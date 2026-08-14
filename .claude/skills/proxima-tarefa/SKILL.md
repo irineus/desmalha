@@ -22,6 +22,7 @@ Query SQL no data source, excluindo Concluído, ordenando por Fase ASC → Em an
 2. Atualizar Notas do card (⚠️ `update_properties` SOBRESCREVE Notas — ler o valor atual primeiro e reenviar completo).
 3. Atualizar a página de Decisões vigentes via `update_content` (edições pontuais, nunca replace): decisão nova na seção certa com data e card de origem; decisão substituída vai para "Decisões superadas" com motivo; linha no Histórico.
 4. Status = "Concluído". Parar — um item do board por sessão; a próxima só em nova sessão.
+5. **Fechar o ciclo do Git antes de encerrar**: oferecer explicitamente abrir o PR da branch da tarefa e fazer o merge. Branch empurrada sem PR some — já aconteceu com o motor de cálculo, concluído no board e ausente do `main` por duas sessões. Se houver PR aberto de tarefa anterior ainda não mergeado, dizer no resumo final. Ver regra permanente 6 do `CLAUDE.md`.
 
 ## Proibições
 Nunca deletar cards. Nunca tocar em outros databases do workspace. IDs de página em UUID hifenizado nas atualizações.
