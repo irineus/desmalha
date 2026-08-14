@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'monitoring.dart';
+
+Future<void> main() async {
+  await bootstrap(() => runApp(const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
