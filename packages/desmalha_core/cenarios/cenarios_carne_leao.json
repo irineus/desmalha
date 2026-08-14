@@ -1,0 +1,421 @@
+{
+  "descricao": "Cenários table-driven do motor de apuração do carnê-leão (spec 'Especificar regras de cálculo', seção 9). Os marcados com oficial=true fecham contra o Carnê-Leão Web (critério de aceite nº 1 do MVP). Cenários 15 (vencimento de DARF) e 17 (centavo nos limites de faixa) vivem em testes unitários dedicados: exercitam funções, não a apuração mensal.",
+  "tabelas": [
+    {
+      "id": "irpf-mensal-2026-01",
+      "fonte": "Tabela progressiva mensal vigente desde mai/2025, mantida em 2026; redutor conforme orientação oficial da RFB sobre a Lei 15.270/2025, publicada em 11/12/2025.",
+      "vigenciaInicio": "2026-01",
+      "vigenciaFim": null,
+      "valorDependenteCentavos": 18959,
+      "descontoSimplificadoCentavos": 60720,
+      "faixas": [
+        { "limiteSuperiorCentavos": 242880, "aliquotaPontosBase": 0, "parcelaDeduzirCentavos": 0 },
+        { "limiteSuperiorCentavos": 282665, "aliquotaPontosBase": 750, "parcelaDeduzirCentavos": 18216 },
+        { "limiteSuperiorCentavos": 375105, "aliquotaPontosBase": 1500, "parcelaDeduzirCentavos": 39416 },
+        { "limiteSuperiorCentavos": 466468, "aliquotaPontosBase": 2250, "parcelaDeduzirCentavos": 67549 },
+        { "limiteSuperiorCentavos": null, "aliquotaPontosBase": 2750, "parcelaDeduzirCentavos": 90873 }
+      ],
+      "redutor": {
+        "tetoCentavos": 31289,
+        "limiteIsencaoCentavos": 500000,
+        "limiteTransicaoCentavos": 735000,
+        "coefACentavos": 97862,
+        "coefBMilionesimos": 133145
+      }
+    }
+  ],
+  "cenarios": [
+    {
+      "numero": 1,
+      "oficial": true,
+      "descricao": "Receita de PF pura na faixa de 27,5%, sem deduções — o desconto simplificado vence por padrão",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 1000000,
+          "esperado": {
+            "versaoTabelaId": "irpf-mensal-2026-01",
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioACentavos": 1000000,
+            "impostoCenarioACentavos": 184127,
+            "baseCenarioBCentavos": 939280,
+            "impostoCenarioBCentavos": 167429,
+            "reducaoRedutorCentavos": 0,
+            "impostoDevidoCentavos": 167429,
+            "saldoNegativoNovoCentavos": 0,
+            "totalParaDarfCentavos": 167429,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 167429,
+            "impostoAcumuladoNovoCentavos": 0
+          }
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "oficial": true,
+      "descricao": "Livro-caixa + INSS + 2 dependentes com queda de faixa (27,5% → 22,5%); imposto com terceira casa decimal truncada (319,1945 → 319,19)",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 800000,
+          "despesas": [ { "valorCentavos": 300000 } ],
+          "inssPagoCentavos": 20000,
+          "dependentes": 2,
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 442082,
+            "impostoCenarioACentavos": 31919,
+            "baseCenarioBCentavos": 739280,
+            "impostoCenarioBCentavos": 112429,
+            "reducaoRedutorCentavos": 0,
+            "impostoDevidoCentavos": 31919,
+            "saldoNegativoNovoCentavos": 0,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 31919
+          }
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "oficial": true,
+      "descricao": "Despesa maior que receita gera saldo negativo, consumido no mês seguinte pelas deduções reais",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 300000,
+          "despesas": [ { "valorCentavos": 400000 } ],
+          "esperado": {
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioACentavos": 0,
+            "impostoCenarioACentavos": 0,
+            "baseCenarioBCentavos": 239280,
+            "impostoCenarioBCentavos": 0,
+            "impostoDevidoCentavos": 0,
+            "saldoNegativoNovoCentavos": 100000,
+            "statusDarf": "semImposto"
+          }
+        },
+        {
+          "competencia": "2026-02",
+          "receitaCentavos": 500000,
+          "despesas": [ { "valorCentavos": 100000 } ],
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "saldoNegativoAnteriorCentavos": 100000,
+            "baseCenarioACentavos": 300000,
+            "impostoCenarioACentavos": 5584,
+            "baseCenarioBCentavos": 439280,
+            "impostoCenarioBCentavos": 31289,
+            "reducaoRedutorCentavos": 5584,
+            "impostoDevidoCentavos": 0,
+            "saldoNegativoNovoCentavos": 0,
+            "statusDarf": "semImposto"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 4,
+      "descricao": "Saldo negativo formado em dezembro não transporta para janeiro (escopo ano-calendário)",
+      "meses": [
+        {
+          "competencia": "2026-12",
+          "receitaCentavos": 100000,
+          "despesas": [ { "valorCentavos": 300000 } ],
+          "esperado": {
+            "impostoDevidoCentavos": 0,
+            "saldoNegativoNovoCentavos": 200000,
+            "statusDarf": "semImposto"
+          }
+        },
+        {
+          "competencia": "2027-01",
+          "receitaCentavos": 500000,
+          "esperado": {
+            "saldoNegativoAnteriorCentavos": 0,
+            "baseCenarioACentavos": 500000,
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioBCentavos": 439280,
+            "impostoCenarioBCentavos": 31289,
+            "reducaoRedutorCentavos": 31289,
+            "impostoDevidoCentavos": 0,
+            "statusDarf": "semImposto"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 5,
+      "oficial": true,
+      "descricao": "Base isenta — sem DARF, com condição de isenção sinalizada",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 240000,
+          "esperado": {
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioACentavos": 240000,
+            "impostoCenarioACentavos": 0,
+            "baseCenarioBCentavos": 179280,
+            "impostoCenarioBCentavos": 0,
+            "impostoDevidoCentavos": 0,
+            "valorDarfCentavos": 0,
+            "statusDarf": "semImposto"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 6,
+      "descricao": "Cenário B (simplificado) mais vantajoso mesmo com despesas reais; redutor parcial na faixa de transição, truncamento do final (802,685 → 802,68)",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 700000,
+          "despesas": [ { "valorCentavos": 30000 } ],
+          "esperado": {
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioACentavos": 670000,
+            "impostoCenarioACentavos": 93377,
+            "baseCenarioBCentavos": 639280,
+            "impostoCenarioBCentavos": 84929,
+            "reducaoRedutorCentavos": 4660,
+            "impostoDevidoCentavos": 80268,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 80268
+          }
+        }
+      ]
+    },
+    {
+      "numero": 7,
+      "descricao": "Redutor na faixa até R$ 5.000, limitado ao imposto apurado (piso zero)",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 480000,
+          "esperado": {
+            "cenarioVencedor": "descontoSimplificado",
+            "impostoCenarioACentavos": 41127,
+            "baseCenarioBCentavos": 419280,
+            "impostoCenarioBCentavos": 26789,
+            "reducaoRedutorCentavos": 26789,
+            "impostoDevidoCentavos": 0,
+            "statusDarf": "semImposto"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 8,
+      "oficial": true,
+      "descricao": "Exemplo oficial da RFB: receita R$ 6.000,00 → imposto devido R$ 394,54 (simplificado + redutor de transição)",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 600000,
+          "esperado": {
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioACentavos": 600000,
+            "impostoCenarioACentavos": 74127,
+            "baseCenarioBCentavos": 539280,
+            "impostoCenarioBCentavos": 57429,
+            "reducaoRedutorCentavos": 17975,
+            "impostoDevidoCentavos": 39454,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 39454
+          }
+        }
+      ]
+    },
+    {
+      "numero": 9,
+      "descricao": "Excesso de INSS e dependentes zera a base mas não transporta — só o excesso do livro-caixa encadeia",
+      "meses": [
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 300000,
+          "inssPagoCentavos": 500000,
+          "esperado": {
+            "baseCenarioACentavos": 0,
+            "impostoDevidoCentavos": 0,
+            "saldoNegativoNovoCentavos": 0,
+            "statusDarf": "semImposto"
+          }
+        },
+        {
+          "competencia": "2026-04",
+          "receitaCentavos": 300000,
+          "esperado": {
+            "saldoNegativoAnteriorCentavos": 0,
+            "baseCenarioACentavos": 300000,
+            "impostoCenarioACentavos": 5584,
+            "cenarioVencedor": "descontoSimplificado",
+            "impostoCenarioBCentavos": 0,
+            "impostoDevidoCentavos": 0,
+            "statusDarf": "semImposto"
+          }
+        }
+      ]
+    },
+    {
+      "numero": 10,
+      "descricao": "Home office: trava de 20% aplicada por lançamento (R$ 1.000,00 → R$ 200,00 dedutíveis)",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 800000,
+          "despesas": [
+            { "valorCentavos": 100000, "travaHomeOffice": true },
+            { "valorCentavos": 50000 }
+          ],
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 730000,
+            "impostoCenarioACentavos": 109877,
+            "impostoCenarioBCentavos": 112429,
+            "impostoDevidoCentavos": 109877,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 109877
+          }
+        }
+      ]
+    },
+    {
+      "numero": 11,
+      "descricao": "Repasse essencial no CPF do profissional entra como receita + despesa (neutraliza); reembolso com NF no CPF do cliente fica fora de tudo",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 600000,
+          "despesas": [ { "valorCentavos": 100000 } ],
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 500000,
+            "impostoCenarioACentavos": 46627,
+            "impostoCenarioBCentavos": 57429,
+            "reducaoRedutorCentavos": 17975,
+            "impostoDevidoCentavos": 28652,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 28652
+          }
+        }
+      ]
+    },
+    {
+      "numero": 12,
+      "descricao": "IRRF retido por PJ é registrado para o relatório anual e ignorado no cálculo mensal",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 1000000,
+          "irrfPjCentavos": 150000,
+          "esperado": {
+            "impostoDevidoCentavos": 167429,
+            "irrfRetidoPjCentavos": 150000,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 167429
+          }
+        }
+      ]
+    },
+    {
+      "numero": 13,
+      "descricao": "Imposto abaixo de R$ 10,00 acumula por dois meses e consolida no terceiro numa única guia",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 800000,
+          "despesas": [ { "valorCentavos": 552120 } ],
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 247880,
+            "impostoDevidoCentavos": 375,
+            "totalParaDarfCentavos": 375,
+            "statusDarf": "acumulaParaProximoMes",
+            "valorDarfCentavos": 0,
+            "impostoAcumuladoNovoCentavos": 375
+          }
+        },
+        {
+          "competencia": "2026-02",
+          "receitaCentavos": 800000,
+          "despesas": [ { "valorCentavos": 552120 } ],
+          "esperado": {
+            "impostoAcumuladoAnteriorCentavos": 375,
+            "impostoDevidoCentavos": 375,
+            "totalParaDarfCentavos": 750,
+            "statusDarf": "acumulaParaProximoMes",
+            "valorDarfCentavos": 0,
+            "impostoAcumuladoNovoCentavos": 750
+          }
+        },
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 800000,
+          "despesas": [ { "valorCentavos": 552120 } ],
+          "esperado": {
+            "impostoAcumuladoAnteriorCentavos": 750,
+            "impostoDevidoCentavos": 375,
+            "totalParaDarfCentavos": 1125,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 1125,
+            "impostoAcumuladoNovoCentavos": 0
+          }
+        }
+      ]
+    },
+    {
+      "numero": 14,
+      "descricao": "Resíduo abaixo de R$ 10,00 em dezembro não transporta — vai para a DIRPF; janeiro recomeça do zero",
+      "meses": [
+        {
+          "competencia": "2026-12",
+          "receitaCentavos": 800000,
+          "despesas": [ { "valorCentavos": 552120 } ],
+          "esperado": {
+            "impostoDevidoCentavos": 375,
+            "totalParaDarfCentavos": 375,
+            "statusDarf": "residuoParaDirpf",
+            "valorDarfCentavos": 0,
+            "impostoAcumuladoNovoCentavos": 0
+          }
+        },
+        {
+          "competencia": "2027-01",
+          "receitaCentavos": 800000,
+          "despesas": [ { "valorCentavos": 552120 } ],
+          "esperado": {
+            "impostoAcumuladoAnteriorCentavos": 0,
+            "impostoDevidoCentavos": 375,
+            "totalParaDarfCentavos": 375,
+            "statusDarf": "acumulaParaProximoMes",
+            "impostoAcumuladoNovoCentavos": 375
+          }
+        }
+      ]
+    },
+    {
+      "numero": 16,
+      "oficial": true,
+      "descricao": "Terceira casa decimal no imposto final (213,13995475): truncar → 213,13 (contraprova empírica pendente, modo configurável)",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 555555,
+          "esperado": {
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioBCentavos": 494835,
+            "impostoCenarioBCentavos": 45206,
+            "reducaoRedutorCentavos": 23892,
+            "impostoDevidoCentavos": 21313,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 21313
+          }
+        }
+      ]
+    }
+  ]
+}
