@@ -1,0 +1,67 @@
+# CI/CD do Desmalha no Codemagic.
+#
+# Sem assinatura, sem publicação, sem variáveis secretas por enquanto — release
+# signing será Play App Signing + variáveis cifradas do Codemagic, configuradas
+# pelo usuário na interface web (nunca no repositório).
+#
+# A conexão da conta Codemagic a este repositório é feita na interface web.
+workflows:
+  android-verify:
+    name: Android verify (analyze + testes + APK debug)
+    instance_type: linux_x2
+    max_build_duration: 30
+    environment:
+      # Usa o FVM com a versão pinada no .fvmrc da raiz (Flutter 3.44.7).
+      flutter: fvm
+      java: 17
+    triggering:
+      events:
+        - push
+      cancel_previous_builds: true
+    scripts:
+      - name: Flutter pinado (sanidade)
+        script: |
+          fvm flutter --version
+      - name: Analyze do app
+        working_directory: apps/desmalha_app
+        script: |
+          fvm flutter pub get
+          fvm flutter analyze
+      - name: Testes do desmalha_core (Dart puro)
+        working_directory: packages/desmalha_core
+        script: |
+          fvm dart pub get
+          fvm dart test
+      - name: Testes do app
+        working_directory: apps/desmalha_app
+        script: |
+          fvm flutter test
+      - name: Build APK debug
+        working_directory: apps/desmalha_app
+        script: |
+          fvm flutter build apk --debug
+    artifacts:
+      - apps/desmalha_app/build/app/outputs/flutter-apk/app-debug.apk
+
+  ios-simulator-nightly:
+    name: iOS simulator nightly (compila sem assinar)
+    # O agendamento diário (cron) é configurado na interface web do Codemagic
+    # (Scheduled builds) apontando para este workflow; o YAML não carrega cron.
+    # Disparo manual: "Start new build" escolhendo este workflow.
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      flutter: fvm
+      xcode: latest
+    scripts:
+      - name: Flutter pinado (sanidade)
+        script: |
+          fvm flutter --version
+      - name: Build iOS para simulador (sem codesign)
+        working_directory: apps/desmalha_app
+        script: |
+          fvm flutter pub get
+          fvm flutter build ios --simulator --no-codesign
+      # TODO(Fase 4): quando existir código de banco (SQLite/Drift + SQLCipher),
+      # acrescentar aqui os testes de `PRAGMA cipher_version` e o round-trip de
+      # backup cifrado ponta-a-ponta no simulador.
