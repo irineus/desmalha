@@ -24,6 +24,12 @@ workflows:
       events:
         - push
       cancel_previous_builds: true
+    # Cache de dependências para poupar a cota única de 500 min/mês do M2:
+    # evita re-baixar pacotes pub e artefatos do Gradle a cada build.
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/.gradle/caches
     scripts:
       - name: Flutter pinado (sanidade)
         script: |
@@ -61,6 +67,12 @@ workflows:
     environment:
       flutter: fvm
       xcode: latest
+    # Mesma economia de cota do android-verify; CocoaPods entra porque o build
+    # iOS resolve pods na primeira compilação com plugins nativos.
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/Library/Caches/CocoaPods
     scripts:
       - name: Flutter pinado (sanidade)
         script: |
