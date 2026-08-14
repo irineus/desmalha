@@ -15,7 +15,9 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 30
     environment:
-      # Usa o FVM com a versão pinada no .fvmrc da raiz (Flutter 3.44.7).
+      # 'flutter: fvm' faz o Codemagic ler o .fvmrc da raiz e apontar o comando
+      # `flutter` para a versão pinada (3.44.7). O CLI `fvm` NÃO existe no PATH
+      # dos runners — os scripts chamam `flutter`/`dart` diretamente.
       flutter: fvm
       java: 17
     triggering:
@@ -25,25 +27,27 @@ workflows:
     scripts:
       - name: Flutter pinado (sanidade)
         script: |
-          fvm flutter --version
+          flutter --version
+          flutter --version | grep -q "Flutter 3\.44\.7" \
+            || { echo "ERRO: versão do Flutter difere do .fvmrc (esperado 3.44.7)"; exit 1; }
       - name: Analyze do app
         working_directory: apps/desmalha_app
         script: |
-          fvm flutter pub get
-          fvm flutter analyze
+          flutter pub get
+          flutter analyze
       - name: Testes do desmalha_core (Dart puro)
         working_directory: packages/desmalha_core
         script: |
-          fvm dart pub get
-          fvm dart test
+          dart pub get
+          dart test
       - name: Testes do app
         working_directory: apps/desmalha_app
         script: |
-          fvm flutter test
+          flutter test
       - name: Build APK debug
         working_directory: apps/desmalha_app
         script: |
-          fvm flutter build apk --debug
+          flutter build apk --debug
     artifacts:
       - apps/desmalha_app/build/app/outputs/flutter-apk/app-debug.apk
 
@@ -60,12 +64,14 @@ workflows:
     scripts:
       - name: Flutter pinado (sanidade)
         script: |
-          fvm flutter --version
+          flutter --version
+          flutter --version | grep -q "Flutter 3\.44\.7" \
+            || { echo "ERRO: versão do Flutter difere do .fvmrc (esperado 3.44.7)"; exit 1; }
       - name: Build iOS para simulador (sem codesign)
         working_directory: apps/desmalha_app
         script: |
-          fvm flutter pub get
-          fvm flutter build ios --simulator --no-codesign
+          flutter pub get
+          flutter build ios --simulator --no-codesign
       # TODO(Fase 4): quando existir código de banco (SQLite/Drift + SQLCipher),
       # acrescentar aqui os testes de `PRAGMA cipher_version` e o round-trip de
       # backup cifrado ponta-a-ponta no simulador.
