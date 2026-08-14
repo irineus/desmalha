@@ -5,6 +5,8 @@
 # pelo usuário na interface web (nunca no repositório).
 #
 # A conexão da conta Codemagic a este repositório é feita na interface web.
+# O disparo automático por push depende do webhook do repositório no GitHub,
+# criado pelo botão "Update webhook" na aba Webhooks do app no Codemagic.
 workflows:
   android-verify:
     name: Android verify (analyze + testes + APK debug)
