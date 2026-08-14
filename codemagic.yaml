@@ -23,7 +23,22 @@ workflows:
     triggering:
       events:
         - push
+      # Critério de disparo (ago/2026, economia da cota única de 500 min/mês):
+      # só push no main — branch de trabalho já é verificada na própria sessão
+      # (analyze + testes antes do push), então o CI é o selo do merge, não um
+      # repetidor. Válvula manual: commit com [skip ci] não dispara build.
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
       cancel_previous_builds: true
+    # Pula o build quando o push só toca documentação/config de sessão — merge
+    # de ajuste em CLAUDE.md ou na skill não precisa compilar APK.
+    when:
+      changeset:
+        excludes:
+          - '**/*.md'
+          - '.claude/**'
     # Cache de dependências para poupar a cota única de 500 min/mês do M2:
     # evita re-baixar pacotes pub e artefatos do Gradle a cada build.
     cache:
@@ -59,9 +74,11 @@ workflows:
 
   ios-simulator-nightly:
     name: iOS simulator nightly (compila sem assinar)
-    # O agendamento diário (cron) é configurado na interface web do Codemagic
+    # O agendamento (cron) é configurado na interface web do Codemagic
     # (Scheduled builds) apontando para este workflow; o YAML não carrega cron.
-    # Disparo manual: "Start new build" escolhendo este workflow.
+    # Cadência decidida em ago/2026: 3x/semana (seg/qua/sex, 01:00 UTC, main)
+    # enquanto o app não tiver código nativo — volta a diário quando o SQLCipher
+    # entrar (Fase 4). Disparo manual: "Start new build" escolhendo o workflow.
     instance_type: mac_mini_m2
     max_build_duration: 30
     environment:
