@@ -8,7 +8,11 @@
 workflows:
   android-verify:
     name: Android verify (analyze + testes + APK debug)
-    instance_type: linux_x2
+    # mac_mini_m2 é o ÚNICO instance type do plano gratuito do Codemagic —
+    # linux_x2/linux_x4/windows_x2 exigem billing habilitado. Logo, este workflow
+    # também consome a cota mensal de 500 min (M2); cancel_previous_builds e o
+    # max_build_duration curto existem para proteger essa cota.
+    instance_type: mac_mini_m2
     max_build_duration: 30
     environment:
       # Usa o FVM com a versão pinada no .fvmrc da raiz (Flutter 3.44.7).
