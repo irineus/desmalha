@@ -254,6 +254,12 @@ ApuracaoMensal apurarMes({
   // O saldo do livro-caixa não é consumido aqui: o anterior sobrevive e o
   // excesso de despesas do próprio mês continua correndo (nunca foi
   // deduzido em lugar nenhum).
+  //
+  // Transporta APENAS o excesso sobre a receita, e não as despesas do mês
+  // inteiro (confirmado com o contador em ago/2026). Ter escolhido o
+  // desconto simplificado para apurar a base não desvincula a despesa da
+  // receita que já a absorveu; estocar despesa coberta pela receita do mês
+  // seria dedução dupla — simplificado agora, despesa real depois.
   final aposSimplificado = receita - tabela.descontoSimplificadoCentavos;
   final baseB = aposSimplificado < 0 ? 0 : aposSimplificado;
   final impostoBMicro = tabela.impostoProgressivoMicroCentavos(baseB);
