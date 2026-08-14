@@ -82,3 +82,8 @@ tarball oficial de `storage.googleapis.com` quando o clone git do FVM não for p
    fechar o card.
 6. **Um escopo por sessão.** Se descobrir trabalho novo no meio do caminho, anote no
    resumo final como "candidato a card" em vez de executar.
+7. **Nenhuma tarefa termina em branch órfã.** Ao fechar a tarefa, sempre **ofereça abrir o
+   PR e fazer o merge** — no resumo final, como pergunta explícita, mesmo que o usuário não
+   tenha pedido PR. Se já houver PR de sessão anterior sem merge, diga qual. Motivo: a
+   branch do motor de cálculo ficou pronta, o card foi marcado como concluído e o PR nunca
+   foi aberto; o `main` passou duas sessões sem o motor e ninguém percebeu.
