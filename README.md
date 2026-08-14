@@ -33,4 +33,22 @@ cd apps/desmalha_app && fvm flutter analyze && fvm flutter test
 cd apps/desmalha_app && fvm flutter build apk --debug
 ```
 
+## Monitoramento de erros (Sentry)
+
+O app usa [Sentry](https://sentry.io) (`sentry_flutter`) para crash/erro, **anônimo por
+construção** (`apps/desmalha_app/lib/monitoring.dart`): sem PII, sem screenshot, sem
+usuário identificado, sem tracing de performance. O SDK só inicializa quando o build
+recebe um DSN:
+
+```bash
+flutter build apk --release \
+  --dart-define=SENTRY_DSN=<dsn do projeto> \
+  --dart-define=SENTRY_ENVIRONMENT=production
+```
+
+Sem `SENTRY_DSN` — dev, testes e CI de verificação — o monitoramento fica desligado e
+nenhum tráfego de telemetria sai do app. Em release, o DSN entra por variável cifrada
+do Codemagic (nunca no repositório). Regra de ouro: mensagens de exceção e breadcrumbs
+jamais podem carregar dado fiscal (valores, CPF, descrição de transação).
+
 Contexto completo do projeto para sessões de agente: [`CLAUDE.md`](CLAUDE.md).
