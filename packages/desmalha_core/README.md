@@ -16,11 +16,13 @@ nuvem, nem servidor — ADR local-first). Para isso existe o
 `validar_extrato`: ele apenas **lê** o arquivo e imprime **só agregados**;
 nada é gravado nem transmitido.
 
-Na raiz do monorepo (Windows, PowerShell ou cmd):
+De dentro de `packages/desmalha_core` (Windows, PowerShell ou cmd):
 
 ```
+cd packages\desmalha_core
+fvm dart pub get
 fvm dart run desmalha_core:validar_extrato C:\caminho\extrato.ofx
-fvm dart run desmalha_core:validar_extrato C:\caminho\extrato.csv --perfil packages\desmalha_core\perfis\nubank-conta-csv-v1.json
+fvm dart run desmalha_core:validar_extrato C:\caminho\extrato.csv --perfil perfis\nubank-conta-csv-v1.json
 ```
 
 O relatório traz: nº de transações, período coberto, soma de créditos e
