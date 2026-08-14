@@ -6,3 +6,10 @@
 library;
 
 export 'src/dinheiro.dart';
+export 'src/extrato/csv_parser.dart';
+export 'src/extrato/data_civil.dart';
+export 'src/extrato/decodificacao.dart';
+export 'src/extrato/ofx_parser.dart';
+export 'src/extrato/perfil_csv.dart';
+export 'src/extrato/transacao_importada.dart';
+export 'src/extrato/valor_monetario.dart';
