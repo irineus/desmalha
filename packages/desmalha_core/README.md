@@ -84,6 +84,28 @@ Os cenários de aceitação são table-driven em
 `cenarios/cenarios_carne_leao.json`; os marcados `oficial: true` fecham
 contra o Carnê-Leão Web na Fase 7.
 
+## Geração do DARF (código de receita 0190)
+
+`DocumentoDarf.daApuracao` monta a guia a partir de uma `ApuracaoMensal`:
+período de apuração, vencimento, contribuinte e valor. `darfsDaSequencia`
+resolve o N:1 do DARF mínimo — a guia registra em
+`competenciasAbrangidas` os meses que ficaram abaixo de R$ 10,00 e foram
+absorvidos por ela. `gerarPdfDarf` produz o PDF (o compartilhamento
+nativo é da tela de DARF, na Fase 5).
+
+**Código de barras.** O padrão FEBRABAN de arrecadação está implementado
+por inteiro e testado — 44 dígitos, DV geral por módulo 10 ou 11 conforme
+o identificador de valor, linha digitável de 48 dígitos e simbologia ITF.
+O que **não** está aqui é como a Receita Federal preenche os 25 dígitos do
+campo livre: isso é especificação da RFB, chega pelo catálogo versionado
+como `LayoutCodigoBarrasDarf` e só é usado quando o campo
+`conferido_contra_documento_real` for verdadeiro.
+
+⚠ Enquanto não houver layout conferido contra um DARF real emitido pelo
+Sicalc/e-CAC, a guia sai **sem** código de barras e direciona ao e-CAC.
+Um código de barras adivinhado não falha: ele é lido pelo banco e paga a
+receita errada em silêncio. Mesma postura do `PRAGMA cipher_version`.
+
 ## Layout
 
 ```
