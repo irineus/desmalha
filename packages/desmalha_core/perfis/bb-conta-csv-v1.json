@@ -1,0 +1,14 @@
+{
+  "id": "bb-conta-csv-v1",
+  "banco": "Banco do Brasil",
+  "delimitador": ",",
+  "linhasCabecalho": 1,
+  "formatoData": "dd/MM/yyyy",
+  "formatoValor": "virgulaDecimal",
+  "colunaData": 0,
+  "colunaValor": 4,
+  "colunaDescricao": 1,
+  "colunaTipo": 5,
+  "marcadorDebito": "D",
+  "descricoesIgnoradas": ["Saldo Anterior", "S A L D O"]
+}

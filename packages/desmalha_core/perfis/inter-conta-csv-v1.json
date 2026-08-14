@@ -1,0 +1,11 @@
+{
+  "id": "inter-conta-csv-v1",
+  "banco": "Banco Inter",
+  "delimitador": ";",
+  "linhasCabecalho": 5,
+  "formatoData": "dd/MM/yyyy",
+  "formatoValor": "virgulaDecimal",
+  "colunaData": 0,
+  "colunaValor": 2,
+  "colunaDescricao": 1
+}

@@ -1,0 +1,12 @@
+{
+  "id": "nubank-conta-csv-v1",
+  "banco": "Nubank",
+  "delimitador": ",",
+  "linhasCabecalho": 1,
+  "formatoData": "dd/MM/yyyy",
+  "formatoValor": "pontoDecimal",
+  "colunaData": 0,
+  "colunaValor": 1,
+  "colunaDescricao": 3,
+  "colunaIdExterno": 2
+}
