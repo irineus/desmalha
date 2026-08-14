@@ -55,6 +55,62 @@ void main() {
     });
   });
 
+  group('o que transporta no mês de desconto simplificado', () {
+    // Regra confirmada pelo contador em ago/2026, depois de uma rodada de
+    // esclarecimento: transporta APENAS o excesso de despesas sobre a receita
+    // do mês — o resultado negativo do livro-caixa. O fato de o motor ter
+    // escolhido o desconto simplificado para apurar a base não desvincula a
+    // despesa da receita que já a absorveu.
+    //
+    // A leitura oposta (estocar as despesas do mês inteiro sempre que o
+    // simplificado vence) foi expressamente descartada: criaria dedução dupla
+    // — desconto simplificado agora, despesa real depois — e exporia o
+    // usuário no cruzamento de dados da Receita. Não "corrigir" para ela.
+
+    test('receita absorve a despesa: nada transporta', () {
+      // R$ 3.000,00 de receita contra R$ 400,00 de despesa. O simplificado
+      // vence (base isenta de R$ 2.392,80 contra R$ 2.600,00 tributados),
+      // mas o livro-caixa fechou POSITIVO em R$ 2.600,00 — não há excesso.
+      final apuracao = apurarMes(
+        entrada: EntradaApuracao(
+          competencia: '2026-05',
+          receitaBrutaCentavos: 300000,
+          despesasDedutiveisCentavos: 40000,
+        ),
+        tabela: tabela,
+      );
+      expect(apuracao.cenarioVencedor, CenarioVencedor.descontoSimplificado);
+      expect(apuracao.saldoNegativoNovoCentavos, 0);
+    });
+
+    test('despesa supera a receita: transporta só o excesso', () {
+      // Mesma receita, R$ 4.000,00 de despesa: o livro-caixa fecha negativo
+      // em R$ 1.000,00, e é esse valor — não os R$ 4.000,00 — que corre.
+      final apuracao = apurarMes(
+        entrada: EntradaApuracao(
+          competencia: '2026-05',
+          receitaBrutaCentavos: 300000,
+          despesasDedutiveisCentavos: 400000,
+        ),
+        tabela: tabela,
+      );
+      expect(apuracao.saldoNegativoNovoCentavos, 100000);
+    });
+
+    test('o excesso soma ao saldo herdado, sem consumi-lo', () {
+      final apuracao = apurarMes(
+        entrada: EntradaApuracao(
+          competencia: '2026-05',
+          receitaBrutaCentavos: 300000,
+          despesasDedutiveisCentavos: 400000,
+        ),
+        tabela: tabela,
+        saldoNegativoAnteriorCentavos: 50000,
+      );
+      expect(apuracao.saldoNegativoNovoCentavos, 150000);
+    });
+  });
+
   group('modo de ajuste final (contraprova pendente — spec, seção 7)', () {
     // Receita R$ 5.555,55: imposto final exato de R$ 213,13995475.
     final entrada = EntradaApuracao(
