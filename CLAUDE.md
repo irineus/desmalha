@@ -87,3 +87,16 @@ tarball oficial de `storage.googleapis.com` quando o clone git do FVM não for p
    tenha pedido PR. Se já houver PR de sessão anterior sem merge, diga qual. Motivo: a
    branch do motor de cálculo ficou pronta, o card foi marcado como concluído e o PR nunca
    foi aberto; o `main` passou duas sessões sem o motor e ninguém percebeu.
+8. **Na dúvida sobre regra fiscal ou jurídica, pergunte — nunca escolha uma leitura e siga.**
+   Vale para fonte oficial ambígua, para resposta de contador ou advogado que admita mais de
+   uma interpretação, e para qualquer ponto em que a especificação não cubra o caso. Ao
+   perguntar, apresente **opções fechadas** (a/b) e um **exemplo numérico concreto** que
+   separe as leituras — pergunta aberta volta com prosa que ainda admite as duas. Perguntar
+   custa uma mensagem; implementar a leitura errada custa um erro fiscal na mão do usuário.
+   ⚠️ Desconfie especialmente do erro que **favorece** o usuário: ninguém reclama de imposto
+   a menos, e ele só aparece no cruzamento de dados da Receita. Foi exatamente o caso do
+   transporte de despesas em mês de desconto simplificado (ago/2026): a redação da primeira
+   resposta do contador prescrevia dedução dupla, e a segunda rodada confirmou que
+   implementá-la teria posto um erro fiscal no app com aval por escrito.
+   Enquanto a dúvida não fecha, **o comportamento seguro é falhar visível** — como a guia que
+   sai sem código de barras em vez de sair com um código adivinhado.
