@@ -80,6 +80,17 @@ desativar login por senha. A garantia primária é do código do app. A trava em
 no banco, em vez de criar em silêncio uma conta cuja senha vira o elo fraco do
 backup.
 
+A garantia primária existe desde ago/2026 em `apps/desmalha_app/lib/auth/`: o
+SDK de auth entra no app por **um arquivo só** (`porta_auth_supabase.dart`), e
+`test/auth/trava_sem_senha_test.dart` varre `lib/` a cada execução recusando
+qualquer menção a API de senha ou de provedor social — mais o próprio
+isolamento do SDK, para que a auditoria continue cabendo em um arquivo.
+
+A configuração que só existe no painel (código de 8 dígitos, validade de 600s,
+*secure email change* e os templates com `{{ .Token }}`) está em
+[`manual/auth_otp.md`](manual/auth_otp.md), e precisa ser repetida em cada
+projeto.
+
 Para desligar numa emergência de autenticação:
 
 ```sql
