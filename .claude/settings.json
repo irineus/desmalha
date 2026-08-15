@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(cd *)",
+      "Bash(source tool/env)",
+      "Bash(bash tool/setup_env.sh)",
+      "Bash(./tool/testar_supabase.sh *)",
+
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git ls-files *)",
+      "Bash(git cherry *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+
+      "Bash(fvm flutter analyze *)",
+      "Bash(fvm flutter test *)",
+      "Bash(fvm flutter pub *)",
+      "Bash(fvm flutter build *)",
+      "Bash(fvm flutter doctor *)",
+      "Bash(fvm dart analyze *)",
+      "Bash(fvm dart test *)",
+      "Bash(fvm dart run *)",
+      "Bash(fvm dart format *)",
+      "Bash(fvm dart pub *)"
+    ]
+  }
+}
