@@ -18,12 +18,31 @@ codemagic.yaml            # CI/CD (Codemagic)
 
 ## Reconstruir o ambiente
 
+**Linux** (sessões de nuvem, CI):
+
 ```bash
 bash tool/setup_env.sh   # idempotente; termina com `fvm flutter doctor`
 source tool/env          # ANDROID_HOME / PATH para a sessão atual
 ```
 
+**Windows** (máquina de UI, emulador e hot reload): [`docs/ambiente-windows.md`](docs/ambiente-windows.md).
+
 Flutter **3.44.7** pinado via [FVM](https://fvm.app) (`.fvmrc`). JDK 17.
+
+## Verificar o ambiente
+
+Roda igual nos três ambientes (Dart puro, sem dependência) e falha alto quando a
+instalação diverge do que o repositório declara:
+
+```bash
+fvm dart run tool/verificar_ambiente.dart            # pins e toolchain
+fvm dart run tool/verificar_ambiente.dart --android  # exige emulador/aparelho conectado
+```
+
+Confere o Flutter em uso contra o `.fvmrc` (e o `.fvmrc` contra o `tool/setup_env.sh`), o
+`flutter` do `PATH` — que é o SDK visto pelo Android Studio —, JDK 17, os componentes do
+Android SDK, e as decisões travadas `applicationId = com.desmalha.app` e `minSdk = 26`. As
+versões esperadas saem do próprio repositório; o verificador não guarda cópia delas.
 
 ## Verificação rápida
 
