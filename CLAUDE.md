@@ -40,6 +40,8 @@ imposto mensal, gera DARF (código 0190) e prepara os consolidados para o e-CAC.
 .fvmrc                     # pin do Flutter (3.44.7) — só o .fvmrc é versionado, .fvm/ não
 codemagic.yaml             # CI: android-verify (push) + ios-simulator-nightly (cron/manual)
 tool/setup_env.sh          # bootstrap idempotente de ambiente Linux (JDK, FVM, Android SDK)
+tool/verificar_ambiente.dart  # verificador de ambiente (Dart puro; roda nos 3 ambientes)
+docs/ambiente-windows.md   # roteiro da máquina de UI (emulador, hot reload, Android Studio)
 apps/desmalha_app/         # o app Flutter (só orquestra e apresenta)
 packages/desmalha_core/    # Dart puro: motor de cálculo, parser OFX, regras fiscais
 .claude/skills/proxima-tarefa/  # skill de board do Notion
@@ -54,6 +56,11 @@ Sessão Linux efêmera nasce pronta com:
 ```
 bash tool/setup_env.sh          # instala JDK 17, FVM, Flutter 3.44.7, Android SDK
 source tool/env                 # exporta ANDROID_HOME etc. (gerado pelo script)
+```
+Conferir que o ambiente bate com o que o repositório declara (vale nos três ambientes;
+no Windows é o que fecha o Bloco 3, com `--android` exigindo emulador/aparelho):
+```
+fvm dart run tool/verificar_ambiente.dart [--android]
 ```
 Build e testes (sempre via FVM):
 ```
