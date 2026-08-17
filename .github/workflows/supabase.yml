@@ -126,6 +126,11 @@ jobs:
         with:
           version: latest
 
+      # Para montar o payload de auth a partir do config.toml.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: Conferir que o ambiente está configurado
         # Falhar aqui, com o nome do que falta, é muito melhor do que falhar no
         # meio da publicação com uma mensagem do CLI sobre credencial ausente.
@@ -204,9 +209,8 @@ jobs:
           done
 
       - name: Configuração de Auth
-        # ⚠️ `config push` SOBRESCREVE: o que não está no config.toml volta ao
-        # padrão do CLI no projeto remoto. É por isso que site_url está
-        # explícito lá, vindo desta variável de ambiente.
+        # Escreve só os campos nomeados em tool/auth_para_api.ts. Ver o
+        # comentário longo mais abaixo sobre por que `config push` não serve.
         run: |
           # --yes porque `config push` abre um prompt de confirmação. Numa
           # execução anterior ele foi aceito por EOF, o que funciona por
@@ -262,9 +266,47 @@ jobs:
             exit 1
           fi
 
-          # Agora sim: o resto da configuração de Auth, templates inclusive.
-          supabase link --project-ref "$REF" --yes
-          supabase config push --yes
+          # ─── Resto da configuração de Auth: PATCH estreito ─────────────
+          #
+          # 🔴 NÃO usar `supabase config push` aqui. Ele manda a configuração de
+          # auth INTEIRA, e os campos que o config.toml não descreve vão embora
+          # junto — inclusive o SMTP remoto, porque o bloco [auth.email.smtp] de
+          # lá vale para o stack local. Medido em 17/ago/2026: às 04:56 a
+          # conferência acima leu smtp_host=smtp.resend.com, o config push rodou
+          # no mesmo job logo depois, e o toggle voltou a desligado.
+          #
+          # Não é bug do CLI: é o que "push da configuração inteira" significa, e
+          # é incompatível com um projeto onde parte da configuração só existe
+          # no painel. Então escrevemos só os campos que nomeamos.
+          #
+          # A lista está em tool/auth_para_api.ts, com teste que reprova se um
+          # campo smtp_* entrar nela.
+          corpo=$(deno run --allow-read tool/auth_para_api.ts)
+
+          codigo=$(curl -sS -o /tmp/patch.json -w '%{http_code}'             -X PATCH "https://api.supabase.com/v1/projects/$REF/config/auth"             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN"             -H "Content-Type: application/json"             --data "$corpo")
+          if [[ "$codigo" != 2?? ]]; then
+            echo "a Management API recusou a configuração de auth (HTTP $codigo):" >&2
+            cat /tmp/patch.json >&2
+            exit 1
+          fi
+
+          # Lê de volta o que importa: que o SMTP SOBREVIVEU ao PATCH — que é o
+          # defeito que este desenho existe para não repetir — e que o template
+          # aplicado é o nosso, e não o padrão em inglês.
+          curl -sS "https://api.supabase.com/v1/projects/$REF/config/auth"             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" > /tmp/depois.json
+
+          depois_host=$(jq -r '.smtp_host // ""' /tmp/depois.json)
+          tem_token=$(jq -r '(.mailer_templates_magic_link_content // "") | contains("{{ .Token }}")' /tmp/depois.json)
+          echo "→ depois do PATCH: smtp_host=${depois_host:-(vazio)} template_com_token=$tem_token"
+
+          if [[ "$depois_host" != "$esperado_host" ]]; then
+            echo "o PATCH derrubou o SMTP do projeto — era exatamente o que se queria evitar" >&2
+            exit 1
+          fi
+          if [[ "$tem_token" != "true" ]]; then
+            echo "o template aplicado não contém {{ .Token }}: o e-mail vai sair com link" >&2
+            exit 1
+          fi
 
       - name: Edge functions
         run: supabase functions deploy excluir-conta --project-ref "$REF"
