@@ -141,6 +141,40 @@ jobs:
             exit 1
           fi
 
+          # A string de conexão errada custou uma execução inteira: o CLI
+          # conecta, o DNS devolve IPv6, e o erro é um ECONNREFUSED com um
+          # endereço hexadecimal que não menciona IPv6 nem pooler em lugar
+          # nenhum. Conferir o FORMATO aqui transforma isso numa mensagem que
+          # diz o que fazer, cinco segundos depois do início.
+          #
+          # Não valida a senha nem o host exato — só a classe de endereço, que é
+          # a única coisa que dá para saber sem conectar.
+          if [[ "$SUPABASE_DB_URL" == *"@db."*".supabase.co"* ]]; then
+            cat >&2 <<'FIM'
+          SUPABASE_DB_URL está com a string de "Direct connection".
+
+          Ela não funciona aqui: é IPv6 no plano free, e o runner do GitHub
+          Actions só fala IPv4. O sintoma seria um ECONNREFUSED para um
+          endereço 2600:... no passo de Migrations.
+
+          Use a string de "Session pooler" (porta 5432):
+            postgresql://postgres.<ref>:<senha>@aws-<regiao>.pooler.supabase.com:5432/postgres
+
+          No dashboard: botão Connect, no topo do projeto, aba Session pooler.
+          FIM
+            exit 1
+          fi
+
+          if [[ "$SUPABASE_DB_URL" == *".pooler.supabase.com:6543"* ]]; then
+            cat >&2 <<'FIM'
+          SUPABASE_DB_URL está com a string de "Transaction pooler" (porta 6543).
+
+          Ela não suporta prepared statements, e as migrations usam. Troque a
+          porta para 5432 — é a mesma string, em modo Session pooler.
+          FIM
+            exit 1
+          fi
+
       - name: Migrations
         # 🔴 SUPABASE_DB_URL tem de ser a string do **Session pooler** (porta
         # 5432, host aws-<regiao>.pooler.supabase.com). A conexao direta
