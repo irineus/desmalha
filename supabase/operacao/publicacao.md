@@ -34,15 +34,33 @@ esta parte é sua. Em **Settings → Environments**, criar o environment `dev`
 
 | Nome | Tipo | Valor |
 |---|---|---|
-| `SUPABASE_ACCESS_TOKEN` | secret | token pessoal, em app.supabase.com/account/tokens |
+| `SUPABASE_ACCESS_TOKEN` | secret | token pessoal, em supabase.com/dashboard/account/tokens |
 | `SUPABASE_DB_PASSWORD` | secret | senha do banco do projeto |
-| `SUPABASE_DB_URL` | secret | string de conexão completa (Project Settings → Database → Connection string) |
+| `SUPABASE_DB_URL` | secret | string de conexão do **Session pooler** — ver o aviso abaixo |
 | `SUPABASE_PROJECT_REF` | variable | o ref do projeto (`caqxssmxeiuutfguxdzj` no dev) |
 | `SUPABASE_SITE_URL` | variable | endereço público do projeto (sem site próprio ainda, use `https://<ref>.supabase.co`) |
 
 O workflow confere os cinco **antes** de começar a publicar e falha nomeando o
 que faltou — melhor do que quebrar no meio, com uma mensagem do CLI sobre
 credencial ausente.
+
+### 🔴 A string de conexão tem de ser a do *Session pooler*
+
+No botão **Connect** do dashboard aparecem três strings. A que serve aqui é a de
+**Session pooler**, porta **5432**, host `aws-<região>.pooler.supabase.com`:
+
+```
+postgresql://postgres.<ref>:<senha>@aws-<regiao>.pooler.supabase.com:5432/postgres
+```
+
+Não é preferência. A **conexão direta** (`db.<ref>.supabase.co`) é **IPv6** no
+plano free, e a documentação do Supabase lista o **GitHub Actions entre as
+plataformas que só falam IPv4** — de lá, a conexão direta simplesmente não
+resolve. O *Transaction pooler* (porta 6543) também não serve: ele não suporta
+*prepared statements*, e migrations usam.
+
+O sintoma de errar é um timeout de conexão no passo de migrations, que não diz
+nada sobre IPv6 — daí este aviso estar aqui e não na sua memória.
 
 ## O endereço que vai para o Google Play
 
