@@ -140,7 +140,8 @@ publica: suítes → migrations → pós-deploy → configuração de Auth → e
 functions → conferência do que ficou de pé.
 
 Push no `main` publica no **dev**; produção é disparo explícito. O único trabalho
-seu é registrar as credenciais do projeto uma vez, em Settings → Environments —
+seu é registrar as credenciais do projeto uma vez, em Settings → Secrets and
+variables → Actions —
 a tabela está em [`operacao/publicacao.md`](operacao/publicacao.md), com o
 roteiro de publicação à mão para o caso de precisar.
 
