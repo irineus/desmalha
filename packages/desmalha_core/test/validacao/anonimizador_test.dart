@@ -125,9 +125,81 @@ void main() {
       expect(a, b);
     });
 
-    test('palavra isolada não é tratada como nome', () {
+    test('palavra isolada TAMBÉM é tratada como nome', () {
+      // Regra invertida em 16/ago/2026 depois do primeiro extrato real: em
+      // MEMO de Pix, palavra solta fora do vocabulário é quase sempre
+      // primeiro nome. O custo aceito é embaralhar estabelecimento junto.
       final anon = Anonimizador();
-      expect(anon.anonimizarTexto('Uber'), 'Uber');
+      expect(anon.anonimizarTexto('GISELE'), isNot(contains('GISELE')));
+      expect(anon.anonimizarTexto('Uber'), isNot(contains('Uber')));
+    });
+
+    test('vocabulário bancário isolado continua sobrevivendo', () {
+      final anon = Anonimizador();
+      expect(anon.anonimizarTexto('PIX TRANSF'), 'PIX TRANSF');
+      expect(anon.anonimizarTexto('TED'), 'TED');
+    });
+
+    test('palavra funcional curta e isolada não vira nome', () {
+      // O piso de 3 letras e os conectivos: sem eles, substituir palavra
+      // isolada sujaria a fixture trocando "de" e "as" por nome fictício.
+      final anon = Anonimizador();
+      expect(anon.anonimizarTexto('de as um no'), 'de as um no');
+      expect(anon.anonimizarTexto('Pagamento de mensalidade em 15/07/2026'),
+          'Pagamento de mensalidade em 15/07/2026');
+      // Conectivo GRUDADO num nome continua sendo absorvido por ele —
+      // comportamento antigo, que "JOAO DA SILVA" é um nome só.
+      final comNome = anon.anonimizarTexto('recebido de MARIA SOUZA');
+      expect(comNome, startsWith('recebido '));
+      expect(comNome, isNot(contains('MARIA')));
+      expect(comNome, isNot(contains('SOUZA')));
+    });
+
+    group('MEMO truncado em largura fixa (vazamentos do Itaú real)', () {
+      // Os quatro casos abaixo saíram de um extrato REAL do Itaú, onde o
+      // banco corta o MEMO numa largura fixa e cola a data no fim. Nenhum
+      // arquivo sintético tinha mostrado isso.
+
+      test('nome colado à data não escapa mais', () {
+        final anon = Anonimizador();
+        final saida = anon.anonimizarTexto('PIX TRANSF SHIRLEI06 08');
+        expect(saida, isNot(contains('SHIRLEI')));
+        // A data colada é estrutura: o sufixo sobrevive.
+        expect(saida, endsWith('06 08'));
+        expect(saida, startsWith('PIX TRANSF '));
+      });
+
+      test('nome isolado entre vocabulário e data não escapa mais', () {
+        final anon = Anonimizador();
+        final saida = anon.anonimizarTexto('PIX TRANSF GISELE 04 08');
+        expect(saida, isNot(contains('GISELE')));
+        expect(saida, endsWith(' 04 08'));
+      });
+
+      test('sobrenome truncado no fim de um nome completo não escapa', () {
+        final anon = Anonimizador();
+        final saida = anon.anonimizarTexto('PIX Carla Souza Santo29 06');
+        expect(saida, isNot(contains('Carla')));
+        expect(saida, isNot(contains('Souza')));
+        expect(saida, isNot(contains('Santo')));
+        expect(saida, endsWith('29 06'));
+      });
+
+      test('nome do próprio titular colado à data não escapa', () {
+        final anon = Anonimizador();
+        final saida = anon.anonimizarTexto('DEV PIX Irineu Juni02 08');
+        expect(saida, isNot(contains('Irineu')));
+        expect(saida, isNot(contains('Juni')));
+        expect(saida, endsWith('02 08'));
+      });
+
+      test('inicial solta (1 letra) não vira nome, mas some com o nome', () {
+        final anon = Anonimizador();
+        // 'PAULO J05' → PAULO é candidato; 'J' tem 1 letra e não é.
+        final saida = anon.anonimizarTexto('PIX TRANSF PAULO J05 08');
+        expect(saida, isNot(contains('PAULO')));
+        expect(saida, endsWith('08'));
+      });
     });
 
     test('perturbação mantém sinal e fica dentro de ±15%', () {
