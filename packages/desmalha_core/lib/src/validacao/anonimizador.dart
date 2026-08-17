@@ -19,10 +19,17 @@
 ///   vocabulário é quase sempre primeiro nome. O custo é embaralhar nome de
 ///   estabelecimento junto (`CLARO`, `CEEE`), e ele foi aceito — errar para
 ///   o lado de anonimizar demais é o único erro barato aqui.
-/// - Dígitos colados à palavra são separados antes da avaliação
-///   (`SHIRLEI06` → `SHIRLEI` + `06`) e o sufixo é preservado: banco que
-///   trunca o MEMO em largura fixa e cola a data no fim (Itaú) escondia o
-///   nome inteiro da heurística.
+/// - O texto é varrido por TRECHOS DE LETRAS, não por palavras separadas
+///   por espaço: qualquer pontuação, dígito ou espaçamento entre eles é
+///   separador e sobrevive byte a byte. É o que faz `SHIRLEI06`,
+///   `PIX-MARIA`, `DOC.RENATA` e `PIX*CARLOS` serem avaliados pelo nome que
+///   carregam. Separar só por espaço, olhando apenas o prefixo de letras de
+///   cada token, deixava passar todo nome colado por `-`, `/`, `.`, `:`,
+///   `*`, `_`, `;` ou TAB — e separador sem espaço é a norma no Itaú e no
+///   Bradesco.
+/// - Trechos vizinhos unidos por UM espaço formam um nome só
+///   (`JOAO DA SILVA`); qualquer outro separador quebra o grupo, e cada
+///   lado é avaliado por si.
 /// - Valores monetários → perturbados em até ±15%, mantendo o sinal.
 /// - Identificadores externos (FITID/coluna de id) → sequenciais fictícios,
 ///   preservando duplicatas (insumo do card de deduplicação).
@@ -101,6 +108,17 @@ class Anonimizador {
     'este', 'esta', 'esse', 'essa', 'isso', 'que', 'sao', 'ate', 'apos',
     'antes', 'sobre', 'entre', 'nao', 'sim', 'mais', 'menos', 'total',
     'valor', 'data', 'numero', 'ref', 'obs', 'id', 'lancamento',
+    // Rótulos e marcadores estruturais de extrato. Entraram quando as
+    // colunas fora do perfil passaram a receber tratamento de texto livre:
+    // sem eles, um "Entrada"/"Saída" na coluna de tipo viraria nome
+    // fictício e esconderia de quem escreve o perfil justamente a coluna
+    // que precisa enxergar. Nenhum é nome ou sobrenome plausível — a lista
+    // só pode crescer com palavras de que isso seja verdade.
+    'entrada', 'saida', 'debitos', 'creditos', 'extrato', 'periodo',
+    'lancamentos', 'historico', 'descricao', 'documento', 'docto',
+    'origem', 'destino', 'favorecido', 'remetente', 'pagador',
+    'beneficiario', 'recebedor', 'tipo', 'categoria', 'situacao',
+    'efetivado', 'previsto', 'aplicado', 'movimentacao', 'complemento',
   };
 
   static const _conectivosDeNome = {'da', 'de', 'do', 'das', 'dos', 'e'};
@@ -187,82 +205,121 @@ class Anonimizador {
           _regexDigitosLongos, (m) => _digitosFicticios(m.group(0)!));
 
   String _substituirNomes(String texto) {
-    final palavras = texto.split(' ');
+    // Segmenta em trechos de letras e separadores. Os segmentos ALTERNAM
+    // por construção (cada trecho é maximal), então entre dois trechos de
+    // letras há sempre exatamente um separador.
+    final segmentos = _segmentar(texto);
+    final trechos = <int>[
+      for (var s = 0; s < segmentos.length; s++)
+        if (segmentos[s].ehLetras) s,
+    ];
+    if (trechos.isEmpty) return texto;
 
-    // 1ª passada: separa o prefixo de letras do resto de cada palavra. O
-    // resto existe porque banco trunca o MEMO em largura fixa e cola a data
-    // no fim (`SHIRLEI06`): sem separar, o token não é "só letras", é
-    // reprovado como candidato, e o nome inteiro escapa da heurística.
-    final letras = <String>[];
-    final restos = <String>[];
-    for (final palavra in palavras) {
-      var corte = 0;
-      while (corte < palavra.length && _ehLetra(palavra.codeUnitAt(corte))) {
-        corte++;
-      }
-      letras.add(palavra.substring(0, corte));
-      restos.add(palavra.substring(corte));
-    }
+    String letras(int k) => segmentos[trechos[k]].texto;
 
-    // Candidata a nome: prefixo de 2+ letras fora do vocabulário bancário.
-    final candidata = List<bool>.generate(palavras.length, (i) {
-      if (letras[i].length < 2) return false;
-      return !_vocabularioBancario.contains(_semAcentos(letras[i].toLowerCase()));
+    /// O trecho `k` e o seguinte estão separados por UM espaço — a única
+    /// junção que forma nome composto. Pontuação, dígito ou espaço duplo
+    /// quebram o grupo, e aí cada lado é avaliado por si (o que continua
+    /// removendo os dois, só que como nomes isolados).
+    bool coladoPorEspaco(int k) =>
+        k + 1 < trechos.length && segmentos[trechos[k] + 1].texto == ' ';
+
+    // Candidato a nome: trecho de 2+ letras fora do vocabulário bancário.
+    final candidata = List<bool>.generate(trechos.length, (k) {
+      if (letras(k).length < 2) return false;
+      return !_vocabularioBancario
+          .contains(_semAcentos(letras(k).toLowerCase()));
     });
 
-    // 2ª passada: conectivos (da/de/do/…) entram no nome quando cercados
-    // por candidatas — "JOAO DA SILVA" é um nome só.
-    for (var i = 1; i < palavras.length - 1; i++) {
-      if (candidata[i]) continue;
-      if (_conectivosDeNome.contains(_semAcentos(letras[i].toLowerCase())) &&
-          candidata[i - 1] &&
-          candidata[i + 1]) {
-        candidata[i] = true;
+    // Conectivos (da/de/do/…) entram no nome quando cercados por candidatas
+    // e unidos por espaço — "JOAO DA SILVA" é um nome só.
+    for (var k = 1; k < trechos.length - 1; k++) {
+      if (candidata[k]) continue;
+      if (_conectivosDeNome.contains(_semAcentos(letras(k).toLowerCase())) &&
+          candidata[k - 1] &&
+          candidata[k + 1] &&
+          coladoPorEspaco(k - 1) &&
+          coladoPorEspaco(k)) {
+        candidata[k] = true;
       }
     }
 
-    // Substitui toda sequência de candidatas, INCLUSIVE de uma só palavra:
-    // em MEMO de Pix, palavra solta fora do vocabulário é quase sempre
-    // primeiro nome, e deixá-la passar foi o que vazou nomes reais no
-    // primeiro extrato de verdade. O que sobra depois das letras (a data
-    // colada) é preservado — é estrutura do arquivo.
-    final resultado = <String>[];
-    var i = 0;
-    while (i < palavras.length) {
-      if (!candidata[i]) {
-        resultado.add(palavras[i]);
-        i++;
+    // Substitui toda sequência de candidatas, INCLUSIVE de um só trecho: em
+    // MEMO de Pix, palavra solta fora do vocabulário é quase sempre primeiro
+    // nome, e deixá-la passar foi o que vazou nomes reais no primeiro
+    // extrato de verdade.
+    final substituto = List<String?>.filled(trechos.length, null);
+    final continuacao = List<bool>.filled(trechos.length, false);
+
+    var k = 0;
+    while (k < trechos.length) {
+      if (!candidata[k]) {
+        k++;
         continue;
       }
-      var fim = i;
-      while (fim + 1 < palavras.length && candidata[fim + 1]) {
+      var fim = k;
+      while (coladoPorEspaco(fim) && candidata[fim + 1]) {
         fim++;
       }
 
       // Candidata SOZINHA só vira nome com 3+ letras e fora dos conectivos:
       // nome de pessoa com duas letras não existe na prática, e sem esse
       // piso um "de" ou "as" solto viraria nome fictício.
-      if (fim == i &&
-          (letras[i].length < 3 ||
-              _conectivosDeNome.contains(_semAcentos(letras[i].toLowerCase())))) {
-        resultado.add(palavras[i]);
-        i++;
+      if (fim == k &&
+          (letras(k).length < 3 ||
+              _conectivosDeNome
+                  .contains(_semAcentos(letras(k).toLowerCase())))) {
+        k++;
         continue;
       }
 
-      final trecho = [for (var j = i; j <= fim; j++) letras[j]].join(' ');
-      final caixaAlta = trecho == trecho.toUpperCase();
-      final sufixo = [for (var j = i; j <= fim; j++) restos[j]].join();
-      resultado.add(_nomeFicticio(
-            trecho,
-            caixaAlta: caixaAlta,
-            isolada: fim == i,
-          ) +
-          sufixo);
-      i = fim + 1;
+      final trecho = [for (var j = k; j <= fim; j++) letras(j)].join(' ');
+      substituto[k] = _nomeFicticio(
+        trecho,
+        caixaAlta: trecho == trecho.toUpperCase(),
+        isolada: fim == k,
+      );
+      for (var j = k + 1; j <= fim; j++) {
+        continuacao[j] = true;
+      }
+      k = fim + 1;
     }
 
-    return resultado.join(' ');
+    // Reconstrói preservando byte a byte tudo que não é nome — dígito
+    // colado, pontuação, espaçamento e a data que o banco cola no fim do
+    // MEMO truncado são ESTRUTURA do arquivo. Só os espaços internos de um
+    // grupo somem, junto com os trechos que eles uniam.
+    final buffer = StringBuffer();
+    var proximo = 0;
+    for (final segmento in segmentos) {
+      if (segmento.ehLetras) {
+        if (!continuacao[proximo]) {
+          buffer.write(substituto[proximo] ?? segmento.texto);
+        }
+        proximo++;
+      } else if (proximo >= trechos.length || !continuacao[proximo]) {
+        buffer.write(segmento.texto);
+      }
+    }
+    return buffer.toString();
+  }
+
+  /// Quebra [texto] em trechos maximais de letras e de não-letras.
+  static List<_Segmento> _segmentar(String texto) {
+    final segmentos = <_Segmento>[];
+    var i = 0;
+    while (i < texto.length) {
+      final ehLetras = _ehLetra(texto.codeUnitAt(i));
+      var j = i;
+      while (j < texto.length && _ehLetra(texto.codeUnitAt(j)) == ehLetras) {
+        j++;
+      }
+      segmentos.add(
+        _Segmento(texto.substring(i, j), ehLetras: ehLetras),
+      );
+      i = j;
+    }
+    return segmentos;
   }
 
   static bool _ehLetra(int ponto) {
@@ -290,6 +347,14 @@ class Anonimizador {
   }
 }
 
+/// Trecho de letras (candidato a nome) ou o separador entre dois deles.
+class _Segmento {
+  const _Segmento(this.texto, {required this.ehLetras});
+
+  final String texto;
+  final bool ehLetras;
+}
+
 // ── OFX ──────────────────────────────────────────────────────────────────
 
 /// Anonimiza um OFX preservando a estrutura SGML/XML intacta.
@@ -305,6 +370,12 @@ String anonimizarOfx(String conteudo, {Anonimizador? anonimizador}) {
       texto, 'BALAMT', (v) => _perturbarValorOfx(v, anon));
   texto = _substituirTagOfx(texto, 'MEMO', anon.anonimizarTexto);
   texto = _substituirTagOfx(texto, 'NAME', anon.anonimizarTexto);
+  // `EXTDNAME` ("extended name of payee") é irmão de `NAME` no `STMTTRN` da
+  // especificação OFX. Nenhum extrato brasileiro examinado até aqui o
+  // emitiu — entra por especificação, não por observação, porque o custo é
+  // uma linha e o que ele evita é um nome real dentro de um arquivo feito
+  // para ser compartilhado.
+  texto = _substituirTagOfx(texto, 'EXTDNAME', anon.anonimizarTexto);
   return texto;
 }
 
@@ -425,7 +496,15 @@ String anonimizarCsv(
       } else if (c == perfil.colunaData || c == perfil.colunaTipo) {
         // Estrutura pura: preservar.
       } else {
-        campo.texto = anon.anonimizarConservador(campo.texto);
+        // Coluna que o perfil NÃO declara. Tratada como texto livre, e não
+        // de forma conservadora: no CSV do Banco do Brasil é a coluna
+        // "Detalhes" — fora do perfil — que carrega o nome da contraparte, e
+        // o conservador não remove nomes. Anonimizar demais uma coluna que o
+        // parser nem lê não custa nada à fixture; anonimizar de menos põe um
+        // nome real num arquivo feito para ser compartilhado. Os rótulos de
+        // coluna não correm risco: vivem nas linhas de cabeçalho, tratadas
+        // acima.
+        campo.texto = anon.anonimizarTexto(campo.texto);
       }
     }
   }

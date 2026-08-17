@@ -68,10 +68,11 @@ ler as colunas, e o relatório não sai. O que sai é a cópia anonimizada mais
 a **estrutura inferida** (encoding, delimitador, nº de colunas, nº de
 lançamentos), que é o insumo para escrever o perfil que falta.
 
-Não empreste o perfil de outro banco para anonimizar: com as colunas
-trocadas, a descrição cai no tratamento conservador, que remove CPF e
-dígitos longos mas **não remove nomes** — o extrato real vazaria nomes de
-clientes para dentro da fixture.
+Não empreste o perfil de outro banco para anonimizar. Colunas que o perfil
+não declara são tratadas como texto livre (nomes incluídos), mas as que ele
+declara como **data** e como **tipo** são preservadas literalmente — são
+estrutura. Com as colunas trocadas, uma delas pode cair em cima de um campo
+de texto real, e o nome do cliente iria intacto para dentro da fixture.
 
 Sem perfil, a data é a única estrutura reconhecível, e é ela que decide o
 tratamento de cada linha:
