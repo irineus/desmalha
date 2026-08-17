@@ -18,6 +18,11 @@ Fonte do schema: **"Resultado: Revisar modelagem de dados para local-first
 | `20260815000332_aceites_termos` | `public.aceites_termos` + imutabilidade + `registrar_aceite` |
 | `20260815000352_exclusao_e_expurgo` | encerramento de conta e as duas rotinas de expurgo |
 | `20260815000359_trava_sem_senha` | trava de servidor contra conta com senha |
+| `20260817010000_rpc_encerrar_conta` | porta em `public` pela qual a edge function alcança o encerramento |
+
+| Edge function | Conteúdo |
+|---|---|
+| `excluir-conta` | fluxo de exclusão + página pública exigida pelo Google Play ([manual](manual/edge_functions.md)) |
 
 Ainda **não** existem: `assinaturas`, `eventos_pagamento`, `backups_metadados`,
 `envios_suporte` e as sete tabelas do catálogo versionado. São escopo de outros
@@ -70,7 +75,27 @@ linhas sumiram, a API foi mesmo chamada. Mesma postura da guia de DARF que sai
 sem código de barras — falhar visível em vez de registrar como feito o que não
 foi feito.
 
-⚠️ A edge function é a metade que **ainda falta** deste card.
+A edge function está em
+[`functions/excluir-conta`](functions/excluir-conta/index.ts), com a ordem dos
+três passos isolada em `functions/_compartilhado/exclusao.ts` e coberta por
+teste — inclusive a regra que importa: **um passo que falha interrompe os
+seguintes**. Banir um usuário cujo backup continua no bucket produziria conta
+inacessível com dado retido, exatamente o que a PP v0.2 promete não produzir.
+
+O passo 2 não é chamado direto: `conformidade` é um schema privado e o PostgREST
+não o enxerga. A função chama `public.encerrar_conta_do_usuario`, uma porta
+estreita executável só por `service_role` — a alternativa seria expor o schema
+`conformidade` inteiro na API, entregando junto as rotinas de expurgo e a
+leitura da chave de pseudonimização.
+
+A mesma função serve a **página pública** de exclusão exigida pelo Google Play
+de quem deixa criar conta no app: quem trocou de celular ou já desinstalou
+precisa conseguir excluir a conta assim mesmo. A página prova a posse do e-mail
+com o mesmo código de 8 dígitos do login. Publicação, endereço e roteiro de
+conferência em [`manual/edge_functions.md`](manual/edge_functions.md).
+
+⚠️ Falta do card: o botão **dentro do app**. O Google Play exige os dois
+caminhos — no app e na web — de quem permite criar conta pelo app.
 
 ## Autenticação sem senha
 
@@ -105,7 +130,12 @@ supabase db push                                        # migrations
 psql "$SUPABASE_DB_URL" -f supabase/manual/chave_hmac_aceites.sql
 # habilitar pg_cron no dashboard (Database → Extensions), então:
 psql "$SUPABASE_DB_URL" -f supabase/manual/agendamento_expurgo.sql
+supabase functions deploy excluir-conta          # ver manual/edge_functions.md
 ```
+
+A ordem importa: a edge function chama `encerrar_conta_do_usuario`, e publicá-la
+antes das migrations deixaria a exclusão falhando no passo 2 — depois de os
+arquivos do usuário já terem sido apagados.
 
 Os dois arquivos em `manual/` não são migrations de propósito: um cria um
 **segredo** (que não pode ficar versionado) e o outro depende de uma extensão
@@ -116,6 +146,7 @@ habilitada pela interface.
 ```bash
 ./tool/testar_supabase.sh                 # Postgres local descartável, sem nuvem
 SUPABASE_DB_URL='postgresql://…' ./tool/testar_supabase.sh --remoto
+./tool/testar_edge.sh                     # edge functions (Deno), sem nuvem
 ```
 
 O modo local sobe um Postgres do zero, aplica `supabase/tests/shims_locais.sql`
@@ -124,12 +155,14 @@ numa base limpa e roda a suíte. É o que responde "as migrations do repositóri
 reproduzem o schema sozinhas?" — pergunta que aplicar migration por migration na
 nuvem não responde, porque lá o estado já existe.
 
-31 asserções, tudo dentro de uma transação que termina em `ROLLBACK` — pode
+36 asserções, tudo dentro de uma transação que termina em `ROLLBACK` — pode
 rodar contra o `desmalha-dev` sem deixar resíduo. Cobrem: criação automática do
 perfil, as duas travas de senha, derivação e estabilidade do `titular_hash`,
 idempotência do aceite, imutabilidade (conteúdo e exclusão), RLS por papel,
-recusa de encerramento com blob pendente, o expurgo em cascata e a sobrevivência
-do aceite desvinculado.
+recusa de encerramento com blob pendente, o expurgo em cascata, a sobrevivência
+do aceite desvinculado e — as cinco últimas — que a porta em `public` delega o
+encerramento, herda a recusa com blob pendente e **não** é executável por `anon`
+nem por `authenticated`.
 
 Não usa pgTAP de propósito: a extensão teria de ser instalada no projeto, e um
 arcabouço de teste não precisa existir em produção para o teste rodar.
