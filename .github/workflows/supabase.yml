@@ -259,7 +259,9 @@ jobs:
           echo '→ SMTP que o projeto passou a ter:'
           curl -sS "https://api.supabase.com/v1/projects/$REF/config/auth" \
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
-            | jq '{smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name}'
+            | jq '{smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name,
+                   smtp_pass_preenchida: ((.smtp_pass // "") | length > 0),
+                   external_email_enabled}'
 
           # Agora sim: o resto da configuração de Auth, templates inclusive.
           supabase link --project-ref "$REF" --yes
