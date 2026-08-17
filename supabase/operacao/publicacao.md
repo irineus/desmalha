@@ -36,8 +36,13 @@ repositório:
 | `SUPABASE_ACCESS_TOKEN` | Secrets | token pessoal, em supabase.com/dashboard/account/tokens |
 | `SUPABASE_DB_PASSWORD_DEV` | Secrets | senha do banco do `desmalha-dev` |
 | `SUPABASE_DB_URL_DEV` | Secrets | string de conexão do **Session pooler** — ver o aviso abaixo |
-| `SUPABASE_PROJECT_REF_DEV` | Variables | `caqxssmxeiuutfguxdzj` |
-| `SUPABASE_SITE_URL_DEV` | Variables | `https://caqxssmxeiuutfguxdzj.supabase.co` |
+| `SUPABASE_PROJECT_REF_DEV` | Variables *(ou Secrets)* | `caqxssmxeiuutfguxdzj` |
+| `SUPABASE_SITE_URL_DEV` | Variables *(ou Secrets)* | `https://caqxssmxeiuutfguxdzj.supabase.co` |
+
+Os três primeiros **têm de ser secrets**: são credenciais. Os dois últimos
+funcionam nas duas abas — o workflow lê `vars` e cai para `secrets` se não achar.
+`Variables` é preferível só porque o valor sai legível no log, o que ajuda a
+depurar; como secret, sai mascarado.
 
 Para produção, os mesmos com sufixo `_PROD` (o `SUPABASE_ACCESS_TOKEN` é um só,
 sem sufixo — ele é da sua conta, não do projeto).
