@@ -56,25 +56,26 @@ begin
   ----------------------------------------------------------------------------
   -- 2. Trava de servidor contra senha
   ----------------------------------------------------------------------------
-  begin
-    insert into auth.users (id, email, encrypted_password)
-    values (u4, 'com.senha@exemplo.com', '$2a$10$abcdefghijklmnopqrstuv');
-    perform pg_temp.reg('03 INSERT com senha é recusado', false,
-                        'o insert passou — a trava não pegou');
-  exception when others then
-    perform pg_temp.reg('03 INSERT com senha é recusado',
-                        sqlerrm like '%conta com senha%', sqlerrm);
-  end;
+  -- A trava NEUTRALIZA em vez de recusar: a escrita passa e a senha não fica.
+  -- Recusar bloqueava o cadastro por OTP, porque o GoTrue grava um bcrypt
+  -- aleatório ao criar conta sem senha — indistinguível de senha real. O que
+  -- estas asserções verificam é a propriedade que importa: **não existe senha
+  -- utilizável em auth.users**.
+  insert into auth.users (id, email, encrypted_password)
+  values (u4, 'com.senha@exemplo.com',
+          extensions.crypt('senha-de-verdade', extensions.gen_salt('bf')));
 
-  begin
-    update auth.users set encrypted_password = '$2a$10$abcdefghijklmnopqrstuv'
-     where id = u1;
-    perform pg_temp.reg('04 UPDATE definindo senha é recusado', false,
-                        'o update passou — a trava não pegou');
-  exception when others then
-    perform pg_temp.reg('04 UPDATE definindo senha é recusado',
-                        sqlerrm like '%conta com senha%', sqlerrm);
-  end;
+  select encrypted_password is null into v_bool from auth.users where id = u4;
+  perform pg_temp.reg('03 INSERT com senha grava a conta SEM senha',
+                      coalesce(v_bool, false));
+
+  update auth.users
+     set encrypted_password = extensions.crypt('outra-senha', extensions.gen_salt('bf'))
+   where id = u1;
+
+  select encrypted_password is null into v_bool from auth.users where id = u1;
+  perform pg_temp.reg('04 UPDATE definindo senha não deixa senha',
+                      coalesce(v_bool, false));
 
   ----------------------------------------------------------------------------
   -- 3. Registro de aceite
@@ -338,30 +339,30 @@ begin
   -- derrubando o único caminho de entrada do app. Descoberto só na primeira
   -- tentativa de login com e-mail real, em 17/ago/2026.
   ----------------------------------------------------------------------------
+  -- Reproduz o que o GoTrue faz de verdade num cadastro por OTP: bcrypt de um
+  -- valor aleatório. A primeira versão da trava recusava exatamente isto, e por
+  -- isso ninguém conseguia criar conta.
   begin
     insert into auth.users (id, email, encrypted_password)
-    values (u7, 'sem.senha@exemplo.com', extensions.crypt('', extensions.gen_salt('bf')));
-    perform pg_temp.reg('37 marcador de "sem senha" NÃO bloqueia o cadastro', true);
+    values (u7, 'cadastro.otp@exemplo.com',
+            extensions.crypt(extensions.gen_random_uuid()::text,
+                             extensions.gen_salt('bf')));
+    perform pg_temp.reg('37 cadastro no formato do GoTrue NÃO é bloqueado', true);
   exception when others then
-    perform pg_temp.reg('37 marcador de "sem senha" NÃO bloqueia o cadastro', false,
+    perform pg_temp.reg('37 cadastro no formato do GoTrue NÃO é bloqueado', false,
                         sqlerrm);
   end;
 
-  -- E o marcador não fica no banco parecendo senha.
   select encrypted_password is null into v_bool from auth.users where id = u7;
-  perform pg_temp.reg('38 marcador é normalizado para null', coalesce(v_bool, false));
+  perform pg_temp.reg('38 e a conta nasce sem senha', coalesce(v_bool, false));
 
-  -- A âncora: a asserção 37 não pode ter sido conseguida afrouxando a trava.
-  begin
-    insert into auth.users (id, email, encrypted_password)
-    values (u8, 'com.senha.real@exemplo.com',
-            extensions.crypt('senha-de-verdade', extensions.gen_salt('bf')));
-    perform pg_temp.reg('39 senha REAL segue recusada', false,
-                        'a trava deixou passar uma senha utilizável');
-  exception when others then
-    perform pg_temp.reg('39 senha REAL segue recusada',
-                        sqlerrm like '%conta com senha não é permitida%', sqlerrm);
-  end;
+  -- A âncora que importa: a propriedade vale para a tabela INTEIRA, e não só
+  -- para as linhas que estas asserções tocaram. Se um caminho de escrita
+  -- escapar da trava um dia, é aqui que aparece.
+  select count(*) into v_n from auth.users
+   where encrypted_password is not null and encrypted_password <> '';
+  perform pg_temp.reg('39 nenhuma linha de auth.users tem senha utilizável',
+                      v_n = 0, v_n::text);
 end;
 $bloco$;
 
