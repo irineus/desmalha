@@ -1,8 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- allowBackup=false: o banco local cifrado NÃO pode ir para o backup
+         automático do Google — deixar o SO copiar o arquivo para uma nuvem
+         que não controlamos fura o claim "nem nós conseguimos ver seus
+         dados". O backup do usuário é o envelope .dsmb cifrado ponta a
+         ponta (card "Backup cifrado ponta a ponta"). Decisão registrada na
+         modelagem local-first (ago/2026). -->
     <application
         android:label="desmalha_app"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"

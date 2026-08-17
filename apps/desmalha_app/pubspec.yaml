@@ -41,8 +41,21 @@ dependencies:
   sentry_flutter: ^9.27.0
   supabase_flutter: ^2.17.2
 
+  # Persistência local cifrada (decisão travada: SQLite/Drift + SQLCipher).
+  # O SQLCipher vem do próprio package:sqlite3 3.x via build hook — ver a
+  # seção `hooks:` no fim deste arquivo. O antigo sqlcipher_flutter_libs
+  # foi descontinuado (0.7.0+eol) e não entra aqui.
+  drift: ^2.34.3
+  sqlite3: ^3.5.1
+  flutter_secure_storage: ^11.0.0
+  path_provider: ^2.1.6
+  path: ^1.9.1
+  uuid: ^4.6.0
+
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -51,6 +64,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  drift_dev: ^2.34.5
+  build_runner: ^2.15.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -93,3 +108,14 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Troca o SQLite embarcado pelo build SQLCipher publicado nos releases do
+# package:sqlite3 (binários pré-compilados, verificados por sha256). Vale para
+# TODAS as plataformas, inclusive o host dos testes — é o que permite provar
+# `PRAGMA cipher_version` no `flutter test`, não só no aparelho.
+# ⚠️ Remover esta seção faria o app voltar ao SQLite SEM CIFRA em silêncio;
+# quem pega isso é o teste de boot em lib/dados/conexao_cifrada.dart.
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlcipher
