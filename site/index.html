@@ -1,51 +1,4 @@
-/**
- * A página pública de exclusão de conta.
- *
- * Existe porque o Google Play exige, de quem deixa criar conta no app, um
- * endereço **web** onde a exclusão possa ser pedida sem instalar nada — quem
- * trocou de celular ou já desinstalou o app precisa conseguir chegar aqui.
- *
- * A política da loja também exige dizer, na própria página, **o que é apagado,
- * o que é retido e por quanto tempo**. Isso não é texto de enfeite: são os três
- * prazos da PP v0.2, que no backend são executados por rotina
- * (`20260815000352_exclusao_e_expurgo.sql`). O teste desta página confere que os
- * três continuam escritos aqui — se um prazo mudar no banco e não mudar no
- * texto, a página passa a mentir para o usuário e para a loja.
- *
- * Tudo embutido, sem recurso externo: a página tem de abrir num aparelho velho,
- * numa rede ruim, sem CDN e sem fonte remota.
- *
- * 🔴 ESTA PÁGINA NÃO RENDERIZA SERVIDA DE `*.supabase.co`. Medido em
- * 17/ago/2026: o gateway reescreve o `text/html` desta resposta para
- * `text/plain` e injeta `Content-Security-Policy: default-src 'none'; sandbox`.
- * Com o `nosniff` junto, quem abre o link vê o código-fonte; e mesmo que
- * renderizasse, a CSP mataria o script do formulário. É consistente com uma
- * proteção anti-phishing do domínio deles, e vale só para HTML — as rotas de
- * `POST` continuam devolvendo JSON normalmente.
- *
- * O HTML aqui continua correto e continua sendo a fonte da página; o que muda é
- * de onde ele é servido. Ver `supabase/operacao/publicacao.md`, seção "O
- * endereço que vai para o Google Play".
- */
-
-/** Prazos da PP v0.2, seção 9. A página e o banco têm de contar a mesma coisa. */
-export const PRAZOS = {
-  arquivos: "imediatamente, sem carência",
-  conta: "30 dias",
-  aceite: "5 anos",
-} as const;
-
-/**
- * Monta a página.
- *
- * `endpoint` é para onde o formulário posta. Quando a página é servida PELA
- * função, `location.pathname` basta e é o padrão. Servida de fora — que é o
- * caso real, porque o gateway não deixa ela renderizar aqui —, precisa da URL
- * absoluta da função, porque aí a origem é outra. O CORS da função já é `*`.
- */
-export function paginaExclusao(endpoint?: string): string {
-  const alvo = endpoint ? JSON.stringify(endpoint) : "location.pathname";
-  return `<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
@@ -121,15 +74,15 @@ export function paginaExclusao(endpoint?: string): string {
   <ul>
     <li>
       <strong>Seus backups e qualquer arquivo enviado ao suporte:</strong>
-      apagados <strong>${PRAZOS.arquivos}</strong>.
+      apagados <strong>imediatamente, sem carência</strong>.
     </li>
     <li>
       <strong>Sua conta e seu cadastro:</strong> a conta é bloqueada na hora e
-      apagada em definitivo depois de <strong>${PRAZOS.conta}</strong>.
+      apagada em definitivo depois de <strong>30 dias</strong>.
     </li>
     <li>
       <strong>O registro de que você aceitou os termos:</strong> mantido por
-      <strong>${PRAZOS.aceite}</strong>, desvinculado do seu cadastro. Ele deixa
+      <strong>5 anos</strong>, desvinculado do seu cadastro. Ele deixa
       de apontar para você e passa a existir só como prova de que o aceite
       ocorreu, o que a lei nos permite guardar para exercer direitos.
     </li>
@@ -168,7 +121,7 @@ export function paginaExclusao(endpoint?: string): string {
   }
 
   function pedir(corpo) {
-    return fetch(${alvo}, {
+    return fetch("https://caqxssmxeiuutfguxdzj.supabase.co/functions/v1/excluir-conta", {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(corpo)
@@ -209,7 +162,7 @@ export function paginaExclusao(endpoint?: string): string {
       .then(function (r) {
         if (r.ok) {
           etapaCodigo.classList.add('escondido');
-          mostrar('Conta excluída. Seus backups foram apagados e a conta será removida em definitivo em ${PRAZOS.conta}.', false);
+          mostrar('Conta excluída. Seus backups foram apagados e a conta será removida em definitivo em 30 dias.', false);
         } else {
           mostrar(r.dados.mensagem || 'Não foi possível concluir. Tente de novo.', true);
         }
@@ -221,5 +174,3 @@ export function paginaExclusao(endpoint?: string): string {
 </script>
 </body>
 </html>
-`;
-}
