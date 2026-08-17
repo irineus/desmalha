@@ -33,7 +33,29 @@ fvm dart run tool/verificar_ambiente.dart --android
 | Git para Windows | atual | habilite **suporte a caminhos longos** no instalador |
 | **JDK 17** (Temurin) | 17.x | major 17 exata — o Gradle do projeto compila com `sourceCompatibility 17` |
 | Android Studio | atual | traz Android SDK, emulador e Device Manager |
-| **FVM** | atual | `dart pub global activate fvm`, ou `choco install fvm` |
+| **FVM** | atual | numa máquina limpa, **binário oficial** — ver abaixo |
+
+JDK e Android Studio saem do `winget`, que resolve os dois sem interação (o instalador do
+Android Studio pede UAC uma vez):
+
+```powershell
+winget install --id EclipseAdoptium.Temurin.17.JDK --exact --silent
+winget install --id Google.AndroidStudio --exact --silent
+```
+
+⚠️ **O FVM não está no ****`winget`****, e os dois caminhos da documentação oficial dele
+pressupõem algo que a máquina limpa não tem**: `dart pub global activate fvm` exige um Dart
+já instalado — que aqui só chegaria *pelo* FVM — e `choco install fvm` exige o Chocolatey.
+O caminho que funciona do zero é o binário publicado no repositório do FVM:
+
+```powershell
+$zip = "$env:TEMP\fvm.zip"
+Invoke-WebRequest -Uri "https://github.com/leoafarias/fvm/releases/download/4.1.2/fvm-4.1.2-windows-x64.zip" -OutFile $zip
+Expand-Archive -Path $zip -DestinationPath "$env:LOCALAPPDATA\fvm-bin" -Force
+# acrescente %LOCALAPPDATA%\fvm-bin\fvm ao Path do usuário
+```
+
+(confira a versão corrente em <https://github.com/leoafarias/fvm/releases>)
 
 Não instale o Flutter "solto" pelo instalador oficial: quem gerencia a versão é o FVM, a
 partir do `.fvmrc`. Se você já tem um Flutter avulso no `PATH`, ou remova-o, ou aceite o
@@ -54,10 +76,16 @@ E acrescente ao `Path` do usuário:
 ```
 %JAVA_HOME%\bin
 %ANDROID_HOME%\platform-tools
-%LOCALAPPDATA%\Pub\Cache\bin        (onde o `dart pub global activate` põe o fvm)
+%ANDROID_HOME%\emulator
+%LOCALAPPDATA%\fvm-bin\fvm          (onde o binário do FVM foi extraído)
 ```
 
 Feche e reabra o terminal — variável de ambiente não se propaga para janela já aberta.
+
+⚠️ **Não defina ****`FVM_CACHE_PATH`**. Sem ela o FVM usa `%USERPROFILE%\fvm`, que é o
+caminho da seção 5. Defini-la aponta o CLI para um lugar e deixa os symlinks do projeto
+(`.fvm\flutter_sdk`) apontando para outro — o sintoma é o FVM rebaixar um segundo SDK de
+1,2 GB em silêncio, e o Android Studio continuar na cópia errada.
 
 ## 3. Flutter pinado, pelo FVM
 
@@ -95,6 +123,10 @@ Este é o ponto onde FVM e IDE se desencontram com mais frequência. O plugin do
 Android Studio **não** passa pelo `fvm`: ele usa o caminho configurado na IDE e o
 `local.properties` do módulo Android (que é gerado e fica fora do versionamento).
 
+Antes disso: **os plugins Flutter e Dart não vêm no Android Studio**. Instale-os em
+*Settings → Plugins* (o de Flutter puxa o de Dart) e reinicie a IDE — sem eles não existe
+a tela de configuração citada abaixo.
+
 Em *Settings → Languages & Frameworks → Flutter → Flutter SDK path*, aponte para o SDK que
 o FVM baixou:
 
@@ -119,6 +151,17 @@ do build que vai para a loja.
 Aceleração por hardware: no Windows, o emulador usa WHPX. Se ele reclamar, habilite
 *Plataforma do Hipervisor do Windows* nos recursos opcionais do sistema.
 
+Sem abrir a IDE, o mesmo AVD sai da linha de comando (foi assim que o `desmalha_pixel`
+usado na validação foi criado):
+
+```powershell
+$sdkmanager = "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat"
+$avdmanager = "$env:ANDROID_HOME\cmdline-tools\latest\bin\avdmanager.bat"
+& $sdkmanager "system-images;android-36;google_apis;x86_64"
+& $avdmanager create avd -n desmalha_pixel -k "system-images;android-36;google_apis;x86_64" -d pixel_7
+& "$env:ANDROID_HOME\emulator\emulator.exe" -avd desmalha_pixel
+```
+
 Pela linha de comando:
 
 ```powershell
@@ -134,6 +177,41 @@ fvm flutter emulators --launch <id>         # sobe
 3. `adb devices` deve listar o aparelho como `device` (não `unauthorized`).
 
 Em alguns fabricantes o Windows precisa do driver OEM para o modo ADB.
+
+### Depuração sem fio — o caminho que funciona quando o USB não sustenta
+
+Medido em 16/ago/2026 num Galaxy S23 (SM-S918B): **o link USB caía de forma reprodutível**
+— durante a transferência do APK de 110 MB, e de novo alguns segundos após o launch
+(`Lost connection to device`), com o app já rodando na tela. O Windows continuava
+enxergando a "ADB Interface" o tempo todo; quem perdia o aparelho era o servidor `adb`.
+Um `adb kill-server ; adb start-server` recuperava, e caía de novo na operação seguinte.
+
+Pela mesma máquina, no mesmo aparelho, a **depuração sem fio ficou estável** e entregou o
+hot reload sem nenhuma queda. Numa Samsung, é o caminho a tentar **antes** de sair trocando
+cabo e porta:
+
+1. Aparelho e PC na mesma rede Wi-Fi.
+2. *Opções do desenvolvedor → **Depuração sem fio*** → ligue e **entre na opção**.
+3. Anote o **"Endereço IP e porta"** da tela principal — é o de `connect`.
+4. Toque em *Parear dispositivo com código de pareamento*: abre um diálogo com um código de
+   6 dígitos e **outro** IP:porta (a porta de pareamento é diferente). Mantenha o diálogo
+   aberto — ele expira.
+
+```powershell
+adb pair <ip>:<porta-de-pareamento> <codigo-de-6-digitos>
+adb connect <ip>:<porta-principal>
+adb devices          # deve listar <ip>:<porta-principal> como `device`
+```
+
+O pareamento é uma vez só; depois basta o `connect` (a porta principal muda a cada vez que
+a depuração sem fio é religada).
+
+### Com mais de um alvo conectado, `-s` não é opcional
+
+Com emulador e aparelho ao mesmo tempo, `adb` sem `-s` falha — e o modo `exec-out` falha
+**em silêncio**, devolvendo saída vazia com código 0. Foi assim que uma rodada de captura
+de tela gerou PNGs de 0 byte sem nenhum erro visível. Sempre `adb -s <serial> ...`, e trate
+arquivo vazio como falha.
 
 ## 8. Verificação — é isto que fecha o Bloco 3
 
@@ -174,7 +252,12 @@ máquina de UI.
 
 **Build de Gradle absurdamente lento.** O Defender varre cada arquivo que o Gradle escreve.
 Adicione exclusões de pasta para `%USERPROFILE%\.gradle`, `%LOCALAPPDATA%\Pub\Cache`,
-`%LOCALAPPDATA%\Android\Sdk` e o diretório do repositório.
+`%LOCALAPPDATA%\Android\Sdk` e o diretório do repositório. Num PowerShell **como
+administrador** (`Add-MpPreference` exige elevação):
+
+```powershell
+"$env:USERPROFILE\.gradle","$env:LOCALAPPDATA\Pub\Cache","$env:LOCALAPPDATA\Android\Sdk","$env:USERPROFILE\fvm","$env:USERPROFILE\source\repos\desmalha" | ForEach-Object { Add-MpPreference -ExclusionPath $_ }
+```
 
 **`Filename too long` no Git ou no build.** Habilite caminhos longos:
 
