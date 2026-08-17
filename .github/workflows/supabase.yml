@@ -106,8 +106,15 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets[format('SUPABASE_DB_PASSWORD_{0}', inputs.ambiente || 'DEV')] }}
       SUPABASE_DB_URL: ${{ secrets[format('SUPABASE_DB_URL_{0}', inputs.ambiente || 'DEV')] }}
-      SUPABASE_SITE_URL: ${{ vars[format('SUPABASE_SITE_URL_{0}', inputs.ambiente || 'DEV')] }}
-      REF: ${{ vars[format('SUPABASE_PROJECT_REF_{0}', inputs.ambiente || 'DEV')] }}
+      # Estes dois não são segredo — o ref e a URL do projeto são públicos, e
+      # como `vars` aparecem legíveis no log, o que ajuda a depurar. Mas aceitam
+      # `secrets` também: a distinção entre as duas abas do GitHub é sutil, e na
+      # primeira configuração real os cinco valores foram parar em Secrets.
+      # Exigir que fossem movidos seria transformar um detalhe de interface em
+      # trabalho manual — exatamente o que este workflow existe para eliminar.
+      # Em `secrets`, só saem mascarados como *** no log.
+      SUPABASE_SITE_URL: ${{ vars[format('SUPABASE_SITE_URL_{0}', inputs.ambiente || 'DEV')] || secrets[format('SUPABASE_SITE_URL_{0}', inputs.ambiente || 'DEV')] }}
+      REF: ${{ vars[format('SUPABASE_PROJECT_REF_{0}', inputs.ambiente || 'DEV')] || secrets[format('SUPABASE_PROJECT_REF_{0}', inputs.ambiente || 'DEV')] }}
 
     steps:
       - uses: actions/checkout@v4
@@ -124,8 +131,8 @@ jobs:
           [[ -n "$SUPABASE_ACCESS_TOKEN" ]] || faltando+=("secret   SUPABASE_ACCESS_TOKEN")
           [[ -n "$SUPABASE_DB_URL" ]]       || faltando+=("secret   SUPABASE_DB_URL_$AMB")
           [[ -n "$SUPABASE_DB_PASSWORD" ]]  || faltando+=("secret   SUPABASE_DB_PASSWORD_$AMB")
-          [[ -n "$REF" ]]                   || faltando+=("variable SUPABASE_PROJECT_REF_$AMB")
-          [[ -n "$SUPABASE_SITE_URL" ]]     || faltando+=("variable SUPABASE_SITE_URL_$AMB")
+          [[ -n "$REF" ]]                   || faltando+=("SUPABASE_PROJECT_REF_$AMB   (variable ou secret)")
+          [[ -n "$SUPABASE_SITE_URL" ]]     || faltando+=("SUPABASE_SITE_URL_$AMB   (variable ou secret)")
           if (( ${#faltando[@]} )); then
             printf 'ambiente %s incompleto — falta cadastrar em\n' "$AMB"
             printf 'Settings > Secrets and variables > Actions:\n\n'
