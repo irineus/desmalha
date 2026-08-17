@@ -33,6 +33,8 @@ declare
   u4 constant uuid := '44444444-4444-4444-8444-444444444444';
   u5 constant uuid := '55555555-5555-4555-8555-555555555555';
   u6 constant uuid := '66666666-6666-4666-8666-666666666666';
+  u7 constant uuid := '77777777-7777-4777-8777-777777777777';
+  u8 constant uuid := '88888888-8888-4888-8888-888888888888';
   v_id       bigint;
   v_id2      bigint;
   v_n        integer;
@@ -326,6 +328,40 @@ begin
   perform public.encerrar_conta_do_usuario(u6);
   select excluido_em is not null into v_bool from public.perfis where id = u6;
   perform pg_temp.reg('36 a porta delega o encerramento de fato', v_bool);
+
+  ----------------------------------------------------------------------------
+  -- 12. A trava anti-senha não pode bloquear o cadastro por OTP
+  --
+  -- As asserções 03 e 04 inserem em auth.users como o TESTE faz. O GoTrue faz
+  -- diferente: ao criar conta sem senha ele grava um marcador em
+  -- encrypted_password, e a primeira versão da trava recusava esse marcador —
+  -- derrubando o único caminho de entrada do app. Descoberto só na primeira
+  -- tentativa de login com e-mail real, em 17/ago/2026.
+  ----------------------------------------------------------------------------
+  begin
+    insert into auth.users (id, email, encrypted_password)
+    values (u7, 'sem.senha@exemplo.com', extensions.crypt('', extensions.gen_salt('bf')));
+    perform pg_temp.reg('37 marcador de "sem senha" NÃO bloqueia o cadastro', true);
+  exception when others then
+    perform pg_temp.reg('37 marcador de "sem senha" NÃO bloqueia o cadastro', false,
+                        sqlerrm);
+  end;
+
+  -- E o marcador não fica no banco parecendo senha.
+  select encrypted_password is null into v_bool from auth.users where id = u7;
+  perform pg_temp.reg('38 marcador é normalizado para null', coalesce(v_bool, false));
+
+  -- A âncora: a asserção 37 não pode ter sido conseguida afrouxando a trava.
+  begin
+    insert into auth.users (id, email, encrypted_password)
+    values (u8, 'com.senha.real@exemplo.com',
+            extensions.crypt('senha-de-verdade', extensions.gen_salt('bf')));
+    perform pg_temp.reg('39 senha REAL segue recusada', false,
+                        'a trava deixou passar uma senha utilizável');
+  exception when others then
+    perform pg_temp.reg('39 senha REAL segue recusada',
+                        sqlerrm like '%conta com senha não é permitida%', sqlerrm);
+  end;
 end;
 $bloco$;
 
@@ -353,8 +389,8 @@ declare
 begin
   select count(*) filter (where not ok), count(*) into v_falhou, v_total from _res;
 
-  if v_total < 36 then
-    raise exception 'a suíte registrou só % asserções; esperado ao menos 36', v_total;
+  if v_total < 39 then
+    raise exception 'a suíte registrou só % asserções; esperado ao menos 39', v_total;
   end if;
   if v_falhou > 0 then
     raise exception '% de % asserções falharam (ver a coluna detalhe acima)',
