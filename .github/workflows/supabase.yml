@@ -229,9 +229,13 @@ jobs:
           leia() {
             python3 -c "import tomllib,sys; print(tomllib.load(open('supabase/config.toml','rb'))['auth']['email']['smtp'][sys.argv[1]])" "$1"
           }
+          # ⚠️ smtp_port vai como STRING. O exemplo na documentação do Supabase
+          # mostra `"smtp_port": 587` sem aspas, e a API recusa exatamente isso:
+          # "smtp_port: Invalid input: expected string, received number".
+          # A documentação está errada — não troque de volta para --argjson.
           corpo=$(jq -n \
             --arg  host  "$(leia host)" \
-            --argjson port "$(leia port)" \
+            --arg  port  "$(leia port)" \
             --arg  user  "$(leia user)" \
             --arg  nome  "$(leia sender_name)" \
             --arg  senha "$SUPABASE_AUTH_SMTP_PASS" \
