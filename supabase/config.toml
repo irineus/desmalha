@@ -88,9 +88,13 @@ max_frequency = "60s"
 # campo de SMTP nenhum. Quem configura SMTP remoto é a Management API.
 #
 # O bloco continua aqui como FONTE ÚNICA dos valores não-secretos: o workflow lê
-# host, port, user e sender_name daqui e os envia via API. Senha e remetente vêm
-# do ambiente naquele momento, por serem credencial e configuração de conta —
-# por isso não estão neste arquivo.
+# host, port, user e sender_name daqui e os envia via API.
+#
+# ⚠️ `pass` e `admin_email` PRECISAM existir mesmo sem serem usados no push
+# remoto: com o bloco presente e um deles ausente, o CLI recusa o arquivo com
+# "Missing required field in config: auth.email.smtp.pass" — e recusa em
+# QUALQUER comando, `db push` inclusive, porque ele valida o config.toml
+# inteiro antes de agir. Removê-los quebrou as migrations em 17/ago.
 [auth.email.smtp]
 host = "smtp.resend.com"
 # 587 (STARTTLS). O Resend também aceita 465, 2465, 2587 e 25.
@@ -98,6 +102,8 @@ port = 587
 # No Resend o usuário é literalmente "resend"; quem identifica a conta é a senha.
 user = "resend"
 sender_name = "Desmalha"
+pass = "env(SUPABASE_AUTH_SMTP_PASS)"
+admin_email = "env(SUPABASE_AUTH_SMTP_ADMIN_EMAIL)"
 
 # Por padrão os templates mandam um LINK, e o app precisa de um CÓDIGO. Cadastro
 # e login são o mesmo gesto sem senha, então os dois usam o mesmo arquivo.
