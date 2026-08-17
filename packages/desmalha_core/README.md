@@ -52,10 +52,37 @@ fvm dart run desmalha_core:validar_extrato extrato.csv --perfil perfil.json --an
 Gera `extrato.anonimizado.csv` (ou `--saida <arquivo>`): nomes e CPFs
 fictícios, contas e identificadores trocados, valores perturbados em até
 ±15% — **preservando a estrutura** (delimitadores, formato de data,
-encoding e BOM, aspas, quebras de linha, linhas de saldo). É o insumo
-seguro para virar fixture de regressão no repositório e perfil de banco
-novo. A anonimização é heurística e determinística: **revise o arquivo
-gerado antes de compartilhar**.
+encoding e BOM, aspas, quebras de linha, agrupamento de milhar, linhas de
+saldo). É o insumo seguro para virar fixture de regressão no repositório e
+perfil de banco novo. A anonimização é heurística e determinística:
+**revise o arquivo gerado antes de compartilhar**.
+
+### Banco que ainda não tem perfil
+
+```
+fvm dart run desmalha_core:validar_extrato extrato.csv --anonimizar
+```
+
+Sem `--perfil`, o CSV só é aceito para anonimizar — sem perfil não há como
+ler as colunas, e o relatório não sai. O que sai é a cópia anonimizada mais
+a **estrutura inferida** (encoding, delimitador, nº de colunas, nº de
+lançamentos), que é o insumo para escrever o perfil que falta.
+
+Não empreste o perfil de outro banco para anonimizar: com as colunas
+trocadas, a descrição cai no tratamento conservador, que remove CPF e
+dígitos longos mas **não remove nomes** — o extrato real vazaria nomes de
+clientes para dentro da fixture.
+
+Sem perfil, a data é a única estrutura reconhecível, e é ela que decide o
+tratamento de cada linha:
+
+- **linha com data** (lançamento) — data preservada, valor perturbado, todo
+  o resto tratado como texto livre (CPFs, dígitos longos e nomes);
+- **linha sem data** (cabeçalho, preâmbulo, rodapé) — tratamento
+  conservador, para que os rótulos de coluna cheguem legíveis a quem vai
+  escrever o perfil. ⚠️ Conservador **não remove nomes**: preâmbulo com nome
+  do titular sobrevive de propósito. O CLI informa quantas linhas caíram
+  nesse tratamento — **revise-as à mão**.
 
 ## Motor de apuração do carnê-leão
 
