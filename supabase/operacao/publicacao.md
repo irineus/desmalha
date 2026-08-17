@@ -98,13 +98,50 @@ nada sobre IPv6 — daí este aviso estar aqui e não na sua memória.
 
 ## O endereço que vai para o Google Play
 
+🔴 **AINDA NÃO EXISTE UM ENDEREÇO UTILIZÁVEL.** Leia a seção abaixo antes de
+declarar qualquer coisa no Play Console.
+
+### O gateway do Supabase não deixa a página renderizar
+
+Medido em 17/ago/2026 contra a função já publicada no `desmalha-dev`. Um `GET`
+em `https://<ref>.supabase.co/functions/v1/excluir-conta` devolve **HTTP 200**
+com o HTML correto no corpo — e estes cabeçalhos:
+
 ```
-https://<ref>.supabase.co/functions/v1/excluir-conta
+Content-Type: text/plain
+Content-Security-Policy: default-src 'none'; sandbox
+x-content-type-options: nosniff
 ```
 
-É o que entra no campo de **URL de exclusão de conta** do Play Console
-(Política → Segurança de dados). É público e não exige o app instalado, que é o
-ponto da exigência.
+A função devolve `text/html; charset=utf-8`. **O gateway reescreve para
+`text/plain` e injeta uma CSP de sandbox.** Com `nosniff` junto, o navegador não
+tem como reinterpretar: quem abrir o link vê o **código-fonte** da página, não a
+página. E mesmo que renderizasse, `default-src 'none'; sandbox` bloquearia o
+script que faz o formulário funcionar.
+
+Não está documentado, mas o comportamento é consistente com uma proteção
+anti-phishing deliberada: servir HTML arbitrário de dentro de `*.supabase.co`
+transformaria o domínio deles em hospedagem de página falsa. Repare que só o
+HTML é afetado — as rotas `POST` seguem devolvendo
+`application/json; charset=utf-8` normalmente, e o fluxo de exclusão em si está
+inteiro e funcionando.
+
+### O que isso muda
+
+O **back-end da exclusão está pronto e publicado**. O que falta é um lugar de
+onde servir a página, e ele não pode ser o `supabase.co`. Dois caminhos:
+
+1. **Hospedar o HTML estático em outro lugar** (Cloudflare Pages, GitHub Pages,
+   Netlify — todos com faixa gratuita) e deixá-lo chamar a função por `POST`. O
+   CORS da função já é `*`, então funciona sem mudança no servidor. Não depende
+   de domínio próprio: um endereço do próprio serviço já serve, e depois aponta
+   para `desmalha.com.br`. **É o caminho barato e o recomendado.**
+2. **Domínio próprio apontando para a função**, via *custom domain* do Supabase
+   — que é add-on **pago**, e ainda assim precisa ser confirmado se a reescrita
+   de `text/html` também vale para domínio próprio.
+
+Enquanto isso não existir, **não declare a URL no Play Console**: um link que
+mostra código-fonte é pior do que um campo em branco na revisão.
 
 ⚠️ O Google Play exige **dois** caminhos de exclusão de quem deixa criar conta
 pelo app: este link e um botão **dentro do app**. O botão ainda não existe — é
