@@ -17,7 +17,7 @@
  * ⚠️ Esta função roda SEM verificação automática de JWT (a página precisa abrir
  * no navegador de quem não tem sessão). Logo, toda rota aqui é pública, e cada
  * uma tem de provar por si de quem é a conta antes de apagar qualquer coisa.
- * Ver `supabase/manual/edge_functions.md`.
+ * Ver `supabase/operacao/publicacao.md`.
  */
 
 import { createClient } from "@supabase/supabase-js";

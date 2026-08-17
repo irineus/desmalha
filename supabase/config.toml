@@ -1,11 +1,20 @@
-# Configuração do CLI do Supabase.
+# Configuração do projeto Supabase, versionada.
 #
-# Existe por UMA razão: declarar que a função de exclusão de conta roda sem
-# verificação automática de JWT. Todo o resto fica no padrão do CLI de
-# propósito — o projeto não usa stack local, e cada chave a mais aqui é uma
-# chance de divergir em silêncio do que está de fato no dashboard.
+# `supabase config push` aplica este arquivo ao projeto linkado. É o que tirou a
+# configuração de autenticação da interface e trouxe para o repositório: antes,
+# tamanho do código, validade e "secure email change" eram passos manuais num
+# roteiro (`operacao/autenticacao.md`), repetidos à mão em cada projeto. Passo manual
+# repetido à mão é passo que diverge entre dev e prod sem ninguém perceber.
+#
+# ⚠️ LEIA ANTES DE MEXER: `config push` é uma SOBRESCRITA, não uma fusão. O que
+# não estiver declarado aqui volta ao padrão do CLI no projeto remoto. Foi por
+# isso que `site_url` está explícito abaixo mesmo sem site: o padrão do CLI é
+# `http://127.0.0.1:3000`, e deixá-lo implícito publicaria localhost como
+# endereço do projeto.
 
 project_id = "desmalha"
+
+# ─── Edge functions ──────────────────────────────────────────────────────────
 
 [functions.excluir-conta]
 # A página pública de exclusão precisa ABRIR no navegador de quem não tem
@@ -19,3 +28,104 @@ project_id = "desmalha"
 # caminho web; token de sessão validado contra o servidor de auth, no caminho
 # do app. Ver supabase/functions/excluir-conta/index.ts.
 verify_jwt = false
+
+# ─── Autenticação ────────────────────────────────────────────────────────────
+
+[auth]
+enable_signup = true
+
+# Sem site próprio ainda (`desmalha.com.br` é pendência "De marca"). Vem do
+# ambiente para que dev e prod não compartilhem um valor errado por descuido —
+# ver .github/workflows/supabase.yml.
+site_url = "env(SUPABASE_SITE_URL)"
+additional_redirect_urls = []
+
+[auth.email]
+# 🔴 Estes dois números são ESPELHADOS no cliente, em
+# apps/desmalha_app/lib/auth/porta_auth.dart (tamanhoCodigoOtp,
+# validadeCodigoOtp). Mudar aqui sem mudar lá não corrompe nada em silêncio:
+# ninguém consegue entrar, e a tela diz "o código tem 8 dígitos" enquanto o
+# e-mail traz outra coisa. Falha visível, como a guia de DARF sem código de
+# barras — mas ainda assim, mude os dois.
+otp_length = 8
+otp_expiry = 600
+
+# Sem confirmação, o e-mail deixaria de provar posse da caixa — e o e-mail É a
+# conta, o único caminho de entrada.
+enable_confirmations = true
+
+# "Secure email change": dispara código para o endereço ATUAL e para o NOVO. Sem
+# isto, uma sessão esquecida aberta bastaria para levar a conta embora.
+double_confirm_changes = true
+
+# Espelha intervaloReenvioOtp no cliente (60s). O cliente também segura, para
+# não gastar cota nem levar o usuário a um erro que a tela podia evitar.
+max_frequency = "60s"
+
+# Por padrão os templates mandam um LINK, e o app precisa de um CÓDIGO. Cadastro
+# e login são o mesmo gesto sem senha, então os dois usam o mesmo arquivo.
+[auth.email.template.confirmation]
+subject = "Seu código de acesso ao Desmalha"
+content_path = "./supabase/templates/codigo_de_acesso.html"
+
+[auth.email.template.magic_link]
+subject = "Seu código de acesso ao Desmalha"
+content_path = "./supabase/templates/codigo_de_acesso.html"
+
+[auth.email.template.email_change]
+subject = "Confirme a troca de e-mail no Desmalha"
+content_path = "./supabase/templates/troca_de_email.html"
+
+# O e-mail é a conta: não há entrada por telefone.
+[auth.sms]
+enable_signup = false
+
+# ─── Nenhum provedor social ──────────────────────────────────────────────────
+#
+# Não é preferência de estilo: login social traria a exigência de *Sign in with
+# Apple* na submissão à App Store e colocaria um terceiro no caminho da
+# identidade. O app já recusa qualquer chamada de provedor social em `lib/`
+# (test/auth/trava_sem_senha_test.dart); aqui é a mesma decisão do lado do
+# servidor.
+#
+# Estão listados explicitamente, e não deixados no padrão, porque este projeto
+# não confia em default silencioso para sustentar uma decisão de produto.
+
+[auth.external.apple]
+enabled = false
+[auth.external.google]
+enabled = false
+[auth.external.facebook]
+enabled = false
+[auth.external.github]
+enabled = false
+[auth.external.gitlab]
+enabled = false
+[auth.external.bitbucket]
+enabled = false
+[auth.external.azure]
+enabled = false
+[auth.external.discord]
+enabled = false
+[auth.external.figma]
+enabled = false
+[auth.external.kakao]
+enabled = false
+[auth.external.keycloak]
+enabled = false
+[auth.external.linkedin_oidc]
+enabled = false
+[auth.external.notion]
+enabled = false
+[auth.external.slack_oidc]
+enabled = false
+[auth.external.spotify]
+enabled = false
+[auth.external.twitch]
+enabled = false
+[auth.external.twitter]
+enabled = false
+[auth.external.workos]
+enabled = false
+[auth.external.zoom]
+enabled = false

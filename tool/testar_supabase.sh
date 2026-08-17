@@ -13,6 +13,10 @@
 #       Roda só a suíte contra um projeto Supabase já migrado (ex.: desmalha-dev).
 #       Não aplica migration nem shim. A suíte termina em ROLLBACK, então não
 #       deixa resíduo — mas NUNCA aponte para produção com dados reais.
+#
+#   ./tool/testar_supabase.sh --descartavel 'postgresql://...'
+#       Igual ao modo local, mas contra um Postgres que já está de pé — é o modo
+#       do CI, que usa um service container. ESCREVE no banco indicado.
 set -euo pipefail
 
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,6 +25,27 @@ SUITE="$RAIZ/supabase/tests/conformidade_identidade.sql"
 if [[ "${1:-}" == "--remoto" ]]; then
   : "${SUPABASE_DB_URL:?defina SUPABASE_DB_URL}"
   exec psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$SUITE"
+fi
+
+# Terceiro modo, para o CI: mesma coisa que o modo local, mas contra um Postgres
+# que já está de pé (o service container do workflow). O nome do parâmetro é
+# "descartável" porque este modo ESCREVE — aplica shims e migrations — e num
+# banco com dados reais isso não é teste, é acidente. O modo --remoto continua
+# sendo o seguro para apontar ao desmalha-dev.
+if [[ "${1:-}" == "--descartavel" ]]; then
+  URL="${2:?uso: $0 --descartavel postgresql://...}"
+  PSQL_CI=(psql "$URL" -v ON_ERROR_STOP=1 -q)
+  ARGS=(-f "$RAIZ/supabase/tests/shims_locais.sql")
+  for m in "$RAIZ"/supabase/migrations/*.sql; do ARGS+=(-f "$m"); done
+  "${PSQL_CI[@]}" "${ARGS[@]}"
+  # A chave do Vault é sorteada dentro do banco, como em produção. Aqui ela vai
+  # direto na tabela do shim: `vault.create_secret` é da plataforma, e é
+  # justamente por isso que o pós-deploy não é migration.
+  "${PSQL_CI[@]}" -c \
+    "insert into vault.secrets (name, secret)
+     values ('desmalha_aceites_hmac_key', encode(extensions.gen_random_bytes(32),'hex'))
+     on conflict (name) do nothing;"
+  exec psql "$URL" -v ON_ERROR_STOP=1 -f "$SUITE"
 fi
 
 PGBIN="$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -1 || true)"

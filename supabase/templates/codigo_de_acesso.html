@@ -1,0 +1,22 @@
+<!-- Desmalha — código de acesso (Confirm signup e Magic Link).
+     Cadastro e login são o mesmo gesto quando não há senha, então os dois
+     templates usam este arquivo: quem recebe não precisa saber se já tinha
+     conta.
+     🔴 {{ .Token }} é obrigatório. Sem ele o usuário recebe só um link e não
+     tem o que digitar na tela, que espera 8 dígitos. -->
+<div style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: #1a1a1a; max-width: 34rem;">
+  <p>Seu código de acesso ao <strong>Desmalha</strong> é:</p>
+
+  <p style="font-size: 32px; font-weight: 700; letter-spacing: 0.25em; margin: 24px 0;">{{ .Token }}</p>
+
+  <p>Ele vale por 10 minutos.</p>
+
+  <p style="color: #555;">
+    Se não foi você que pediu, ignore este e-mail — ninguém entra na sua conta
+    sem este código.
+  </p>
+
+  <p style="color: #555; font-size: 14px; margin-top: 32px;">
+    Desmalha — controle de carnê-leão.
+  </p>
+</div>

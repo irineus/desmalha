@@ -100,7 +100,7 @@ class FalhaAuth implements Exception {
 /// Quantidade de dígitos do código enviado por e-mail.
 ///
 /// ⚠️ Espelha uma configuração DE SERVIDOR (Supabase → Authentication →
-/// Providers → Email → *Email OTP Length*). Ver `supabase/manual/auth_otp.md`.
+/// Providers → Email → *Email OTP Length*). Ver `supabase/operacao/autenticacao.md`.
 /// Se as duas divergirem, ninguém consegue entrar — falha visível, e não uma
 /// conta criada em silêncio por um caminho que não deveria existir.
 const int tamanhoCodigoOtp = 8;
@@ -130,7 +130,7 @@ abstract interface class PortaAuth {
   ///
   /// Com *Secure email change* ligado no provedor, isto dispara um código para
   /// o endereço ATUAL e outro para o NOVO: a troca só se completa com as duas
-  /// confirmações. Ver `supabase/manual/auth_otp.md`.
+  /// confirmações. Ver `supabase/operacao/autenticacao.md`.
   Future<void> solicitarTrocaEmail(String novoEmail);
 
   /// Confirma um dos dois lados da troca de e-mail.

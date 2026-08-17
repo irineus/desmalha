@@ -1,0 +1,169 @@
+# Desmalha — verificação e publicação do backend Supabase.
+#
+# POR QUE AQUI, E NÃO NO CODEMAGIC
+#
+# O plano gratuito do Codemagic só oferece `mac_mini_m2`, e TODOS os builds
+# dividem uma cota única de 500 min/mês — que existe para o Flutter e para o
+# simulador iOS, as duas coisas que só um runner macOS faz. Publicar migrations
+# não precisa de macOS. Um runner Linux do GitHub Actions custa 1x (contra os
+# 10x do macOS lá) e não encosta na cota que o iOS depende.
+#
+# O QUE ISTO SUBSTITUI
+#
+# Três passos que eram manuais, repetidos à mão em cada projeto:
+#   • `psql -f supabase/manual/chave_hmac_aceites.sql`
+#   • habilitar pg_cron na interface + `psql -f .../agendamento_expurgo.sql`
+#   • configurar OTP de 8 dígitos, 600s, secure email change, templates com
+#     {{ .Token }} e "nenhum provedor social" na interface de Authentication
+#
+# Passo manual repetido à mão é passo que diverge entre dev e prod sem ninguém
+# perceber — e, no caso do agendamento, prazo de retenção que depende de alguém
+# lembrar não é prazo, é intenção.
+#
+# ⚠️ NADA É PUBLICADO SEM PASSAR PELO PORTÃO. O job `verificar` roda as duas
+# suítes antes; `publicar` depende dele. Publicar migration não verificada seria
+# automatizar o erro em vez do trabalho.
+
+name: Supabase
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - 'tool/testar_supabase.sh'
+      - 'tool/testar_edge.sh'
+      - '.github/workflows/supabase.yml'
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'tool/testar_supabase.sh'
+      - 'tool/testar_edge.sh'
+      - '.github/workflows/supabase.yml'
+  workflow_dispatch:
+    inputs:
+      ambiente:
+        description: 'Projeto alvo da publicação'
+        type: choice
+        options: [dev, prod]
+        default: dev
+
+jobs:
+  verificar:
+    name: Suítes do backend
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Edge functions (type-check + testes)
+        run: ./tool/testar_edge.sh
+
+      - name: Schema e conformidade num Postgres limpo
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c 'create database desmalha'
+          # Responde "as migrations do repositório reproduzem o schema sozinhas?"
+          # — pergunta que aplicar migration por migration na nuvem não responde,
+          # porque lá o estado já existe.
+          ./tool/testar_supabase.sh --descartavel \
+            'postgresql://postgres:postgres@localhost:5432/desmalha'
+
+  publicar:
+    name: Publicar no ${{ inputs.ambiente || 'dev' }}
+    needs: verificar
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # O Environment é o que separa dev de prod e o que permite exigir aprovação
+    # antes de tocar em produção (Settings → Environments → prod → required
+    # reviewers). Push no main publica só no dev; prod é disparo explícito.
+    environment: ${{ inputs.ambiente || 'dev' }}
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_SITE_URL: ${{ vars.SUPABASE_SITE_URL }}
+      REF: ${{ vars.SUPABASE_PROJECT_REF }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Conferir que o ambiente está configurado
+        # Falhar aqui, com o nome do que falta, é muito melhor do que falhar no
+        # meio da publicação com uma mensagem do CLI sobre credencial ausente.
+        run: |
+          faltando=()
+          [[ -n "$SUPABASE_ACCESS_TOKEN" ]] || faltando+=("secret SUPABASE_ACCESS_TOKEN")
+          [[ -n "$SUPABASE_DB_URL" ]]       || faltando+=("secret SUPABASE_DB_URL")
+          [[ -n "$SUPABASE_DB_PASSWORD" ]]  || faltando+=("secret SUPABASE_DB_PASSWORD")
+          [[ -n "$REF" ]]                   || faltando+=("variable SUPABASE_PROJECT_REF")
+          [[ -n "$SUPABASE_SITE_URL" ]]     || faltando+=("variable SUPABASE_SITE_URL")
+          if (( ${#faltando[@]} )); then
+            printf 'ambiente "%s" incompleto:\n' "${{ inputs.ambiente || 'dev' }}"
+            printf '  - %s\n' "${faltando[@]}"
+            echo 'ver supabase/README.md, seção "Publicação automática"'
+            exit 1
+          fi
+
+      - name: Migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL"
+
+      - name: Pós-deploy (Vault e agendamento do expurgo)
+        # Depois das migrations, sempre: são idempotentes e dependem da
+        # plataforma (Vault, pg_cron), por isso não são migration. Sem eles,
+        # `registrar_aceite` falha no primeiro aceite e os prazos da PP v0.2
+        # ficam só no texto.
+        run: |
+          for f in supabase/pos_deploy/*.sql; do
+            echo "→ $f"
+            psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Configuração de Auth
+        # ⚠️ `config push` SOBRESCREVE: o que não está no config.toml volta ao
+        # padrão do CLI no projeto remoto. É por isso que site_url está
+        # explícito lá, vindo desta variável de ambiente.
+        run: |
+          supabase link --project-ref "$REF"
+          supabase config push
+
+      - name: Edge functions
+        run: supabase functions deploy excluir-conta --project-ref "$REF"
+
+      - name: Conferir o que ficou de pé
+        # Publicação que reporta sucesso sem olhar o resultado é a mesma classe
+        # de erro que a guia de DARF com código de barras adivinhado.
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -At <<'SQL'
+          select 'chave HMAC: ' ||
+                 case when exists (select 1 from vault.secrets
+                                    where name = 'desmalha_aceites_hmac_key')
+                      then 'presente' else 'AUSENTE' end;
+          select 'job ' || jobname || ': ' || schedule ||
+                 case when active then '' else ' (INATIVO)' end
+            from cron.job where jobname like 'desmalha-%' order by jobname;
+          SQL
+          echo "função publicada:"
+          supabase functions list --project-ref "$REF"
