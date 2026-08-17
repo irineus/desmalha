@@ -128,6 +128,12 @@ jobs:
           fi
 
       - name: Migrations
+        # 🔴 SUPABASE_DB_URL tem de ser a string do **Session pooler** (porta
+        # 5432, host aws-<regiao>.pooler.supabase.com). A conexao direta
+        # (db.<ref>.supabase.co) e IPv6 no plano free, e o GitHub Actions so
+        # fala IPv4 — dali ela nao resolve, e o sintoma e um timeout que nao
+        # menciona IPv6. O Transaction pooler (6543) tambem nao serve: nao
+        # suporta prepared statements, e migrations usam.
         run: supabase db push --db-url "$SUPABASE_DB_URL"
 
       - name: Pós-deploy (Vault e agendamento do expurgo)
