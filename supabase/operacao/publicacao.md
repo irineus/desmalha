@@ -38,11 +38,32 @@ repositório:
 | `SUPABASE_DB_URL_DEV` | Secrets | string de conexão do **Session pooler** — ver o aviso abaixo |
 | `SUPABASE_PROJECT_REF_DEV` | Variables *(ou Secrets)* | `caqxssmxeiuutfguxdzj` |
 | `SUPABASE_SITE_URL_DEV` | Variables *(ou Secrets)* | `https://caqxssmxeiuutfguxdzj.supabase.co` |
+| `RESEND_API_KEY_DEV` | Secrets | API key do Resend (`re_...`) |
+| `SMTP_ADMIN_EMAIL_DEV` | Variables *(ou Secrets)* | remetente verificado no seu Resend |
 
-Os três primeiros **têm de ser secrets**: são credenciais. Os dois últimos
-funcionam nas duas abas — o workflow lê `vars` e cai para `secrets` se não achar.
-`Variables` é preferível só porque o valor sai legível no log, o que ajuda a
-depurar; como secret, sai mascarado.
+`SUPABASE_ACCESS_TOKEN`, as duas de banco e a `RESEND_API_KEY_*` **têm de ser
+secrets**: são credenciais. As outras funcionam nas duas abas — o workflow lê
+`vars` e cai para `secrets` se não achar. `Variables` é preferível só porque o
+valor sai legível no log, o que ajuda a depurar.
+
+### 🔴 O SMTP não é opcional
+
+Descoberto na primeira publicação real: o Supabase **recusa personalizar
+template de e-mail em projeto free que usa o provedor embutido**. E o template
+padrão manda um **link**, sem `{{ .Token }}` — enquanto a tela do app pede **8
+dígitos**.
+
+Ou seja: sem SMTP próprio, ninguém consegue entrar no app. Não é degradação de
+entrega, é login impossível. É por isso que `RESEND_API_KEY_*` está na lista de
+obrigatórios, e o workflow para se ela faltar.
+
+**No Resend:** o usuário SMTP é literalmente `resend` e a senha é a API key —
+por isso só a key precisa ser cadastrada. O `SMTP_ADMIN_EMAIL_*` é o remetente,
+e depende do que a sua conta tem verificado. Sem domínio próprio
+(`desmalha.com.br` segue pendente em "De marca"), o remetente disponível é o de
+teste do Resend, que **entrega apenas para o e-mail dono da conta** — suficiente
+para a conferência do dev, insuficiente para o beta. Verificar um domínio é
+pré-requisito do beta fechado, não deste card.
 
 Para produção, os mesmos com sufixo `_PROD` (o `SUPABASE_ACCESS_TOKEN` é um só,
 sem sufixo — ele é da sua conta, não do projeto).
