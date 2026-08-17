@@ -212,56 +212,55 @@ jobs:
           # execução anterior ele foi aceito por EOF, o que funciona por
           # acidente: depender de como o CLI trata entrada fechada é frágil
           # entre versões, e o modo de falhar seria o job pendurado.
-          # ─── SMTP vai pela Management API, não pelo config push ────────────
-          # `supabase config push` NÃO configura SMTP remoto. O bloco
-          # [auth.email.smtp] do config.toml descreve o stack LOCAL — os padrões
-          # documentados são host `inbucket` e porta 2500, que é o mail catcher
-          # de desenvolvimento. Confirmado no log de 17/ago: o diff que o CLI
-          # enviou não continha campo de SMTP nenhum, e por isso o push de
-          # templates seguia sendo recusado mesmo com o SMTP declarado.
+          # ─── SMTP: o workflow CONFERE, e nunca escreve ─────────────────
           #
-          # Precisa vir ANTES do config push: o backend só aceita template
-          # personalizado num projeto que JÁ tem SMTP próprio.
+          # 🔴 A versão anterior fazia PATCH nos campos smtp_* pela Management
+          # API, e isso DESLIGAVA o SMTP do projeto. Medido em 17/ago/2026: às
+          # 04:39 um e-mail saiu pelo Resend, às 04:42 este workflow rodou, e o
+          # "Enable custom SMTP" do painel voltou a desligado. A habilitação
+          # mora fora do que a API expõe — a especificação OpenAPI oficial não
+          # tem campo para ela —, e reescrever os sete valores a derruba junto.
           #
-          # Host, porta, usuário e nome do remetente saem do config.toml para
-          # não existirem em dois lugares; senha e e-mail do remetente vêm do
-          # ambiente, porque são credencial e configuração de conta.
+          # Automação que destrói configuração que funciona é pior do que não
+          # ter automação. Então o passo deixou de mutar e passou a verificar:
+          # lê o que está no projeto e reprova se não for o esperado. A garantia
+          # de que dev e prod não divergem continua de pé; o que sai é a
+          # escrita, que era o que quebrava.
+          #
+          # Ligar o SMTP virou passo de UMA VEZ por projeto, no painel. Está no
+          # roteiro em supabase/operacao/autenticacao.md.
           leia() {
             python3 -c "import tomllib,sys; print(tomllib.load(open('supabase/config.toml','rb'))['auth']['email']['smtp'][sys.argv[1]])" "$1"
           }
-          # ⚠️ smtp_port vai como STRING. O exemplo na documentação do Supabase
-          # mostra `"smtp_port": 587` sem aspas, e a API recusa exatamente isso:
-          # "smtp_port: Invalid input: expected string, received number".
-          # A documentação está errada — não troque de volta para --argjson.
-          corpo=$(jq -n \
-            --arg  host  "$(leia host)" \
-            --arg  port  "$(leia port)" \
-            --arg  user  "$(leia user)" \
-            --arg  nome  "$(leia sender_name)" \
-            --arg  senha "$SUPABASE_AUTH_SMTP_PASS" \
-            --arg  admin "$SUPABASE_AUTH_SMTP_ADMIN_EMAIL" \
-            '{smtp_host:$host, smtp_port:$port, smtp_user:$user,
-              smtp_sender_name:$nome, smtp_pass:$senha, smtp_admin_email:$admin}')
+          esperado_host=$(leia host)
 
-          codigo=$(curl -sS -o /tmp/smtp.json -w '%{http_code}' \
-            -X PATCH "https://api.supabase.com/v1/projects/$REF/config/auth" \
-            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data "$corpo")
-          if [[ "$codigo" != 2?? ]]; then
-            echo "a Management API recusou a configuração de SMTP (HTTP $codigo):" >&2
-            cat /tmp/smtp.json >&2
+          curl -sS "https://api.supabase.com/v1/projects/$REF/config/auth"             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" > /tmp/auth.json
+
+          atual_host=$(jq -r '.smtp_host // ""' /tmp/auth.json)
+          tem_senha=$(jq -r '((.smtp_pass // "") | length) > 0' /tmp/auth.json)
+
+          echo "→ SMTP do projeto: host=${atual_host:-(vazio)} senha=$tem_senha"
+
+          if [[ "$atual_host" != "$esperado_host" || "$tem_senha" != "true" ]]; then
+            cat >&2 <<FIM
+          O projeto $AMB não está com o SMTP próprio configurado.
+
+          esperado: host=$esperado_host, com senha
+          no projeto: host=${atual_host:-(vazio)}, senha preenchida=$tem_senha
+
+          Sem SMTP próprio o Supabase IGNORA os templates personalizados, e o
+          e-mail sai com o template padrão em inglês, com link em vez dos 8
+          dígitos que a tela do app pede — ou seja, ninguém entra.
+
+          Ligue uma vez, no painel do projeto:
+            Authentication > Emails > SMTP Settings > Enable custom SMTP
+
+          Os valores estão em supabase/operacao/autenticacao.md. Este workflow
+          NÃO liga por você de propósito: escrever esses campos pela API desliga
+          a habilitação, que é um estado que a API não expõe.
+          FIM
             exit 1
           fi
-
-          # Lê de volta: a resposta 2xx diz que o pedido foi aceito, não que o
-          # projeto ficou com o SMTP que se queria. A senha não é impressa.
-          echo '→ SMTP que o projeto passou a ter:'
-          curl -sS "https://api.supabase.com/v1/projects/$REF/config/auth" \
-            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
-            | jq '{smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name,
-                   smtp_pass_preenchida: ((.smtp_pass // "") | length > 0),
-                   external_email_enabled}'
 
           # Agora sim: o resto da configuração de Auth, templates inclusive.
           supabase link --project-ref "$REF" --yes
