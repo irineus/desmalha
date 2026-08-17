@@ -13,8 +13,16 @@
 ///   preservando distinção: originais diferentes viram fictícios diferentes.
 /// - Sequências de 5+ dígitos (contas, telefones, documentos) → dígitos
 ///   fictícios de mesmo comprimento.
-/// - Prováveis nomes de pessoa (2+ palavras fora do vocabulário bancário) →
-///   nomes fictícios, preservando caixa alta.
+/// - Prováveis nomes de pessoa (palavras fora do vocabulário bancário) →
+///   nomes fictícios, preservando caixa alta. Palavra ISOLADA também é
+///   substituída: num MEMO de Pix brasileiro, palavra solta fora do
+///   vocabulário é quase sempre primeiro nome. O custo é embaralhar nome de
+///   estabelecimento junto (`CLARO`, `CEEE`), e ele foi aceito — errar para
+///   o lado de anonimizar demais é o único erro barato aqui.
+/// - Dígitos colados à palavra são separados antes da avaliação
+///   (`SHIRLEI06` → `SHIRLEI` + `06`) e o sufixo é preservado: banco que
+///   trunca o MEMO em largura fixa e cola a data no fim (Itaú) escondia o
+///   nome inteiro da heurística.
 /// - Valores monetários → perturbados em até ±15%, mantendo o sinal.
 /// - Identificadores externos (FITID/coluna de id) → sequenciais fictícios,
 ///   preservando duplicatas (insumo do card de deduplicação).
@@ -56,6 +64,20 @@ class Anonimizador {
     'MARCOS FICTICIO MOTA',
   ];
 
+  /// Substitutos de palavra ISOLADA. Um nome só, e não o trio acima: o MEMO
+  /// do banco tem largura fixa, e trocar uma palavra por três descolaria a
+  /// fixture do tamanho que o arquivo real tem.
+  static const _primeirosNomesFicticios = [
+    'FICTNOME',
+    'FICTALVES',
+    'FICTBARROS',
+    'FICTCASTRO',
+    'FICTDUARTE',
+    'FICTESTEVES',
+    'FICTFARIA',
+    'FICTGOMES',
+  ];
+
   /// Vocabulário bancário que NUNCA é tratado como nome de pessoa —
   /// preservá-lo mantém a estrutura que o parser e os perfis reconhecem.
   /// Comparação sem caixa e sem acentos.
@@ -72,6 +94,13 @@ class Anonimizador {
     'para', 'por', 'a', 'o', 'qr', 'code', 'internet', 'mobile', 'app',
     'caixa', 'eletronico', 'automatico', 'agendada', 'agendado', 'mesma',
     'outra', 'mes', 'dia', 'ltda', 'me', 'mei', 'sa', 'cnpj', 'cpf',
+    // Palavras funcionais: desde que palavra ISOLADA passou a ser
+    // substituída, um "as" ou "uma" solto viraria nome fictício e sujaria a
+    // fixture sem ganho nenhum de privacidade.
+    'as', 'os', 'um', 'uma', 'uns', 'umas', 'ao', 'aos', 'nos', 'nas',
+    'este', 'esta', 'esse', 'essa', 'isso', 'que', 'sao', 'ate', 'apos',
+    'antes', 'sobre', 'entre', 'nao', 'sim', 'mais', 'menos', 'total',
+    'valor', 'data', 'numero', 'ref', 'obs', 'id', 'lancamento',
   };
 
   static const _conectivosDeNome = {'da', 'de', 'do', 'das', 'dos', 'e'};
@@ -108,11 +137,16 @@ class Anonimizador {
         return buffer.toString();
       });
 
-  String _nomeFicticio(String original, {required bool caixaAlta}) {
+  String _nomeFicticio(
+    String original, {
+    required bool caixaAlta,
+    required bool isolada,
+  }) {
     final chave = _semAcentos(original.toLowerCase());
+    final pool = isolada ? _primeirosNomesFicticios : _nomesFicticios;
     final nome = _nomes.putIfAbsent(
       chave,
-      () => _nomesFicticios[_nomes.length % _nomesFicticios.length],
+      () => pool[_nomes.length % pool.length],
     );
     if (caixaAlta) return nome;
     return nome
@@ -155,28 +189,43 @@ class Anonimizador {
   String _substituirNomes(String texto) {
     final palavras = texto.split(' ');
 
-    // 1ª passada: palavra é candidata a nome se for só letras (2+) e não
-    // pertencer ao vocabulário bancário.
+    // 1ª passada: separa o prefixo de letras do resto de cada palavra. O
+    // resto existe porque banco trunca o MEMO em largura fixa e cola a data
+    // no fim (`SHIRLEI06`): sem separar, o token não é "só letras", é
+    // reprovado como candidato, e o nome inteiro escapa da heurística.
+    final letras = <String>[];
+    final restos = <String>[];
+    for (final palavra in palavras) {
+      var corte = 0;
+      while (corte < palavra.length && _ehLetra(palavra.codeUnitAt(corte))) {
+        corte++;
+      }
+      letras.add(palavra.substring(0, corte));
+      restos.add(palavra.substring(corte));
+    }
+
+    // Candidata a nome: prefixo de 2+ letras fora do vocabulário bancário.
     final candidata = List<bool>.generate(palavras.length, (i) {
-      final palavra = palavras[i];
-      if (palavra.length < 2) return false;
-      if (!_soLetras(palavra)) return false;
-      return !_vocabularioBancario.contains(_semAcentos(palavra.toLowerCase()));
+      if (letras[i].length < 2) return false;
+      return !_vocabularioBancario.contains(_semAcentos(letras[i].toLowerCase()));
     });
 
     // 2ª passada: conectivos (da/de/do/…) entram no nome quando cercados
     // por candidatas — "JOAO DA SILVA" é um nome só.
     for (var i = 1; i < palavras.length - 1; i++) {
       if (candidata[i]) continue;
-      if (_conectivosDeNome.contains(_semAcentos(palavras[i].toLowerCase())) &&
+      if (_conectivosDeNome.contains(_semAcentos(letras[i].toLowerCase())) &&
           candidata[i - 1] &&
           candidata[i + 1]) {
         candidata[i] = true;
       }
     }
 
-    // Substitui sequências de 2+ candidatas; palavra isolada fica (heurística
-    // documentada: "Uber" sozinho não é tratado como nome).
+    // Substitui toda sequência de candidatas, INCLUSIVE de uma só palavra:
+    // em MEMO de Pix, palavra solta fora do vocabulário é quase sempre
+    // primeiro nome, e deixá-la passar foi o que vazou nomes reais no
+    // primeiro extrato de verdade. O que sobra depois das letras (a data
+    // colada) é preservado — é estrutura do arquivo.
     final resultado = <String>[];
     var i = 0;
     while (i < palavras.length) {
@@ -189,29 +238,39 @@ class Anonimizador {
       while (fim + 1 < palavras.length && candidata[fim + 1]) {
         fim++;
       }
-      if (fim == i) {
+
+      // Candidata SOZINHA só vira nome com 3+ letras e fora dos conectivos:
+      // nome de pessoa com duas letras não existe na prática, e sem esse
+      // piso um "de" ou "as" solto viraria nome fictício.
+      if (fim == i &&
+          (letras[i].length < 3 ||
+              _conectivosDeNome.contains(_semAcentos(letras[i].toLowerCase())))) {
         resultado.add(palavras[i]);
         i++;
         continue;
       }
-      final trecho = palavras.sublist(i, fim + 1).join(' ');
+
+      final trecho = [for (var j = i; j <= fim; j++) letras[j]].join(' ');
       final caixaAlta = trecho == trecho.toUpperCase();
-      resultado.add(_nomeFicticio(trecho, caixaAlta: caixaAlta));
+      final sufixo = [for (var j = i; j <= fim; j++) restos[j]].join();
+      resultado.add(_nomeFicticio(
+            trecho,
+            caixaAlta: caixaAlta,
+            isolada: fim == i,
+          ) +
+          sufixo);
       i = fim + 1;
     }
 
     return resultado.join(' ');
   }
 
-  static bool _soLetras(String palavra) {
-    for (final ponto in palavra.runes) {
-      final ehAscii = (ponto >= 0x41 && ponto <= 0x5A) ||
-          (ponto >= 0x61 && ponto <= 0x7A);
-      final ehLatino = ponto >= 0xC0 && ponto <= 0xFF && ponto != 0xD7 &&
-          ponto != 0xF7;
-      if (!ehAscii && !ehLatino) return false;
-    }
-    return true;
+  static bool _ehLetra(int ponto) {
+    final ehAscii = (ponto >= 0x41 && ponto <= 0x5A) ||
+        (ponto >= 0x61 && ponto <= 0x7A);
+    final ehLatino =
+        ponto >= 0xC0 && ponto <= 0xFF && ponto != 0xD7 && ponto != 0xF7;
+    return ehAscii || ehLatino;
   }
 
   static String _semAcentos(String texto) {
