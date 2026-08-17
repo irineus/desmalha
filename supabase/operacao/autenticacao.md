@@ -55,6 +55,36 @@ Isso é candidato a card no board, e é urgente pelo motivo óbvio: o e-mail é 
 O cliente já segura reenvios dentro de 60 segundos (`intervaloReenvioOtp`), para
 não gastar cota nem levar o usuário a um erro que a tela podia evitar.
 
+## 🔴 Ligar o SMTP é passo de uma vez, no painel — e o CI não faz por você
+
+Sem SMTP próprio, o Supabase **ignora os templates personalizados** e manda o
+padrão em inglês, com link em vez dos 8 dígitos que a tela pede. Ou seja:
+ninguém entra no app.
+
+Ligue uma vez por projeto, em **Authentication → Emails → SMTP Settings →
+Enable custom SMTP**:
+
+| Campo | Valor |
+|---|---|
+| Sender email | o remetente verificado no Resend |
+| Sender name | `Desmalha` |
+| Host | `smtp.resend.com` |
+| Port | `587` |
+| Username | `resend` |
+| Password | a API key do Resend (`re_...`) |
+
+⚠️ **O workflow deliberadamente NÃO liga isso.** Ele já tentou, por `PATCH` nos
+campos `smtp_*` da Management API, e o efeito foi o oposto: em 17/ago/2026, às
+04:39 um e-mail saiu pelo Resend e às 04:42, depois de o workflow rodar, o
+toggle estava desligado. **Escrever os sete valores derruba a habilitação** — que
+é um estado que a API não expõe (a especificação OpenAPI oficial não tem campo
+para ela).
+
+O que o workflow faz hoje é **conferir**: lê a configuração do projeto e reprova
+se o host não bater ou a senha estiver vazia, com a instrução de onde ligar. A
+garantia de que dev e prod não divergem continua; o que saiu foi a escrita, que
+era o que quebrava.
+
 ## O que ainda precisa de gente
 
 Uma coisa só, e não dá para automatizar honestamente: **receber o e-mail**.
