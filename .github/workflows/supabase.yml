@@ -208,11 +208,44 @@ jobs:
         # padrão do CLI no projeto remoto. É por isso que site_url está
         # explícito lá, vindo desta variável de ambiente.
         run: |
-          # --yes porque `config push` abre um prompt de confirmação. Na
-          # primeira execução real ele foi aceito por EOF, o que funciona por
+          # --yes porque `config push` abre um prompt de confirmação. Numa
+          # execução anterior ele foi aceito por EOF, o que funciona por
           # acidente: depender de como o CLI trata entrada fechada é frágil
           # entre versões, e o modo de falhar seria o job pendurado.
           supabase link --project-ref "$REF" --yes
+
+          # ─── Por que DOIS pushes ───────────────────────────────────────────
+          # `config push` manda a configuração inteira numa requisição só, e o
+          # backend valida os templates contra o provedor de e-mail que o
+          # projeto tem NAQUELE MOMENTO. Num projeto que ainda está no provedor
+          # embutido, ele recusa com
+          #
+          #   Email template modification is not available for free tier
+          #   projects using the default email provider
+          #
+          # mesmo que o SMTP venha no MESMO payload. É ovo e galinha: o SMTP
+          # precisa já EXISTIR no projeto para os templates serem aceitos.
+          #
+          # Então: primeiro push sem os templates, que estabelece o SMTP;
+          # segundo push completo, que agora passa. Os dois são idempotentes,
+          # e num projeto que já tem SMTP o primeiro vira no-op.
+          cp supabase/config.toml /tmp/config-completo.toml
+          python3 - <<'PY'
+          caminho = 'supabase/config.toml'
+          saida, pulando = [], False
+          for linha in open(caminho, encoding='utf-8').readlines():
+              if linha.lstrip().startswith('['):
+                  pulando = linha.lstrip().startswith('[auth.email.template.')
+              if not pulando:
+                  saida.append(linha)
+          open(caminho, 'w', encoding='utf-8').writelines(saida)
+          PY
+
+          echo '→ passo 1/2: estabelecendo o SMTP (sem templates)'
+          supabase config push --yes
+
+          cp /tmp/config-completo.toml supabase/config.toml
+          echo '→ passo 2/2: configuração completa, com os templates'
           supabase config push --yes
 
       - name: Edge functions
