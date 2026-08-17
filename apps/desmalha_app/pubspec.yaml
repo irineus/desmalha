@@ -80,6 +80,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    # Seed do catálogo versionado: o app calcula OFFLINE desde o primeiro
+    # boot, antes de qualquer rede. Gerado do repositório por
+    # `fvm dart run desmalha_core:gerar_seed_catalogo` e conferido por teste
+    # (test/catalogo/seed_catalogo_test.dart) — não editar à mão.
+    - assets/catalogo/seed.json
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

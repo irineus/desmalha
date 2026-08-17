@@ -9,6 +9,8 @@ export 'src/carne_leao/apuracao.dart';
 export 'src/carne_leao/darf.dart';
 export 'src/carne_leao/repasse.dart';
 export 'src/carne_leao/tabela_irpf.dart';
+export 'src/catalogo/catalogo.dart';
+export 'src/catalogo/feriados_bancarios.dart';
 export 'src/darf/codigo_barras_arrecadacao.dart';
 export 'src/darf/documento_darf.dart';
 export 'src/darf/itf.dart';

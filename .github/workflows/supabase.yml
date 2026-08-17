@@ -33,12 +33,21 @@ on:
       - 'supabase/**'
       - 'tool/testar_supabase.sh'
       - 'tool/testar_edge.sh'
+      # O catálogo versionado é servido pelo backend; mudar conteúdo ou o
+      # publicador precisa republicar — é o caminho "corrigir banco sem
+      # release" existindo de verdade.
+      - 'tool/publicar_catalogo.ts'
+      - 'packages/desmalha_core/catalogo/**'
+      - 'packages/desmalha_core/perfis/**'
       - '.github/workflows/supabase.yml'
   pull_request:
     paths:
       - 'supabase/**'
       - 'tool/testar_supabase.sh'
       - 'tool/testar_edge.sh'
+      - 'tool/publicar_catalogo.ts'
+      - 'packages/desmalha_core/catalogo/**'
+      - 'packages/desmalha_core/perfis/**'
       - '.github/workflows/supabase.yml'
   workflow_dispatch:
     inputs:
@@ -85,6 +94,20 @@ jobs:
           # porque lá o estado já existe.
           ./tool/testar_supabase.sh --descartavel \
             'postgresql://postgres:postgres@localhost:5432/desmalha'
+
+      - name: Catálogo — publica e confere num Postgres limpo
+        # O mesmo par de SQLs que o job `publicar` roda na nuvem, exercitado
+        # aqui contra o banco que a suíte acabou de migrar. Prova que o SQL
+        # gerado EXECUTA e que a conferência fecha — antes de existir
+        # qualquer credencial envolvida.
+        env:
+          PGPASSWORD: postgres
+          URL: postgresql://postgres:postgres@localhost:5432/desmalha
+        run: |
+          deno run --allow-read tool/publicar_catalogo.ts --sql-publicar > /tmp/catalogo_publicar.sql
+          deno run --allow-read tool/publicar_catalogo.ts --sql-conferir > /tmp/catalogo_conferir.sql
+          psql "$URL" -v ON_ERROR_STOP=1 -q -f /tmp/catalogo_publicar.sql
+          psql "$URL" -v ON_ERROR_STOP=1 -q -f /tmp/catalogo_conferir.sql
 
   publicar:
     name: Publicar no ${{ inputs.ambiente || 'DEV' }}
@@ -207,6 +230,20 @@ jobs:
             echo "→ $f"
             psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"
           done
+
+      - name: Catálogo versionado
+        # Sincroniza repo → banco e LÊ DE VOLTA numa conexão separada, depois
+        # do commit. "O psql saiu com 0" diz que o pedido foi aceito, não que
+        # o projeto ficou como se queria — a lição do SMTP vale aqui também.
+        run: |
+          deno run --allow-read tool/publicar_catalogo.ts --sql-publicar > /tmp/catalogo_publicar.sql
+          deno run --allow-read tool/publicar_catalogo.ts --sql-conferir > /tmp/catalogo_conferir.sql
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -f /tmp/catalogo_publicar.sql
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -f /tmp/catalogo_conferir.sql
+          echo "catálogo publicado e conferido:"
+          psql "$SUPABASE_DB_URL" -At -c \
+            "select tipo || '/' || id || '  (' || publicado_em::date || ')'
+               from public.catalogo_itens order by tipo, id"
 
       - name: Configuração de Auth
         # Escreve só os campos nomeados em tool/auth_para_api.ts. Ver o

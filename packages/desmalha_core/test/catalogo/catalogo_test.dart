@@ -1,0 +1,303 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:desmalha_core/catalogo_arquivos.dart';
+import 'package:desmalha_core/desmalha_core.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('conteúdo real do repositório', () {
+    // A mesma varredura do gerador de seed — convenção do publicador
+    // (tool/publicar_catalogo.ts): catalogo/<tipo>/<id>.json + perfis/.
+    final itens = itensDoCatalogoNoRepositorio('.');
+    final catalogo = Catalogo.fromItens(itens);
+
+    test('carrega inteiro, sem tipo desconhecido e sem item vazio', () {
+      expect(catalogo.tiposIgnorados, isEmpty,
+          reason: 'diretório novo em catalogo/ exige tipo conhecido pelo '
+              'app OU decisão explícita de servi-lo só a apps futuros');
+      expect(catalogo.tabelasIrpf, isNotEmpty);
+      expect(catalogo.feriadosPorAno, isNotEmpty);
+      expect(catalogo.perfisCsv, hasLength(3),
+          reason: 'Nubank, Inter e BB — os perfis de referência de perfis/');
+    });
+
+    test('nome de arquivo = id do conteúdo (Catalogo já reprova divergir)',
+        () {
+      // Catalogo.fromItens lança se o id da linha difere do id do conteúdo;
+      // chegar aqui prova a propriedade. A âncora abaixo garante que ela não
+      // passou por vacuidade.
+      expect(itens, isNotEmpty);
+    });
+
+    test('a tabela do IRPF bate com a dos cenários table-driven', () {
+      final cenarios = jsonDecode(
+        File('cenarios/cenarios_carne_leao.json').readAsStringSync(),
+      ) as Map<String, Object?>;
+      final tabelasCenarios = [
+        for (final t in cenarios['tabelas'] as List<Object?>)
+          TabelaIrpf.fromJson(t as Map<String, Object?>),
+      ];
+      // Compara pela forma canônica (toJson do objeto parseado): campos
+      // extras como "fonte" não contam, valor fiscal conta todo.
+      for (final doCenario in tabelasCenarios) {
+        final doCatalogo = catalogo.tabelasIrpf
+            .where((t) => t.id == doCenario.id)
+            .toList();
+        expect(doCatalogo, hasLength(1),
+            reason: 'tabela ${doCenario.id} dos cenários precisa existir no '
+                'catálogo — o motor é provado com ela');
+        expect(
+          jsonEncode(doCatalogo.single.toJson()),
+          jsonEncode(doCenario.toJson()),
+          reason: 'catálogo e cenários divergem na tabela ${doCenario.id}: '
+              'o app calcularia com uma tabela e o motor seria provado com '
+              'outra',
+        );
+      }
+    });
+
+    test('feriados de 2026: os 13 da FEBRABAN mais 31/12 sem expediente', () {
+      final feriados = catalogo.feriadosDoAno(2026);
+      expect(feriados, hasLength(14));
+      expect(
+        feriados,
+        containsAll(const {
+          '2026-01-01', // Confraternização Universal
+          '2026-02-16', '2026-02-17', // Carnaval
+          '2026-04-03', // Sexta-Feira da Paixão
+          '2026-04-21', // Tiradentes
+          '2026-05-01', // Dia do Trabalho
+          '2026-06-04', // Corpus Christi
+          '2026-09-07', // Independência
+          '2026-10-12', // Nossa Senhora Aparecida
+          '2026-11-02', // Finados
+          '2026-11-15', // Proclamação da República (domingo — inofensivo)
+          '2026-11-20', // Consciência Negra
+          '2026-12-25', // Natal
+          '2026-12-31', // sem expediente ao público (FEBRABAN)
+        }),
+      );
+    });
+
+    test('competência nov/2026 vence em 30/12, não em 31/12', () {
+      // 31/12/2026 é quinta-feira e NÃO é feriado civil — mas a FEBRABAN não
+      // abre agência e manda antecipar tributos. É o caso que a lista de
+      // feriados existe para acertar.
+      expect(catalogo.vencimentoDarfDe('2026-11'), '2026-12-30');
+    });
+
+    test('competência out/2026 vence em 30/11 (segunda, dia útil)', () {
+      expect(catalogo.vencimentoDarfDe('2026-10'), '2026-11-30');
+    });
+
+    test('ano sem cobertura de feriados falha alto, nunca calcula sem eles',
+        () {
+      // Competência dez/2026 vence em jan/2027 — e 2027 ainda não foi
+      // publicado. Calcular com conjunto vazio devolveria uma data possivelmente
+      // errada em silêncio; a rotina anual da Fase 9 publica o ano novo.
+      expect(
+        () => catalogo.vencimentoDarfDe('2026-12'),
+        throwsStateError,
+      );
+      expect(() => catalogo.feriadosDoAno(2027), throwsStateError);
+    });
+
+    test('snapshot: toJson → fromJson preserva o catálogo inteiro', () {
+      final snapshot = catalogo.toJson();
+      expect(snapshot['formatoVersao'], formatoSnapshotCatalogo);
+      final relido = Catalogo.fromJson(
+        jsonDecode(jsonEncode(snapshot)) as Map<String, Object?>,
+      );
+      expect(relido.tabelasIrpf.map((t) => t.id),
+          catalogo.tabelasIrpf.map((t) => t.id));
+      expect(relido.feriadosDoAno(2026), catalogo.feriadosDoAno(2026));
+      expect(relido.perfisCsv.map((p) => p.id),
+          catalogo.perfisCsv.map((p) => p.id));
+    });
+  });
+
+  group('Catalogo.fromItens', () {
+    Map<String, Object?> feriados2026({String id = 'feriados-bancarios-2026'}) =>
+        {
+          'tipo': TipoCatalogo.feriadosBancarios,
+          'id': id,
+          'conteudo': {
+            'id': id,
+            'ano': 2026,
+            'fonte': 'teste',
+            'datas': ['2026-01-01'],
+          },
+        };
+
+    test('tipo desconhecido é ignorado e listado — app antigo segue de pé',
+        () {
+      final catalogo = Catalogo.fromItens([
+        feriados2026(),
+        {
+          'tipo': 'simulacao_pf_cnpj',
+          'id': 'v1',
+          'conteudo': {'qualquer': 'coisa'},
+        },
+      ]);
+      expect(catalogo.tiposIgnorados, ['simulacao_pf_cnpj']);
+      expect(catalogo.feriadosPorAno, hasLength(1));
+    });
+
+    test('item de tipo desconhecido SOBREVIVE ao round-trip do snapshot', () {
+      // O cache local não pode descartar o que o app ainda não entende: o
+      // usuário atualiza o app e o cache mutilado esconderia conteúdo já
+      // baixado.
+      final catalogo = Catalogo.fromItens([
+        feriados2026(),
+        {
+          'tipo': 'simulacao_pf_cnpj',
+          'id': 'v1',
+          'conteudo': {'qualquer': 'coisa'},
+        },
+      ]);
+      final relido = Catalogo.fromJson(catalogo.toJson());
+      expect(relido.tiposIgnorados, ['simulacao_pf_cnpj']);
+      expect((relido.toJson()['itens'] as List), hasLength(2));
+    });
+
+    test('conteúdo malformado de tipo conhecido falha alto', () {
+      expect(
+        () => Catalogo.fromItens([
+          {
+            'tipo': TipoCatalogo.tabelaIrpf,
+            'id': 'irpf-quebrada',
+            'conteudo': {'id': 'irpf-quebrada', 'faixas': <Object?>[]},
+          },
+        ]),
+        throwsFormatException,
+      );
+    });
+
+    test('id da linha divergente do id do conteúdo é recusado', () {
+      expect(
+        () => Catalogo.fromItens([feriados2026()..['id'] = 'outro-id']),
+        throwsFormatException,
+      );
+    });
+
+    test('item repetido é recusado', () {
+      expect(
+        () => Catalogo.fromItens([feriados2026(), feriados2026()]),
+        throwsFormatException,
+      );
+    });
+
+    test('tabelas IRPF com vigências sobrepostas são recusadas na carga', () {
+      // No desenho original do servidor isto era um EXCLUDE de gist; no
+      // catálogo genérico a trava vive aqui — e dispara na carga, não só
+      // quando alguém consulta a competência ambígua.
+      Map<String, Object?> tabela(String id, String inicio, String? fim) => {
+            'tipo': TipoCatalogo.tabelaIrpf,
+            'id': id,
+            'conteudo': {
+              'id': id,
+              'vigenciaInicio': inicio,
+              'vigenciaFim': fim,
+              'valorDependenteCentavos': 0,
+              'descontoSimplificadoCentavos': 0,
+              'faixas': [
+                {
+                  'limiteSuperiorCentavos': null,
+                  'aliquotaPontosBase': 0,
+                  'parcelaDeduzirCentavos': 0,
+                },
+              ],
+            },
+          };
+      expect(
+        () => Catalogo.fromItens([
+          tabela('irpf-a', '2026-01', null),
+          tabela('irpf-b', '2026-06', null),
+        ]),
+        throwsFormatException,
+      );
+      // Vigências encostadas, sem sobreposição, passam.
+      final ok = Catalogo.fromItens([
+        tabela('irpf-a', '2026-01', '2026-05'),
+        tabela('irpf-b', '2026-06', null),
+      ]);
+      expect(ok.tabelaVigentePara('2026-05').id, 'irpf-a');
+      expect(ok.tabelaVigentePara('2026-06').id, 'irpf-b');
+    });
+
+    test('dois registros de feriados para o mesmo ano são recusados', () {
+      expect(
+        () => Catalogo.fromItens([
+          feriados2026(),
+          feriados2026(id: 'feriados-bancarios-2026-bis'),
+        ]),
+        throwsFormatException,
+      );
+    });
+
+    test('snapshot de versão futura é recusado por inteiro', () {
+      expect(
+        () => Catalogo.fromJson({'formatoVersao': 2, 'itens': <Object?>[]}),
+        throwsFormatException,
+      );
+    });
+  });
+
+  group('FeriadosBancarios', () {
+    Map<String, Object?> base() => {
+          'id': 'feriados-bancarios-2026',
+          'ano': 2026,
+          'fonte': 'teste',
+          'datas': ['2026-01-01', '2026-12-25'],
+        };
+
+    test('carrega o caso válido', () {
+      final f = FeriadosBancarios.fromJson(base());
+      expect(f.ano, 2026);
+      expect(f.datas, hasLength(2));
+    });
+
+    test('data que não existe no calendário é recusada', () {
+      expect(
+        () => FeriadosBancarios.fromJson(base()..['datas'] = ['2026-02-30']),
+        throwsFormatException,
+      );
+    });
+
+    test('data fora do ano declarado é recusada', () {
+      expect(
+        () => FeriadosBancarios.fromJson(
+            base()..['datas'] = ['2026-01-01', '2027-01-01']),
+        throwsFormatException,
+      );
+    });
+
+    test('datas fora de ordem ou repetidas são recusadas', () {
+      expect(
+        () => FeriadosBancarios.fromJson(
+            base()..['datas'] = ['2026-12-25', '2026-01-01']),
+        throwsFormatException,
+      );
+      expect(
+        () => FeriadosBancarios.fromJson(
+            base()..['datas'] = ['2026-01-01', '2026-01-01']),
+        throwsFormatException,
+      );
+    });
+
+    test('lista vazia é recusada — ano sem feriado bancário não existe', () {
+      expect(
+        () => FeriadosBancarios.fromJson(base()..['datas'] = <Object?>[]),
+        throwsFormatException,
+      );
+    });
+
+    test('registro sem fonte é recusado', () {
+      expect(
+        () => FeriadosBancarios.fromJson(base()..remove('fonte')),
+        throwsFormatException,
+      );
+    });
+  });
+}
