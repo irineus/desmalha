@@ -114,6 +114,9 @@ jobs:
       # trabalho manual — exatamente o que este workflow existe para eliminar.
       # Em `secrets`, só saem mascarados como *** no log.
       SUPABASE_SITE_URL: ${{ vars[format('SUPABASE_SITE_URL_{0}', inputs.ambiente || 'DEV')] || secrets[format('SUPABASE_SITE_URL_{0}', inputs.ambiente || 'DEV')] }}
+      # SMTP próprio. Os nomes são os que o config.toml consome em env(...).
+      SUPABASE_AUTH_SMTP_PASS: ${{ secrets[format('RESEND_API_KEY_{0}', inputs.ambiente || 'DEV')] }}
+      SUPABASE_AUTH_SMTP_ADMIN_EMAIL: ${{ vars[format('SMTP_ADMIN_EMAIL_{0}', inputs.ambiente || 'DEV')] || secrets[format('SMTP_ADMIN_EMAIL_{0}', inputs.ambiente || 'DEV')] }}
       REF: ${{ vars[format('SUPABASE_PROJECT_REF_{0}', inputs.ambiente || 'DEV')] || secrets[format('SUPABASE_PROJECT_REF_{0}', inputs.ambiente || 'DEV')] }}
 
     steps:
@@ -133,6 +136,11 @@ jobs:
           [[ -n "$SUPABASE_DB_PASSWORD" ]]  || faltando+=("secret   SUPABASE_DB_PASSWORD_$AMB")
           [[ -n "$REF" ]]                   || faltando+=("SUPABASE_PROJECT_REF_$AMB   (variable ou secret)")
           [[ -n "$SUPABASE_SITE_URL" ]]     || faltando+=("SUPABASE_SITE_URL_$AMB   (variable ou secret)")
+          # Sem SMTP, `config push` recusa os templates e o login nao existe:
+          # o template padrao manda link, e a tela pede 8 digitos. Faltar aqui
+          # e melhor do que empurrar SMTP vazio e derrubar o envio de e-mail.
+          [[ -n "$SUPABASE_AUTH_SMTP_PASS" ]]        || faltando+=("secret   RESEND_API_KEY_$AMB")
+          [[ -n "$SUPABASE_AUTH_SMTP_ADMIN_EMAIL" ]] || faltando+=("SMTP_ADMIN_EMAIL_$AMB   (variable ou secret)")
           if (( ${#faltando[@]} )); then
             printf 'ambiente %s incompleto — falta cadastrar em\n' "$AMB"
             printf 'Settings > Secrets and variables > Actions:\n\n'
@@ -200,8 +208,12 @@ jobs:
         # padrão do CLI no projeto remoto. É por isso que site_url está
         # explícito lá, vindo desta variável de ambiente.
         run: |
-          supabase link --project-ref "$REF"
-          supabase config push
+          # --yes porque `config push` abre um prompt de confirmação. Na
+          # primeira execução real ele foi aceito por EOF, o que funciona por
+          # acidente: depender de como o CLI trata entrada fechada é frágil
+          # entre versões, e o modo de falhar seria o job pendurado.
+          supabase link --project-ref "$REF" --yes
+          supabase config push --yes
 
       - name: Edge functions
         run: supabase functions deploy excluir-conta --project-ref "$REF"

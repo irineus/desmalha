@@ -62,6 +62,40 @@ double_confirm_changes = true
 # não gastar cota nem levar o usuário a um erro que a tela podia evitar.
 max_frequency = "60s"
 
+# ─── SMTP próprio (Resend) ───────────────────────────────────────────────────
+#
+# 🔴 NÃO É OTIMIZAÇÃO DE ENTREGA — É O QUE FAZ O LOGIN EXISTIR.
+#
+# Descoberto em 17/ago/2026, na primeira publicação real: o Supabase **recusa
+# personalizar template de e-mail em projeto do plano free que usa o provedor
+# embutido** ("Email template modification is not available for free tier
+# projects using the default email provider"). E o template padrão manda um
+# LINK, sem `{{ .Token }}`.
+#
+# Consequência: com o e-mail embutido, o usuário nunca recebe os 8 dígitos que a
+# tela pede. Não é degradação — é login impossível. Por isso o SMTP próprio
+# deixou de ser "antes do beta fechado" e virou pré-requisito da configuração de
+# Auth inteira.
+#
+# De quebra resolve o problema que já se conhecia: o servidor embutido tem
+# limite baixo e nenhuma garantia de entrega, e o e-mail é a ÚNICA porta de
+# entrada do app.
+[auth.email.smtp]
+host = "smtp.resend.com"
+# 587 (STARTTLS). O Resend também aceita 465, 2465, 2587 e 25.
+port = 587
+# No Resend o usuário é literalmente "resend"; quem identifica a conta é a senha.
+user = "resend"
+# A senha é a API key do Resend. Nunca no repositório — regra permanente 1.
+pass = "env(SUPABASE_AUTH_SMTP_PASS)"
+# Remetente. Vem do ambiente porque depende do que a SUA conta do Resend tem
+# verificado: enquanto não houver domínio próprio (`desmalha.com.br` é pendência
+# "De marca"), o remetente disponível é o de teste do Resend — que entrega
+# apenas para o e-mail dono da conta. Serve para a conferência ponta a ponta do
+# dev; não serve para o beta.
+admin_email = "env(SUPABASE_AUTH_SMTP_ADMIN_EMAIL)"
+sender_name = "Desmalha"
+
 # Por padrão os templates mandam um LINK, e o app precisa de um CÓDIGO. Cadastro
 # e login são o mesmo gesto sem senha, então os dois usam o mesmo arquivo.
 [auth.email.template.confirmation]
