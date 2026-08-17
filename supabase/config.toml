@@ -80,20 +80,23 @@ max_frequency = "60s"
 # De quebra resolve o problema que já se conhecia: o servidor embutido tem
 # limite baixo e nenhuma garantia de entrega, e o e-mail é a ÚNICA porta de
 # entrada do app.
+#
+# ⚠️ ESTE BLOCO NÃO É APLICADO POR `config push`. Descoberto em 17/ago/2026: o
+# `[auth.email.smtp]` do config.toml descreve o stack LOCAL — os padrões
+# documentados são host `inbucket` e porta 2500, o mail catcher de
+# desenvolvimento —, e o diff que o CLI envia ao projeto remoto não carrega
+# campo de SMTP nenhum. Quem configura SMTP remoto é a Management API.
+#
+# O bloco continua aqui como FONTE ÚNICA dos valores não-secretos: o workflow lê
+# host, port, user e sender_name daqui e os envia via API. Senha e remetente vêm
+# do ambiente naquele momento, por serem credencial e configuração de conta —
+# por isso não estão neste arquivo.
 [auth.email.smtp]
 host = "smtp.resend.com"
 # 587 (STARTTLS). O Resend também aceita 465, 2465, 2587 e 25.
 port = 587
 # No Resend o usuário é literalmente "resend"; quem identifica a conta é a senha.
 user = "resend"
-# A senha é a API key do Resend. Nunca no repositório — regra permanente 1.
-pass = "env(SUPABASE_AUTH_SMTP_PASS)"
-# Remetente. Vem do ambiente porque depende do que a SUA conta do Resend tem
-# verificado: enquanto não houver domínio próprio (`desmalha.com.br` é pendência
-# "De marca"), o remetente disponível é o de teste do Resend — que entrega
-# apenas para o e-mail dono da conta. Serve para a conferência ponta a ponta do
-# dev; não serve para o beta.
-admin_email = "env(SUPABASE_AUTH_SMTP_ADMIN_EMAIL)"
 sender_name = "Desmalha"
 
 # Por padrão os templates mandam um LINK, e o app precisa de um CÓDIGO. Cadastro

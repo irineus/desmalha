@@ -212,40 +212,53 @@ jobs:
           # execução anterior ele foi aceito por EOF, o que funciona por
           # acidente: depender de como o CLI trata entrada fechada é frágil
           # entre versões, e o modo de falhar seria o job pendurado.
+          # ─── SMTP vai pela Management API, não pelo config push ────────────
+          # `supabase config push` NÃO configura SMTP remoto. O bloco
+          # [auth.email.smtp] do config.toml descreve o stack LOCAL — os padrões
+          # documentados são host `inbucket` e porta 2500, que é o mail catcher
+          # de desenvolvimento. Confirmado no log de 17/ago: o diff que o CLI
+          # enviou não continha campo de SMTP nenhum, e por isso o push de
+          # templates seguia sendo recusado mesmo com o SMTP declarado.
+          #
+          # Precisa vir ANTES do config push: o backend só aceita template
+          # personalizado num projeto que JÁ tem SMTP próprio.
+          #
+          # Host, porta, usuário e nome do remetente saem do config.toml para
+          # não existirem em dois lugares; senha e e-mail do remetente vêm do
+          # ambiente, porque são credencial e configuração de conta.
+          leia() {
+            python3 -c "import tomllib,sys; print(tomllib.load(open('supabase/config.toml','rb'))['auth']['email']['smtp'][sys.argv[1]])" "$1"
+          }
+          corpo=$(jq -n \
+            --arg  host  "$(leia host)" \
+            --argjson port "$(leia port)" \
+            --arg  user  "$(leia user)" \
+            --arg  nome  "$(leia sender_name)" \
+            --arg  senha "$SUPABASE_AUTH_SMTP_PASS" \
+            --arg  admin "$SUPABASE_AUTH_SMTP_ADMIN_EMAIL" \
+            '{smtp_host:$host, smtp_port:$port, smtp_user:$user,
+              smtp_sender_name:$nome, smtp_pass:$senha, smtp_admin_email:$admin}')
+
+          codigo=$(curl -sS -o /tmp/smtp.json -w '%{http_code}' \
+            -X PATCH "https://api.supabase.com/v1/projects/$REF/config/auth" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "$corpo")
+          if [[ "$codigo" != 2?? ]]; then
+            echo "a Management API recusou a configuração de SMTP (HTTP $codigo):" >&2
+            cat /tmp/smtp.json >&2
+            exit 1
+          fi
+
+          # Lê de volta: a resposta 2xx diz que o pedido foi aceito, não que o
+          # projeto ficou com o SMTP que se queria. A senha não é impressa.
+          echo '→ SMTP que o projeto passou a ter:'
+          curl -sS "https://api.supabase.com/v1/projects/$REF/config/auth" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            | jq '{smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name}'
+
+          # Agora sim: o resto da configuração de Auth, templates inclusive.
           supabase link --project-ref "$REF" --yes
-
-          # ─── Por que DOIS pushes ───────────────────────────────────────────
-          # `config push` manda a configuração inteira numa requisição só, e o
-          # backend valida os templates contra o provedor de e-mail que o
-          # projeto tem NAQUELE MOMENTO. Num projeto que ainda está no provedor
-          # embutido, ele recusa com
-          #
-          #   Email template modification is not available for free tier
-          #   projects using the default email provider
-          #
-          # mesmo que o SMTP venha no MESMO payload. É ovo e galinha: o SMTP
-          # precisa já EXISTIR no projeto para os templates serem aceitos.
-          #
-          # Então: primeiro push sem os templates, que estabelece o SMTP;
-          # segundo push completo, que agora passa. Os dois são idempotentes,
-          # e num projeto que já tem SMTP o primeiro vira no-op.
-          cp supabase/config.toml /tmp/config-completo.toml
-          python3 - <<'PY'
-          caminho = 'supabase/config.toml'
-          saida, pulando = [], False
-          for linha in open(caminho, encoding='utf-8').readlines():
-              if linha.lstrip().startswith('['):
-                  pulando = linha.lstrip().startswith('[auth.email.template.')
-              if not pulando:
-                  saida.append(linha)
-          open(caminho, 'w', encoding='utf-8').writelines(saida)
-          PY
-
-          echo '→ passo 1/2: estabelecendo o SMTP (sem templates)'
-          supabase config push --yes
-
-          cp /tmp/config-completo.toml supabase/config.toml
-          echo '→ passo 2/2: configuração completa, com os templates'
           supabase config push --yes
 
       - name: Edge functions
