@@ -31,6 +31,8 @@ declare
   u2 constant uuid := '22222222-2222-4222-8222-222222222222';
   u3 constant uuid := '33333333-3333-4333-8333-333333333333';
   u4 constant uuid := '44444444-4444-4444-8444-444444444444';
+  u5 constant uuid := '55555555-5555-4555-8555-555555555555';
+  u6 constant uuid := '66666666-6666-4666-8666-666666666666';
   v_id       bigint;
   v_id2      bigint;
   v_n        integer;
@@ -281,6 +283,49 @@ begin
   select user_agent into v_txt from public.aceites_termos where id = v_id;
   perform pg_temp.reg('31 user_agent vem do cabeçalho',
                       v_txt = 'Desmalha/1.0 (Android)', v_txt);
+
+  ----------------------------------------------------------------------------
+  -- 11. A porta em public que a edge function de exclusão usa
+  --
+  -- O PostgREST não enxerga o schema conformidade. Sem esta função, o passo 2
+  -- do fluxo de exclusão seria inalcançável pela edge function — e a saída
+  -- fácil (expor o schema conformidade inteiro na API) entregaria junto as
+  -- rotinas de expurgo e a leitura da chave de pseudonimização.
+  ----------------------------------------------------------------------------
+  perform pg_temp.reg(
+    '32 anon NÃO executa o encerramento',
+    not has_function_privilege(
+      'anon', 'public.encerrar_conta_do_usuario(uuid)', 'execute'));
+
+  perform pg_temp.reg(
+    '33 authenticated NÃO executa o encerramento',
+    not has_function_privilege(
+      'authenticated', 'public.encerrar_conta_do_usuario(uuid)', 'execute'));
+
+  -- Sem este, os dois de cima passariam por uma função que ninguém executa.
+  perform pg_temp.reg(
+    '34 service_role executa o encerramento',
+    has_function_privilege(
+      'service_role', 'public.encerrar_conta_do_usuario(uuid)', 'execute'));
+
+  -- Mesma divisão do bloco 6: o usuário com blob pendente não é o mesmo do
+  -- caminho feliz, porque a linha de storage.objects não sai daqui.
+  insert into auth.users (id, email) values (u5, 'titular.cinco@exemplo.com');
+  insert into storage.objects (bucket_id, name) values ('backups', u5 || '/000001.dsmb');
+
+  begin
+    perform public.encerrar_conta_do_usuario(u5);
+    perform pg_temp.reg('35 a porta herda a recusa com blob pendente', false,
+                        'encerrou com o backup ainda no bucket');
+  exception when others then
+    perform pg_temp.reg('35 a porta herda a recusa com blob pendente',
+                        sqlerrm like '%apague-os pela Storage API%', sqlerrm);
+  end;
+
+  insert into auth.users (id, email) values (u6, 'titular.seis@exemplo.com');
+  perform public.encerrar_conta_do_usuario(u6);
+  select excluido_em is not null into v_bool from public.perfis where id = u6;
+  perform pg_temp.reg('36 a porta delega o encerramento de fato', v_bool);
 end;
 $bloco$;
 
