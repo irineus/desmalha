@@ -78,11 +78,11 @@ workflows:
     name: iOS simulator nightly (compila sem assinar)
     # O agendamento (cron) é configurado na interface web do Codemagic
     # (Scheduled builds) apontando para este workflow; o YAML não carrega cron.
-    # Cadência: DIÁRIA (01:00 UTC, main) desde 17/ago/2026 — o SQLCipher entrou
-    # no app (card "Persistência local em Drift + SQLCipher") e a condição
-    # registrada em ago/2026 ("volta a diário quando o SQLCipher entrar") foi
-    # atingida. ⚠️ A mudança de 3x/semana para diário precisa ser aplicada na
-    # interface (Scheduled builds). Disparo manual: "Start new build".
+    # Cadência: 3x/semana (seg/qua/sex, 01:00 UTC, main). A condição de
+    # ago/2026 ("volta a diário quando o SQLCipher entrar") foi atingida em
+    # 17/ago/2026, mas o usuário decidiu na mesma data MANTER 3x/semana para
+    # preservar a cota única de 500 min/mês. Revisitar se o iOS quebrar entre
+    # nightlies com frequência. Disparo manual: "Start new build".
     instance_type: mac_mini_m2
     max_build_duration: 30
     environment:

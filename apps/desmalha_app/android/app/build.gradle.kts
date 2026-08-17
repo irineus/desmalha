@@ -6,10 +6,12 @@ plugins {
 
 android {
     namespace = "com.desmalha.desmalha_app"
-    // 37 em vez de flutter.compileSdkVersion: o flutter_secure_storage 11
-    // (cofre da chave do SQLCipher) exige compilar contra a API 37. Não
-    // altera minSdk nem targetSdk — só a API usada na compilação.
-    compileSdk = maxOf(37, flutter.compileSdkVersion)
+    // ⚠️ flutter_secure_storage está PINADO na linha 9.x no pubspec porque a
+    // 11.x exige compileSdk 37, e o runner do Codemagic não resolve a API 37
+    // hoje (Gradle instala "android-37.0" e o AGP procura o hash "android-37"
+    // — medido no build 37, 17/ago/2026). Subir o plugin de novo só junto com
+    // um compileSdk que o CI comprovadamente resolve.
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

@@ -47,7 +47,9 @@ dependencies:
   # foi descontinuado (0.7.0+eol) e não entra aqui.
   drift: ^2.34.3
   sqlite3: ^3.5.1
-  flutter_secure_storage: ^11.0.0
+  # Linha 9.x de propósito: a 11.x exige compileSdk 37, que o runner do
+  # Codemagic ainda não resolve (ver comentário em android/app/build.gradle.kts).
+  flutter_secure_storage: ^9.2.4
   path_provider: ^2.1.6
   path: ^1.9.1
   uuid: ^4.6.0
