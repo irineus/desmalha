@@ -6,7 +6,10 @@ plugins {
 
 android {
     namespace = "com.desmalha.desmalha_app"
-    compileSdk = flutter.compileSdkVersion
+    // 37 em vez de flutter.compileSdkVersion: o flutter_secure_storage 11
+    // (cofre da chave do SQLCipher) exige compilar contra a API 37. Não
+    // altera minSdk nem targetSdk — só a API usada na compilação.
+    compileSdk = maxOf(37, flutter.compileSdkVersion)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
