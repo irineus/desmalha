@@ -14,6 +14,18 @@
  *
  * Tudo embutido, sem recurso externo: a página tem de abrir num aparelho velho,
  * numa rede ruim, sem CDN e sem fonte remota.
+ *
+ * 🔴 ESTA PÁGINA NÃO RENDERIZA SERVIDA DE `*.supabase.co`. Medido em
+ * 17/ago/2026: o gateway reescreve o `text/html` desta resposta para
+ * `text/plain` e injeta `Content-Security-Policy: default-src 'none'; sandbox`.
+ * Com o `nosniff` junto, quem abre o link vê o código-fonte; e mesmo que
+ * renderizasse, a CSP mataria o script do formulário. É consistente com uma
+ * proteção anti-phishing do domínio deles, e vale só para HTML — as rotas de
+ * `POST` continuam devolvendo JSON normalmente.
+ *
+ * O HTML aqui continua correto e continua sendo a fonte da página; o que muda é
+ * de onde ele é servido. Ver `supabase/operacao/publicacao.md`, seção "O
+ * endereço que vai para o Google Play".
  */
 
 /** Prazos da PP v0.2, seção 9. A página e o banco têm de contar a mesma coisa. */
