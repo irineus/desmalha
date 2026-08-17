@@ -304,5 +304,148 @@ void main() {
       expect(saidaCrlf, contains('\r\n'));
       expect(saidaCrlf.split('\r\n').length, csvCrlf.split('\r\n').length);
     });
+
+    test('agrupamento de milhar do original é preservado', () {
+      const csvBb = 'Data,Histórico,Detalhes,Doc,Valor,Tipo\n'
+          '10/07/2026,Pix recebido,,,"12.345,67",C\n';
+      final saida = anonimizarCsv(csvBb, _perfilBancoDoBrasil);
+      // O ponto de milhar é estrutura: sem ele a fixture deixaria de
+      // exercitar o caminho onde um formatoValor errado morde.
+      expect(saida, matches(RegExp(r'"\d{1,3}\.\d{3},\d{2}"')));
+    });
+  });
+
+  group('anonimizarCsvSemPerfil', () {
+    // Bradesco-ish: preâmbulo, rótulos, ';' e valores com milhar.
+    const csvBancoNovo = 'Extrato de Conta Corrente\n'
+        'Titular;JOSE CLIENTE REAL;CPF;123.456.789-00\n'
+        'Agência;1234;Conta;56789-0\n'
+        'Data;Histórico;Docto.;Crédito (R\$);Débito (R\$);Saldo (R\$)\n'
+        '10/07/2026;PIX RECEBIDO MARIA PACIENTE SILVA;001234;"1.200,00";;'
+        '"3.450,00"\n'
+        '15/07/2026;PAGAMENTO ALUGUEL CONSULTORIO;001235;;"850,00";'
+        '"2.600,00"\n';
+
+    test('detecta o delimitador pela regularidade de colunas', () {
+      expect(detectarDelimitadorCsv(csvBancoNovo), ';');
+      expect(
+        detectarDelimitadorCsv('Data,Valor,Descrição\n'
+            '10/07/2026,100.00,Pix recebido; urgente\n'
+            '11/07/2026,200.00,Outro; caso\n'),
+        ',',
+      );
+    });
+
+    test('nome de cliente em linha de lançamento NÃO sobrevive', () {
+      final r = anonimizarCsvSemPerfil(csvBancoNovo);
+      // É a razão de o modo existir: emprestar o perfil de outro banco
+      // jogaria a descrição no tratamento conservador, que preserva nomes.
+      expect(r.conteudo, isNot(contains('MARIA')));
+      expect(r.conteudo, isNot(contains('PACIENTE')));
+      expect(r.conteudo, isNot(contains('SILVA')));
+    });
+
+    test('data é preservada e valor é perturbado com o milhar', () {
+      final r = anonimizarCsvSemPerfil(csvBancoNovo);
+      expect(r.conteudo, contains('10/07/2026'));
+      expect(r.conteudo, contains('15/07/2026'));
+      expect(r.conteudo, isNot(contains('1.200,00')));
+      expect(r.conteudo, isNot(contains('850,00')));
+      expect(r.conteudo, matches(RegExp(r'"\d{1,3}\.\d{3},\d{2}"')));
+    });
+
+    test('rótulos de coluna chegam legíveis a quem vai escrever o perfil', () {
+      final r = anonimizarCsvSemPerfil(csvBancoNovo);
+      expect(
+        r.conteudo,
+        contains('Data;Histórico;Docto.;Crédito (R\$);Débito (R\$);'
+            'Saldo (R\$)'),
+      );
+      expect(r.conteudo, contains('Extrato de Conta Corrente'));
+    });
+
+    test('CPF e dígitos longos somem até no preâmbulo', () {
+      final r = anonimizarCsvSemPerfil(csvBancoNovo);
+      expect(r.conteudo, isNot(contains('123.456.789-00')));
+      expect(r.conteudo, isNot(contains('56789')));
+    });
+
+    test('estrutura inferida descreve o arquivo sem revelar conteúdo', () {
+      final r = anonimizarCsvSemPerfil(csvBancoNovo);
+      expect(r.estrutura.delimitador, ';');
+      expect(r.estrutura.colunas, 6);
+      expect(r.estrutura.linhasLancamento, 2);
+      // Título, titular, agência e rótulos: nenhuma tem data.
+      expect(r.estrutura.linhasPreambulo, 4);
+    });
+
+    test('a saída é parseável pelo perfil escrito a partir da estrutura', () {
+      // Exatamente o que o usuário faz depois: escrever o perfil olhando a
+      // cópia anonimizada. Se a anonimização tivesse corrompido a estrutura,
+      // este parse falharia.
+      //
+      // Fixture próprio, de coluna de valor ÚNICA e assinada: o layout de
+      // Crédito/Débito em colunas separadas do `csvBancoNovo` não é
+      // representável no `PerfilCsv` de hoje (ele tem `colunaValor` +
+      // `colunaTipo`, não duas colunas de valor).
+      const csvValorUnico = 'Extrato de Conta Corrente\n'
+          'Titular;JOSE CLIENTE REAL;CPF;123.456.789-00\n'
+          'Data;Histórico;Docto.;Valor (R\$)\n'
+          '10/07/2026;PIX RECEBIDO MARIA PACIENTE SILVA;001234;"1.200,00"\n'
+          '15/07/2026;PAGAMENTO ALUGUEL CONSULTORIO;001235;"-850,00"\n';
+      final r = anonimizarCsvSemPerfil(csvValorUnico);
+      const perfilNovo = PerfilCsv(
+        id: 'banco-novo-conta-csv-v1',
+        banco: 'Banco Novo',
+        delimitador: ';',
+        linhasCabecalho: 3,
+        formatoData: 'dd/MM/yyyy',
+        formatoValor: FormatoValor.virgulaDecimal,
+        colunaData: 0,
+        colunaValor: 3,
+        colunaDescricao: 1,
+      );
+      final extrato = parseCsv(r.conteudo, perfilNovo);
+      expect(extrato.avisos, isEmpty);
+      expect(extrato.transacoes.length, 2);
+      // O sinal do débito sobrevive à perturbação.
+      expect(extrato.transacoes[1].valorCentavos, isNegative);
+    });
+
+    test('é determinística: mesma entrada, mesma saída', () {
+      expect(
+        anonimizarCsvSemPerfil(csvBancoNovo).conteudo,
+        anonimizarCsvSemPerfil(csvBancoNovo).conteudo,
+      );
+    });
+
+    test('CRLF, aspas e BOM-vizinhos são preservados', () {
+      const csvCrlf = 'Data;Descrição;Valor\r\n'
+          '10/07/2026;"PIX; RECEBIDO";"1.200,00"\r\n';
+      final r = anonimizarCsvSemPerfil(csvCrlf);
+      expect(r.conteudo, contains('\r\n'));
+      expect(r.conteudo.split('\r\n').length, csvCrlf.split('\r\n').length);
+      expect(r.conteudo, contains('"'));
+    });
+
+    test('arquivo sem nenhuma data reconhecível não finge ter lançamentos',
+        () {
+      final r = anonimizarCsvSemPerfil('Titular;JOSE CLIENTE REAL\n'
+          'Saldo;1.000,00\n');
+      expect(r.estrutura.linhasLancamento, 0);
+      // Sem data não há como distinguir rótulo de texto livre: tudo cai no
+      // conservador, que preserva nomes. O CLI avisa em cima deste zero.
+      expect(r.estrutura.linhasPreambulo, 2);
+    });
+
+    test('delimitador pode ser imposto por quem chama', () {
+      final r = anonimizarCsvSemPerfil(
+        'Data|Descrição|Valor\n10/07/2026|PIX JOAO REAL|1.200,00\n',
+        delimitador: '|',
+      );
+      expect(r.estrutura.delimitador, '|');
+      expect(r.estrutura.colunas, 3);
+      expect(r.conteudo, isNot(contains('JOAO')));
+    });
   });
 }

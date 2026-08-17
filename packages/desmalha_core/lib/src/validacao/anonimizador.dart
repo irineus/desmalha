@@ -23,6 +23,7 @@
 /// a perturbação usa um gerador congruente linear com semente fixa.
 library;
 
+import '../extrato/data_civil.dart';
 import '../extrato/perfil_csv.dart';
 import '../extrato/valor_monetario.dart';
 
@@ -268,15 +269,55 @@ String _perturbarValorOfx(String bruto, Anonimizador anon) {
   if (centavos == null) return bruto;
   final perturbado = anon.perturbarCentavos(centavos);
   final separador = bruto.contains(',') ? ',' : '.';
+  // TRNAMT não carrega separador de milhar (parseValorOfx rejeita).
   return _renderizarCentavos(perturbado, separador);
 }
 
-/// Renderiza centavos como texto (`-1234.56`), sem separador de milhar.
-String _renderizarCentavos(int centavos, String separadorDecimal) {
+/// Renderiza centavos como texto (`-1234.56`).
+///
+/// Com [separadorMilhar] não nulo, reagrupa a parte inteira de três em três
+/// (`-1.234,56`): o agrupamento é ESTRUTURA do arquivo do banco, e uma
+/// fixture que o perde deixa de exercitar justamente o caminho onde um
+/// `formatoValor` errado no perfil morde.
+String _renderizarCentavos(
+  int centavos,
+  String separadorDecimal, {
+  String? separadorMilhar,
+}) {
   final sinal = centavos < 0 ? '-' : '';
   final absoluto = centavos.abs();
-  return '$sinal${absoluto ~/ 100}$separadorDecimal'
+  var inteira = (absoluto ~/ 100).toString();
+  if (separadorMilhar != null) {
+    final buffer = StringBuffer();
+    for (var i = 0; i < inteira.length; i++) {
+      if (i > 0 && (inteira.length - i) % 3 == 0) buffer.write(separadorMilhar);
+      buffer.write(inteira[i]);
+    }
+    inteira = buffer.toString();
+  }
+  return '$sinal$inteira$separadorDecimal'
       '${(absoluto % 100).toString().padLeft(2, '0')}';
+}
+
+/// Separadores da convenção, na ordem (decimal, milhar).
+(String, String) _separadoresDe(FormatoValor formato) =>
+    formato == FormatoValor.virgulaDecimal ? (',', '.') : ('.', ',');
+
+/// Perturba um campo de valor preservando a convenção e o agrupamento de
+/// milhar do original. Retorna `null` quando o texto não é valor no [formato].
+String? _perturbarCampoValor(
+  String bruto,
+  FormatoValor formato,
+  Anonimizador anon,
+) {
+  final centavos = parseValorMonetario(bruto, formato);
+  if (centavos == null) return null;
+  final (decimal, milhar) = _separadoresDe(formato);
+  return _renderizarCentavos(
+    anon.perturbarCentavos(centavos),
+    decimal,
+    separadorMilhar: bruto.contains(milhar) ? milhar : null,
+  );
 }
 
 // ── CSV ──────────────────────────────────────────────────────────────────
@@ -310,14 +351,9 @@ String anonimizarCsv(
     for (var c = 0; c < campos.length; c++) {
       final campo = campos[c];
       if (c == perfil.colunaValor) {
-        final centavos =
-            parseValorMonetario(campo.texto, perfil.formatoValor);
-        if (centavos != null) {
-          final separador =
-              perfil.formatoValor == FormatoValor.virgulaDecimal ? ',' : '.';
-          campo.texto =
-              _renderizarCentavos(anon.perturbarCentavos(centavos), separador);
-        }
+        final perturbado =
+            _perturbarCampoValor(campo.texto, perfil.formatoValor, anon);
+        if (perturbado != null) campo.texto = perturbado;
       } else if (c == perfil.colunaIdExterno) {
         final id = campo.texto.trim();
         if (id.isNotEmpty) campo.texto = anon.idFicticio(id);
@@ -336,6 +372,205 @@ String anonimizarCsv(
   }
 
   return _escreverRegistrosCsv(registros, perfil.delimitador);
+}
+
+// ── CSV de banco ainda sem perfil ────────────────────────────────────────
+
+/// Formatos de data testados na detecção de linha de lançamento.
+///
+/// Não é o catálogo de formatos suportados pelo parser — é só o conjunto que
+/// permite reconhecer QUE uma linha é lançamento, para não tratar rótulo de
+/// coluna como texto livre.
+const _formatosDataConhecidos = [
+  'dd/MM/yyyy',
+  'dd-MM-yyyy',
+  'dd.MM.yyyy',
+  'yyyy-MM-dd',
+  'yyyy/MM/dd',
+  'dd/MM/yy',
+  'ddMMyyyy',
+  'yyyyMMdd',
+];
+
+/// Campo com cara de valor monetário: parte decimal de exatamente dois
+/// dígitos. Restringir a isso é o que impede perturbar número de agência,
+/// identificador de lançamento ou data compacta.
+final _regexValorAparente = RegExp(r'^\d{1,3}([.,]\d{3})+[.,]\d{2}$|^\d+[.,]\d{2}$');
+
+/// O que a anonimização sem perfil conseguiu inferir da estrutura.
+///
+/// São só agregados — nenhum conteúdo do extrato. É o que pode ser colado de
+/// volta numa sessão de planejamento para construir o perfil do banco.
+class EstruturaCsvInferida {
+  const EstruturaCsvInferida({
+    required this.delimitador,
+    required this.colunas,
+    required this.linhasPreambulo,
+    required this.linhasLancamento,
+  });
+
+  /// Delimitador usado (detectado ou imposto por quem chamou).
+  final String delimitador;
+
+  /// Número de colunas das linhas de lançamento (o valor mais frequente).
+  final int colunas;
+
+  /// Linhas sem data reconhecível — cabeçalhos, preâmbulos e rodapés.
+  /// Elas recebem tratamento CONSERVADOR para que os rótulos de coluna
+  /// sobrevivam, e por isso são as que o usuário precisa revisar à mão.
+  final int linhasPreambulo;
+
+  /// Linhas com ao menos um campo de data reconhecível.
+  final int linhasLancamento;
+}
+
+/// Resultado da anonimização de um CSV de banco ainda sem perfil.
+class AnonimizacaoSemPerfil {
+  const AnonimizacaoSemPerfil({
+    required this.conteudo,
+    required this.estrutura,
+  });
+
+  final String conteudo;
+  final EstruturaCsvInferida estrutura;
+}
+
+/// Detecta o delimitador de um CSV pela consistência do número de campos.
+///
+/// Vence o candidato que produz o maior número de linhas com a MESMA
+/// quantidade de campos (mínimo de dois campos) — a regularidade de colunas é
+/// o que distingue o separador real de uma vírgula que aparece dentro de uma
+/// descrição. Empate resolve pela ordem dos candidatos.
+String detectarDelimitadorCsv(String conteudo) {
+  const candidatos = [';', ',', '\t', '|'];
+  var melhor = candidatos.first;
+  var melhorPontuacao = 0;
+
+  for (final candidato in candidatos) {
+    final registros = _lerRegistrosCsv(conteudo, candidato);
+    final frequencia = <int, int>{};
+    for (final registro in registros) {
+      final campos = registro.campos.length;
+      if (campos < 2) continue;
+      frequencia[campos] = (frequencia[campos] ?? 0) + 1;
+    }
+    final pontuacao =
+        frequencia.values.fold(0, (maior, n) => n > maior ? n : maior);
+    if (pontuacao > melhorPontuacao) {
+      melhorPontuacao = pontuacao;
+      melhor = candidato;
+    }
+  }
+
+  return melhor;
+}
+
+/// Anonimiza um CSV de banco para o qual AINDA NÃO EXISTE perfil.
+///
+/// Existe porque o caminho do card — extrato que falha vira fixture
+/// anonimizada e perfil novo — é circular sem ele: [anonimizarCsv] exige o
+/// perfil que ainda não foi escrito. E emprestar o perfil de outro banco não
+/// serve: com as colunas trocadas, a descrição cairia no tratamento
+/// conservador, que remove CPF e dígitos longos mas NÃO remove nomes — o
+/// extrato real vazaria nomes de clientes para dentro da fixture.
+///
+/// Sem perfil, a única estrutura reconhecível é a data, e ela decide o
+/// tratamento de cada linha:
+/// - linha COM data (lançamento) → data preservada, valor perturbado, todo o
+///   resto tratado como texto livre (CPFs, dígitos longos e nomes);
+/// - linha SEM data (cabeçalho, preâmbulo, rodapé) → tratamento conservador,
+///   para que os rótulos de coluna cheguem legíveis a quem vai escrever o
+///   perfil. ⚠️ Conservador não remove nomes: preâmbulo com nome do titular
+///   sobrevive de propósito, e é o que o usuário precisa revisar à mão.
+///   [EstruturaCsvInferida.linhasPreambulo] diz quantas são.
+AnonimizacaoSemPerfil anonimizarCsvSemPerfil(
+  String conteudo, {
+  String? delimitador,
+  Anonimizador? anonimizador,
+}) {
+  final anon = anonimizador ?? Anonimizador();
+  final separador = delimitador ?? detectarDelimitadorCsv(conteudo);
+  final registros = _lerRegistrosCsv(conteudo, separador);
+
+  var linhasPreambulo = 0;
+  final colunasPorLinha = <int, int>{};
+
+  for (final registro in registros) {
+    final campos = registro.campos;
+    if (campos.length == 1 && campos[0].texto.trim().isEmpty) continue;
+
+    final colunaData = _indiceDaData(campos);
+    if (colunaData == null) {
+      linhasPreambulo++;
+      for (final campo in campos) {
+        campo.texto = anon.anonimizarConservador(campo.texto);
+      }
+      continue;
+    }
+
+    colunasPorLinha[campos.length] = (colunasPorLinha[campos.length] ?? 0) + 1;
+
+    for (var c = 0; c < campos.length; c++) {
+      if (c == colunaData) continue; // Estrutura pura: preservar.
+      final campo = campos[c];
+      final perturbado = _perturbarSeValorAparente(campo.texto, anon);
+      campo.texto = perturbado ?? anon.anonimizarTexto(campo.texto);
+    }
+  }
+
+  var colunas = 0;
+  var maiorFrequencia = 0;
+  colunasPorLinha.forEach((quantidade, frequencia) {
+    if (frequencia > maiorFrequencia) {
+      maiorFrequencia = frequencia;
+      colunas = quantidade;
+    }
+  });
+
+  return AnonimizacaoSemPerfil(
+    conteudo: _escreverRegistrosCsv(registros, separador),
+    estrutura: EstruturaCsvInferida(
+      delimitador: separador,
+      colunas: colunas,
+      linhasPreambulo: linhasPreambulo,
+      linhasLancamento: maiorFrequencia == 0
+          ? 0
+          : colunasPorLinha.values.fold(0, (soma, n) => soma + n),
+    ),
+  );
+}
+
+/// Índice do primeiro campo que é data em algum formato conhecido.
+int? _indiceDaData(List<_CampoCsv> campos) {
+  for (var c = 0; c < campos.length; c++) {
+    final texto = campos[c].texto.trim();
+    if (texto.isEmpty) continue;
+    for (final formato in _formatosDataConhecidos) {
+      if (parseDataCivil(texto, formato) != null) return c;
+    }
+  }
+  return null;
+}
+
+/// Perturba o campo se ele tiver cara de valor; `null` se não tiver.
+String? _perturbarSeValorAparente(String bruto, Anonimizador anon) {
+  var texto =
+      bruto.replaceAll('R\$', '').replaceAll(RegExp(r'[\s\u00A0]'), '');
+  if (texto.startsWith('(') && texto.endsWith(')')) {
+    texto = texto.substring(1, texto.length - 1);
+  }
+  if (texto.startsWith('-') || texto.startsWith('+')) {
+    texto = texto.substring(1);
+  } else if (texto.endsWith('-') || texto.endsWith('+')) {
+    texto = texto.substring(0, texto.length - 1);
+  }
+  if (!_regexValorAparente.hasMatch(texto)) return null;
+
+  // A convenção é a do próprio campo: o ÚLTIMO separador é o decimal.
+  final formato = texto.lastIndexOf(',') > texto.lastIndexOf('.')
+      ? FormatoValor.virgulaDecimal
+      : FormatoValor.pontoDecimal;
+  return _perturbarCampoValor(bruto, formato, anon);
 }
 
 class _CampoCsv {

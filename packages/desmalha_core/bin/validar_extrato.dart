@@ -9,8 +9,8 @@
 ///   `fvm dart run desmalha_core:validar_extrato <arquivo> [opções]`
 ///
 /// Opções:
-///   `--perfil <perfil.json>` — perfil CSV do banco (obrigatório para CSV);
-///   exemplos em packages/desmalha_core/perfis/.
+///   `--perfil <perfil.json>` — perfil CSV do banco (obrigatório para CSV,
+///   exceto com `--anonimizar`); exemplos em packages/desmalha_core/perfis/.
 ///   `--formato <ofx|csv>` — força o formato (padrão: autodetecta).
 ///   `--encoding <charset>` — força utf-8 | latin-1 | windows-1252
 ///   (padrão: autodetecta; perfil CSV pode fixar).
@@ -40,9 +40,14 @@ agregados — é o que pode ser colado de volta na sessão de planejamento.
 Uso:
   fvm dart run desmalha_core:validar_extrato <arquivo> [opções]
 
+Banco sem perfil ainda: rode só com --anonimizar. O relatório não sai (sem
+perfil não há como ler as colunas), mas a cópia anonimizada sai — e é ela
+que permite escrever o perfil que falta.
+
 Opções:
-  --perfil <perfil.json>   perfil CSV do banco (obrigatório para CSV);
-                           exemplos em packages/desmalha_core/perfis/
+  --perfil <perfil.json>   perfil CSV do banco (obrigatório para CSV, exceto
+                           com --anonimizar); exemplos em
+                           packages/desmalha_core/perfis/
   --formato <ofx|csv>      força o formato (padrão: autodetecta)
   --encoding <charset>     força utf-8 | latin-1 | windows-1252
   --anonimizar             gera cópia anonimizada preservando a estrutura
@@ -157,46 +162,89 @@ int _executar(List<String> argumentos) {
     _ => detectarFormato(decodificado.texto, nomeArquivo: arquivo),
   };
 
-  final ExtratoImportado extrato;
-  switch (formato) {
-    case FormatoDetectado.ofx:
-      extrato = parseOfx(decodificado.texto);
-    case FormatoDetectado.csv:
-      if (perfil == null) {
-        throw const _ErroDeUso(
-          'arquivo CSV exige --perfil <perfil.json> — exemplos em '
-          'packages/desmalha_core/perfis/',
-        );
-      }
-      extrato = parseCsv(decodificado.texto, perfil);
+  // CSV sem perfil só é aceito para anonimizar: sem perfil não há como
+  // interpretar as colunas, e o objetivo aí é justamente produzir o insumo
+  // seguro para ESCREVER o perfil que falta.
+  final semPerfil = formato == FormatoDetectado.csv && perfil == null;
+  if (semPerfil && !anonimizar) {
+    throw const _ErroDeUso(
+      'arquivo CSV exige --perfil <perfil.json> — exemplos em '
+      'packages/desmalha_core/perfis/. Se o banco ainda não tem perfil, '
+      'rode com --anonimizar para gerar a cópia que permite escrevê-lo.',
+    );
   }
 
-  final relatorio = RelatorioExtrato.doExtrato(
-    extrato,
-    encoding: decodificado.encoding,
-  );
+  RelatorioExtrato? relatorio;
+  if (!semPerfil) {
+    final extrato = switch (formato) {
+      FormatoDetectado.ofx => parseOfx(decodificado.texto),
+      FormatoDetectado.csv => parseCsv(decodificado.texto, perfil!),
+    };
+    relatorio = RelatorioExtrato.doExtrato(
+      extrato,
+      encoding: decodificado.encoding,
+    );
+  }
+
   stdout.writeln('Arquivo:            $arquivo');
-  stdout.writeln(relatorio.render());
+  if (relatorio != null) {
+    stdout.writeln(relatorio.render());
+  }
 
   if (anonimizar) {
-    final anonimizado = switch (formato) {
-      FormatoDetectado.ofx => anonimizarOfx(decodificado.texto),
-      FormatoDetectado.csv => anonimizarCsv(decodificado.texto, perfil!),
-    };
+    final String anonimizado;
+    EstruturaCsvInferida? estrutura;
+    switch (formato) {
+      case FormatoDetectado.ofx:
+        anonimizado = anonimizarOfx(decodificado.texto);
+      case FormatoDetectado.csv:
+        if (perfil != null) {
+          anonimizado = anonimizarCsv(decodificado.texto, perfil);
+        } else {
+          final resultado = anonimizarCsvSemPerfil(decodificado.texto);
+          anonimizado = resultado.conteudo;
+          estrutura = resultado.estrutura;
+        }
+    }
+
     final destino = caminhoSaida ?? _caminhoAnonimizado(arquivo);
     File(destino).writeAsBytesSync(codificarSaida(
       anonimizado,
       decodificado.encoding,
       comBom: decodificado.comBom,
     ));
-    stdout
-      ..writeln()
-      ..writeln('Cópia anonimizada:  $destino')
-      ..writeln('⚠ A anonimização é heurística — revise o arquivo gerado '
-          'antes de compartilhar.');
+
+    stdout.writeln();
+    if (estrutura != null) {
+      final delimitador = switch (estrutura.delimitador) {
+        '\t' => 'TAB',
+        final outro => outro,
+      };
+      stdout
+        ..writeln('Banco sem perfil — estrutura inferida:')
+        ..writeln('  Encoding:         ${decodificado.encoding}')
+        ..writeln('  Delimitador:      $delimitador')
+        ..writeln('  Colunas:          ${estrutura.colunas}')
+        ..writeln('  Lançamentos:      ${estrutura.linhasLancamento}')
+        ..writeln('  Linhas sem data:  ${estrutura.linhasPreambulo}')
+        ..writeln();
+    }
+    stdout.writeln('Cópia anonimizada:  $destino');
+    if (estrutura != null && estrutura.linhasLancamento == 0) {
+      stdout.writeln('⚠ NENHUMA linha de lançamento foi reconhecida — o '
+          'arquivo inteiro caiu no tratamento conservador, que NÃO remove '
+          'nomes. Não compartilhe sem revisar linha a linha.');
+    } else if (estrutura != null && estrutura.linhasPreambulo > 0) {
+      stdout.writeln('⚠ ${estrutura.linhasPreambulo} linha(s) sem data '
+          'receberam tratamento conservador para preservar os rótulos de '
+          'coluna — conservador NÃO remove nomes. Revise essas linhas antes '
+          'de compartilhar.');
+    }
+    stdout.writeln('⚠ A anonimização é heurística — revise o arquivo gerado '
+        'antes de compartilhar.');
   }
 
-  return relatorio.avisos.isEmpty ? 0 : 1;
+  return relatorio == null || relatorio.avisos.isEmpty ? 0 : 1;
 }
 
 /// `extrato.csv` → `extrato.anonimizado.csv`; sem extensão, sufixa no fim.
