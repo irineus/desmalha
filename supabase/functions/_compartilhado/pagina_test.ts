@@ -51,9 +51,30 @@ Deno.test("a página monta texto sem nenhuma escrita de HTML", () => {
   assert(html.includes("textContent"), "a página não usa textContent");
 });
 
-Deno.test("o formulário posta na própria rota", () => {
-  // A função é servida em /excluir-conta; um caminho fixo aqui quebraria se a
-  // rota mudasse de nome, e quebraria calado — o botão simplesmente não faria
-  // nada.
+Deno.test("sem endpoint, o formulário posta na própria rota", () => {
+  // É o caso de a página ser servida PELA função: um caminho fixo quebraria se
+  // a rota mudasse de nome, e quebraria calado — o botão não faria nada.
   assert(html.includes("location.pathname"));
+});
+
+Deno.test("com endpoint, o formulário posta na URL absoluta", () => {
+  // É o caso real: a página é servida do Cloudflare Pages, origem diferente da
+  // função. Sem a URL absoluta, o `fetch` iria para o próprio Pages e o botão
+  // devolveria 404 — falha que só aparece clicando.
+  const alvo = "https://exemplo.supabase.co/functions/v1/excluir-conta";
+  const comAlvo = paginaExclusao(alvo);
+
+  assert(comAlvo.includes(`fetch(${JSON.stringify(alvo)}`));
+  assert(!comAlvo.includes("location.pathname"));
+});
+
+Deno.test("o endpoint entra como literal JSON, não concatenado", () => {
+  // O valor vai para dentro de um <script>. Interpolar cru deixaria uma aspa ou
+  // um `</script>` no endereço fechar o bloco — e esta página existe para
+  // apagar conta, não é lugar de descobrir injeção depois.
+  const hostil = 'https://x/"+alert(1)+"';
+  const gerada = paginaExclusao(hostil);
+
+  assert(gerada.includes(JSON.stringify(hostil)));
+  assert(!gerada.includes('"+alert(1)+"'));
 });

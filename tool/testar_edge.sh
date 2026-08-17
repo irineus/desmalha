@@ -30,6 +30,12 @@ mapfile -t FONTES < <(find . -name '*.ts' -not -path './node_modules/*' | sort)
 
 deno check "${FONTES[@]}"
 
+# `site/index.html` é gerado de pagina.ts e versionado, porque o Cloudflare Pages
+# serve estático e sem build. Arquivo gerado que se commita apodrece calado —
+# alguém edita o gerador, esquece de rodar, e a página publicada fica velha sem
+# nenhum sinal. Esta conferência é o sinal.
+deno run --allow-read "$RAIZ/tool/gerar_pagina.ts" --conferir
+
 # --allow-read: os testes leem só os próprios fontes (a página é montada em
 # memória). Nenhuma permissão de rede ou de escrita é concedida — se um teste
 # passar a precisar de rede, é sinal de que virou teste de integração e não
