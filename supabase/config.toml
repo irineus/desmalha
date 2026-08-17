@@ -1,0 +1,21 @@
+# Configuração do CLI do Supabase.
+#
+# Existe por UMA razão: declarar que a função de exclusão de conta roda sem
+# verificação automática de JWT. Todo o resto fica no padrão do CLI de
+# propósito — o projeto não usa stack local, e cada chave a mais aqui é uma
+# chance de divergir em silêncio do que está de fato no dashboard.
+
+project_id = "desmalha"
+
+[functions.excluir-conta]
+# A página pública de exclusão precisa ABRIR no navegador de quem não tem
+# sessão — é a exigência do Google Play: quem já desinstalou o app tem de
+# conseguir excluir a conta assim mesmo. Com verify_jwt ligado (o padrão), o
+# gateway devolveria 401 antes de a função rodar, e o link da ficha da loja
+# seria uma página de erro.
+#
+# A contrapartida está assumida dentro da função: TODA rota dela é pública, e
+# cada uma prova por si de quem é a conta — código enviado ao e-mail, no
+# caminho web; token de sessão validado contra o servidor de auth, no caminho
+# do app. Ver supabase/functions/excluir-conta/index.ts.
+verify_jwt = false

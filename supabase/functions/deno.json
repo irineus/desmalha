@@ -1,0 +1,22 @@
+{
+  "$comment": [
+    "Dependências das edge functions. Fica em supabase/functions/ para valer",
+    "para todas elas — o runtime do Supabase lê este arquivo, e é ele também",
+    "que permite `deno check` e `deno test` localmente.",
+    "",
+    "nodeModulesDir=auto porque o supabase-js depende de pacotes npm; sem isso",
+    "o type-check falha pedindo `deno install`. A pasta node_modules resultante",
+    "é artefato de máquina e está no .gitignore."
+  ],
+  "nodeModulesDir": "auto",
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@^2.112.3"
+  },
+  "tasks": {
+    "verificar": "deno check **/*.ts && deno test --allow-read"
+  },
+  "fmt": {
+    "lineWidth": 80
+  }
+}

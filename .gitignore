@@ -16,6 +16,16 @@ build/
 # packages (packages/*) keep theirs out by convention:
 packages/*/pubspec.lock
 
+# --- Supabase CLI ---
+# Estado local do `supabase link` (ref do projeto, credenciais de sessão).
+supabase/.temp/
+supabase/.branches/
+
+# --- Deno / edge functions ---
+# deno.lock É versionado (build reproduzível); node_modules é artefato de
+# máquina, criado pelo nodeModulesDir=auto de que o supabase-js depende.
+supabase/functions/node_modules/
+
 # --- Android ---
 **/android/.gradle/
 **/android/local.properties
