@@ -41,9 +41,19 @@ const DESTINO = new URL("../site/index.html", import.meta.url);
 
 const html = paginaExclusao(ENDPOINT);
 
+/**
+ * Compara ignorando fim de linha.
+ *
+ * No Windows o git entrega o arquivo com CRLF no checkout, e o gerador escreve
+ * LF. Sem normalizar, a conferência acusa divergência que não existe — e passou
+ * despercebido na primeira vez porque o arquivo tinha acabado de ser gerado,
+ * ainda em LF. Trava que acusa falso positivo é abandonada em uma semana.
+ */
+const semQuebra = (t: string) => t.split("\r\n").join("\n");
+
 if (Deno.args.includes("--conferir")) {
   const atual = await Deno.readTextFile(DESTINO).catch(() => "");
-  if (atual !== html) {
+  if (semQuebra(atual) !== semQuebra(html)) {
     console.error(
       "site/index.html está desatualizado em relação a pagina.ts.\n" +
         "Rode: deno run --allow-read --allow-write tool/gerar_pagina.ts",
