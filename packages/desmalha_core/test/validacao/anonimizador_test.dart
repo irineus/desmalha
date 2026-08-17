@@ -202,6 +202,120 @@ void main() {
       });
     });
 
+    group('nome colado por pontuação (não só por dígito)', () {
+      // A correção de cc40d6c separou o DÍGITO colado à palavra, mas o texto
+      // continuava sendo partido por espaço e só o PREFIXO de letras de cada
+      // token era avaliado — todo nome colado por pontuação escapava inteiro.
+      // Separador sem espaço é a norma no Itaú e no Bradesco.
+      const casos = {
+        'PIX-MARIA SILVA': ['MARIA', 'SILVA'],
+        'TED/JOAO SANTOS': ['JOAO', 'SANTOS'],
+        'MARIA.SILVA': ['MARIA', 'SILVA'],
+        'PIX TRANSF:GISELE': ['GISELE'],
+        'PAGTO_ROBERTA LIMA': ['ROBERTA', 'LIMA'],
+        'PIX*CARLOS': ['CARLOS'],
+        'DOC.RENATA COSTA': ['RENATA', 'COSTA'],
+        'PIX RECEBIDO;LUCAS DIAS': ['LUCAS', 'DIAS'],
+        'CRED PIX\tPAULA MENDES': ['PAULA', 'MENDES'],
+        'PIX RECEBIDO (ANDREA BEATRIZ)': ['ANDREA', 'BEATRIZ'],
+        'PIX  MARIANA  ROCHA': ['MARIANA', 'ROCHA'],
+      };
+
+      casos.forEach((entrada, nomes) {
+        test('"$entrada" não deixa nome passar', () {
+          final saida = Anonimizador().anonimizarTexto(entrada);
+          for (final nome in nomes) {
+            expect(saida, isNot(contains(nome)),
+                reason: '"$nome" sobreviveu em "$saida"');
+          }
+        });
+      });
+
+      test('o separador em si é preservado byte a byte', () {
+        // O que não é nome é estrutura do arquivo, e a fixture depende dela.
+        final anon = Anonimizador();
+        expect(anon.anonimizarTexto('PIX-MARIA SILVA'), startsWith('PIX-'));
+        expect(anon.anonimizarTexto('PIX*CARLOS'), startsWith('PIX*'));
+        expect(anon.anonimizarTexto('CRED PIX\tPAULA MENDES'),
+            contains('\t'));
+        expect(anon.anonimizarTexto('PIX  MARIANA  ROCHA').split('  ').length,
+            3, reason: 'espaço duplo do preenchimento não vira simples');
+      });
+
+      test('vocabulário colado por pontuação continua sobrevivendo', () {
+        final anon = Anonimizador();
+        expect(anon.anonimizarTexto('PIX-TRANSF/TED'), 'PIX-TRANSF/TED');
+        expect(anon.anonimizarTexto('15/07/2026-12:30'), '15/07/2026-12:30');
+      });
+    });
+
+    group('âncora adversarial: nenhum nome sobrevive a nenhuma moldura', () {
+      // Âncora contra a próxima variante desta família de bug: em vez de
+      // enumerar as molduras que já falharam uma vez, cruza um catálogo de
+      // nomes brasileiros com todas as formas conhecidas de o banco colá-los
+      // ao texto. Falha em bloco quando um separador novo aparecer.
+      // ⚠️ Nenhum destes pode ser um dos primeiros nomes do pool de
+      // substitutos (`ANA`, `BRUNO`, `CARLA`, `DAVI`, `ELISA`, `FABIO`,
+      // `GILDA`, `HUGO`, `IARA`, `JONAS`, `LIVIA`, `MARCOS`): o teste
+      // acusaria vazamento em cima do próprio substituto. Foi o que
+      // aconteceu com `ANA`, trocado por `ANDREA`. A colisão é inofensiva no
+      // arquivo — o mapeamento é arbitrário, e `ANA` na saída não é indício
+      // de que havia `ANA` na entrada —, mas torna a asserção indecidível.
+      const nomes = [
+        'MARIA', 'JOAO', 'GISELE', 'SHIRLEI', 'CARLOS', 'RENATA',
+        'LUCAS', 'PAULA', 'BEATRIZ', 'RODRIGO', 'THIAGO', 'IRINEU',
+      ];
+      // `%s` é onde o nome entra. Todas saíram de formatos reais de extrato:
+      // separador de campo, truncamento em largura fixa, parênteses.
+      const molduras = [
+        '%s',
+        'PIX %s',
+        'PIX-%s',
+        'PIX %s 04 08',
+        'PIX TRANSF %s06 08',
+        'TED/%s',
+        'DOC.%s',
+        'PAGTO_%s',
+        'PIX RECEBIDO;%s',
+        'PIX*%s',
+        'PIX RECEBIDO (%s)',
+        'PIX RECEBIDO - %s - 123.456.789-01',
+        'TRANSFERENCIA RECEBIDA PELO PIX %s\tCONTA 12345678',
+        'PIX %s DA SILVA',
+        'Pix recebido de %s',
+      ];
+
+      for (final moldura in molduras) {
+        test('moldura "$moldura" não vaza nenhum nome', () {
+          for (final nome in nomes) {
+            final entrada = moldura.replaceAll('%s', nome);
+            final saida = Anonimizador().anonimizarTexto(entrada);
+            expect(saida, isNot(contains(nome)),
+                reason: '"$nome" sobreviveu em "$entrada" → "$saida"');
+            // E na forma capitalizada, que é como Nubank e Inter escrevem.
+            final capitalizado =
+                nome[0] + nome.substring(1).toLowerCase();
+            final entradaCap = moldura.replaceAll('%s', capitalizado);
+            expect(
+              Anonimizador().anonimizarTexto(entradaCap),
+              isNot(contains(capitalizado)),
+              reason: '"$capitalizado" sobreviveu em "$entradaCap"',
+            );
+          }
+        });
+      }
+
+      test('a âncora não é vácua: ela reprova o comportamento antigo', () {
+        // Sem esta asserção, um `anonimizarTexto` que apagasse o texto
+        // inteiro passaria em todas as molduras acima. O que se exige é que
+        // o nome saia E a moldura fique.
+        final saida = Anonimizador().anonimizarTexto('PIX-MARIA SILVA');
+        expect(saida, isNot(contains('MARIA')));
+        expect(saida, startsWith('PIX-'));
+        expect(saida.length, greaterThan('PIX-'.length));
+      });
+    });
+
     test('perturbação mantém sinal e fica dentro de ±15%', () {
       final anon = Anonimizador();
       for (final original in [150000, -4590, 1, -1, 33]) {
@@ -269,6 +383,16 @@ void main() {
       expect(anonimo.transacoes[0].idExterno,
           isNot(anonimo.transacoes[1].idExterno));
       expect(anonimo.transacoes[0].idExterno, isNot('PIX001'));
+    });
+
+    test('EXTDNAME também é tratado como nome', () {
+      const ofxComExtdname = 'OFXHEADER:100\n<OFX>\n<STMTTRN>\n'
+          '<TRNAMT>100.00\n<NAME>PIX\n'
+          '<EXTDNAME>RODRIGO PACIENTE MOURA\n</STMTTRN>\n</OFX>\n';
+      final saidaExtdname = anonimizarOfx(ofxComExtdname);
+      expect(saidaExtdname, isNot(contains('RODRIGO')));
+      expect(saidaExtdname, isNot(contains('MOURA')));
+      expect(saidaExtdname, contains('<EXTDNAME>'));
     });
 
     test('estrutura SGML preservada (mesmas linhas, mesmas tags)', () {
@@ -375,6 +499,53 @@ void main() {
       final saidaCrlf = anonimizarCsv(csvCrlf, _perfilNubank);
       expect(saidaCrlf, contains('\r\n'));
       expect(saidaCrlf.split('\r\n').length, csvCrlf.split('\r\n').length);
+    });
+
+    test('coluna que o perfil NÃO declara também perde nomes', () {
+      // No CSV real do Banco do Brasil, "Detalhes" (coluna 2) fica fora do
+      // perfil e é ela que carrega o nome da contraparte. Enquanto colunas
+      // não declaradas recebiam tratamento conservador — que remove CPF e
+      // dígitos longos, mas NÃO nomes —, o nome real ia inteiro para a
+      // fixture.
+      const csvBb = 'Data,Histórico,Detalhes,Doc,Valor,Tipo\n'
+          '10/07/2026,Pix - Recebido,MARIA PACIENTE SILVA,001,"1.200,00",C\n';
+      final saida = anonimizarCsv(csvBb, _perfilBancoDoBrasil);
+      expect(saida, isNot(contains('MARIA')));
+      expect(saida, isNot(contains('PACIENTE')));
+      expect(saida, isNot(contains('SILVA')));
+      // O cabeçalho é tratado à parte e continua legível para quem escreve
+      // o perfil; data e marcador de tipo seguem intactos.
+      expect(saida, startsWith('Data,Histórico,Detalhes,Doc,Valor,Tipo\n'));
+      expect(saida, contains('10/07/2026'));
+      expect(saida.trimRight(), endsWith(',C'));
+
+      final anonimo = parseCsv(saida, _perfilBancoDoBrasil);
+      expect(anonimo.avisos, isEmpty);
+      expect(anonimo.transacoes.length, 1);
+    });
+
+    test('marcador estrutural por extenso sobrevive na coluna de tipo', () {
+      // Consequência de tratar coluna não declarada como texto livre: sem o
+      // vocabulário estrutural, um "Entrada"/"Saída" viraria nome fictício e
+      // esconderia de quem escreve o perfil justamente a coluna que ele
+      // precisa enxergar.
+      const perfilSemTipo = PerfilCsv(
+        id: 'x-conta-csv-v1',
+        banco: 'X',
+        delimitador: ';',
+        formatoData: 'dd/MM/yyyy',
+        formatoValor: FormatoValor.virgulaDecimal,
+        colunaData: 0,
+        colunaValor: 1,
+        colunaDescricao: 2,
+      );
+      const csv = 'Data;Valor;Descrição;Movimentação\n'
+          '10/07/2026;"1.200,00";PIX RECEBIDO DE JOANA REAL;Entrada\n'
+          '11/07/2026;"850,00";ALUGUEL CONSULTORIO;Saída\n';
+      final saida = anonimizarCsv(csv, perfilSemTipo);
+      expect(saida, contains('Entrada'));
+      expect(saida, contains('Saída'));
+      expect(saida, isNot(contains('JOANA')));
     });
 
     test('agrupamento de milhar do original é preservado', () {
