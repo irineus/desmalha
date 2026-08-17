@@ -127,6 +127,24 @@ Antes disso: **os plugins Flutter e Dart não vêm no Android Studio**. Instale-
 *Settings → Plugins* (o de Flutter puxa o de Dart) e reinicie a IDE — sem eles não existe
 a tela de configuração citada abaixo.
 
+Dá para instalá-los **sem abrir a IDE**, baixando do Marketplace a versão que casa com o
+build. O `buildNumber` sai do `product-info.json` da instalação, e o diretório de
+configuração é o `dataDirectoryName` do mesmo arquivo:
+
+```powershell
+$pi    = Get-Content "C:\Program Files\Android\Android Studio\product-info.json" -Raw | ConvertFrom-Json
+$build = "AI-" + (($pi.buildNumber -split '\.')[0..2] -join '.')   # parênteses obrigatórios
+$dest  = "$env:APPDATA\Google\$($pi.dataDirectoryName)\plugins"
+New-Item -ItemType Directory -Path $dest -Force | Out-Null
+foreach ($id in @("Dart", "io.flutter")) {
+  $zip = "$env:TEMP\$id.zip"
+  Invoke-WebRequest "https://plugins.jetbrains.com/pluginManager?action=download&id=$id&build=$build" -OutFile $zip
+  Expand-Archive $zip -DestinationPath $dest -Force
+}
+```
+
+O endpoint devolve a versão compatível com aquele build — não é preciso escolher à mão.
+
 Em *Settings → Languages & Frameworks → Flutter → Flutter SDK path*, aponte para o SDK que
 o FVM baixou:
 
