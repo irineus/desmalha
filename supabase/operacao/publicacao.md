@@ -20,25 +20,33 @@ quando o total cai abaixo do esperado, para que uma suíte que não executou nad
 não passe por vacuidade.
 
 **Quando roda:** push no `main` que toque em `supabase/**` publica no **dev**.
-Produção é disparo explícito (Actions → Supabase → Run workflow → `prod`), e o
-Environment `prod` aceita *required reviewers* se você quiser uma aprovação
-antes.
+Produção é disparo explícito: **Actions → Supabase → Run workflow → `PROD`**.
+Nada publica em produção por acidente de push.
 
 Pull request roda só a etapa 1.
 
 ## Configuração de uma vez (é o único trabalho manual)
 
 Credencial não entra em repositório — regra permanente 1 do `CLAUDE.md` — então
-esta parte é sua. Em **Settings → Environments**, criar o environment `dev`
-(e depois `prod`) com:
+esta parte é sua. Em **Settings → Secrets and variables → Actions**, no
+repositório:
 
-| Nome | Tipo | Valor |
+| Nome | Aba | Valor |
 |---|---|---|
-| `SUPABASE_ACCESS_TOKEN` | secret | token pessoal, em supabase.com/dashboard/account/tokens |
-| `SUPABASE_DB_PASSWORD` | secret | senha do banco do projeto |
-| `SUPABASE_DB_URL` | secret | string de conexão do **Session pooler** — ver o aviso abaixo |
-| `SUPABASE_PROJECT_REF` | variable | o ref do projeto (`caqxssmxeiuutfguxdzj` no dev) |
-| `SUPABASE_SITE_URL` | variable | endereço público do projeto (sem site próprio ainda, use `https://<ref>.supabase.co`) |
+| `SUPABASE_ACCESS_TOKEN` | Secrets | token pessoal, em supabase.com/dashboard/account/tokens |
+| `SUPABASE_DB_PASSWORD_DEV` | Secrets | senha do banco do `desmalha-dev` |
+| `SUPABASE_DB_URL_DEV` | Secrets | string de conexão do **Session pooler** — ver o aviso abaixo |
+| `SUPABASE_PROJECT_REF_DEV` | Variables | `caqxssmxeiuutfguxdzj` |
+| `SUPABASE_SITE_URL_DEV` | Variables | `https://caqxssmxeiuutfguxdzj.supabase.co` |
+
+Para produção, os mesmos com sufixo `_PROD` (o `SUPABASE_ACCESS_TOKEN` é um só,
+sem sufixo — ele é da sua conta, não do projeto).
+
+⚠️ **Por que sufixo e não Environment do GitHub:** no plano **Free**, repositório
+privado **não pode configurar Environments**, e este repositório é privado.
+Sufixo funciona em qualquer plano. Com GitHub Pro/Team dá para migrar e ganhar
+aprovação obrigatória antes de produção; por ora, o que segura produção é ela só
+existir por disparo manual.
 
 O workflow confere os cinco **antes** de começar a publicar e falha nomeando o
 que faltou — melhor do que quebrar no meio, com uma mensagem do CLI sobre
