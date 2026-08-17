@@ -1,0 +1,128 @@
+{
+  "formatoVersao": 1,
+  "itens": [
+    {
+      "tipo": "feriados_bancarios",
+      "id": "feriados-bancarios-2026",
+      "conteudo": {
+        "id": "feriados-bancarios-2026",
+        "ano": 2026,
+        "fonte": "FEBRABAN, '2026 tem 13 feriados bancários nacionais' (portal.febraban.org.br/noticia/4413), conferido em 17/08/2026. 31/12 entra mesmo sem ser feriado: a FEBRABAN não abre as agências no último dia do ano ('não haverá expediente ao público, admitindo-se apenas operações entre instituições financeiras') e orienta que tributos com vencimento nessa data sejam ANTECIPADOS — exatamente o caso do DARF da competência de novembro.",
+        "datas": [
+          "2026-01-01",
+          "2026-02-16",
+          "2026-02-17",
+          "2026-04-03",
+          "2026-04-21",
+          "2026-05-01",
+          "2026-06-04",
+          "2026-09-07",
+          "2026-10-12",
+          "2026-11-02",
+          "2026-11-15",
+          "2026-11-20",
+          "2026-12-25",
+          "2026-12-31"
+        ]
+      }
+    },
+    {
+      "tipo": "tabela_irpf",
+      "id": "irpf-mensal-2026-01",
+      "conteudo": {
+        "id": "irpf-mensal-2026-01",
+        "fonte": "Tabela progressiva mensal vigente desde mai/2025, mantida em 2026; redutor conforme orientação oficial da RFB sobre a Lei 15.270/2025, publicada em 11/12/2025. Mesmos valores validados pelos cenários table-driven do motor (cenarios/cenarios_carne_leao.json) — teste reprova divergência.",
+        "vigenciaInicio": "2026-01",
+        "vigenciaFim": null,
+        "valorDependenteCentavos": 18959,
+        "descontoSimplificadoCentavos": 60720,
+        "faixas": [
+          {
+            "limiteSuperiorCentavos": 242880,
+            "aliquotaPontosBase": 0,
+            "parcelaDeduzirCentavos": 0
+          },
+          {
+            "limiteSuperiorCentavos": 282665,
+            "aliquotaPontosBase": 750,
+            "parcelaDeduzirCentavos": 18216
+          },
+          {
+            "limiteSuperiorCentavos": 375105,
+            "aliquotaPontosBase": 1500,
+            "parcelaDeduzirCentavos": 39416
+          },
+          {
+            "limiteSuperiorCentavos": 466468,
+            "aliquotaPontosBase": 2250,
+            "parcelaDeduzirCentavos": 67549
+          },
+          {
+            "limiteSuperiorCentavos": null,
+            "aliquotaPontosBase": 2750,
+            "parcelaDeduzirCentavos": 90873
+          }
+        ],
+        "redutor": {
+          "tetoCentavos": 31289,
+          "limiteIsencaoCentavos": 500000,
+          "limiteTransicaoCentavos": 735000,
+          "coefACentavos": 97862,
+          "coefBMilionesimos": 133145
+        }
+      }
+    },
+    {
+      "tipo": "perfil_csv",
+      "id": "bb-conta-csv-v1",
+      "conteudo": {
+        "id": "bb-conta-csv-v1",
+        "banco": "Banco do Brasil",
+        "delimitador": ",",
+        "linhasCabecalho": 1,
+        "formatoData": "dd/MM/yyyy",
+        "formatoValor": "virgulaDecimal",
+        "colunaData": 0,
+        "colunaValor": 4,
+        "colunaDescricao": 1,
+        "colunaTipo": 5,
+        "marcadorDebito": "D",
+        "descricoesIgnoradas": [
+          "Saldo Anterior",
+          "S A L D O"
+        ]
+      }
+    },
+    {
+      "tipo": "perfil_csv",
+      "id": "inter-conta-csv-v1",
+      "conteudo": {
+        "id": "inter-conta-csv-v1",
+        "banco": "Banco Inter",
+        "delimitador": ";",
+        "linhasCabecalho": 5,
+        "formatoData": "dd/MM/yyyy",
+        "formatoValor": "virgulaDecimal",
+        "colunaData": 0,
+        "colunaValor": 2,
+        "colunaDescricao": 1
+      }
+    },
+    {
+      "tipo": "perfil_csv",
+      "id": "nubank-conta-csv-v1",
+      "conteudo": {
+        "id": "nubank-conta-csv-v1",
+        "banco": "Nubank",
+        "delimitador": ",",
+        "linhasCabecalho": 1,
+        "formatoData": "dd/MM/yyyy",
+        "formatoValor": "pontoDecimal",
+        "colunaData": 0,
+        "colunaValor": 1,
+        "colunaDescricao": 3,
+        "colunaIdExterno": 2
+      }
+    }
+  ]
+}

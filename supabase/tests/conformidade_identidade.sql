@@ -363,6 +363,83 @@ begin
    where encrypted_password is not null and encrypted_password <> '';
   perform pg_temp.reg('39 nenhuma linha de auth.users tem senha utilizável',
                       v_n = 0, v_n::text);
+
+  ----------------------------------------------------------------------------
+  -- 13. Catálogo versionado — leitura pública, escrita só pelo CI
+  --
+  -- O catálogo é conteúdo fiscal público (tabela do IRPF, feriados, perfis
+  -- de banco): anon lê ANTES de qualquer login. Escrita de cliente não
+  -- existe — quem publica é o workflow, como service_role. As duas negativas
+  -- são provadas tentando, não só olhando privilégio.
+  ----------------------------------------------------------------------------
+  -- Id que não existe no catálogo publicado: no modo --remoto a suíte roda
+  -- contra o desmalha-dev COM conteúdo real, e um id de verdade conflitaria
+  -- na chave primária. O rollback final leva a linha embora.
+  insert into public.catalogo_itens (tipo, id, conteudo) values
+    ('feriados_bancarios', 'suite-feriados-teste',
+     '{"id": "suite-feriados-teste", "ano": 2026, "fonte": "suíte",
+       "datas": ["2026-12-31"]}');
+
+  execute 'set local role anon';
+  select count(*) into v_n from public.catalogo_itens
+   where tipo = 'feriados_bancarios' and id = 'suite-feriados-teste';
+  execute 'reset role';
+  perform pg_temp.reg('40 anon lê o catálogo sem login', v_n = 1, v_n::text);
+
+  execute 'set local role authenticated';
+  select count(*) into v_n from public.catalogo_itens
+   where tipo = 'feriados_bancarios' and id = 'suite-feriados-teste';
+  execute 'reset role';
+  perform pg_temp.reg('41 authenticated lê o catálogo', v_n = 1, v_n::text);
+
+  begin
+    execute 'set local role anon';
+    execute $sql$insert into public.catalogo_itens (tipo, id, conteudo)
+      values ('perfil_csv', 'perfil-forjado',
+              '{"id": "perfil-forjado"}')$sql$;
+    execute 'reset role';
+    perform pg_temp.reg('42 anon NÃO publica no catálogo', false,
+                        'o insert passou — qualquer visitante editaria a '
+                        'tabela do imposto de todo mundo');
+  exception when others then
+    execute 'reset role';
+    perform pg_temp.reg('42 anon NÃO publica no catálogo', true, sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    execute $sql$update public.catalogo_itens
+      set conteudo = jsonb_set(conteudo, '{ano}', '1900')$sql$;
+    execute 'reset role';
+    perform pg_temp.reg('43 authenticated NÃO altera o catálogo', false,
+                        'o update passou');
+  exception when others then
+    execute 'reset role';
+    perform pg_temp.reg('43 authenticated NÃO altera o catálogo', true, sqlerrm);
+  end;
+
+  begin
+    insert into public.catalogo_itens (tipo, id, conteudo)
+    values ('Tipo Errado', 'x', '{"id": "x"}');
+    perform pg_temp.reg('44 tipo fora do formato é recusado', false,
+                        'o insert passou');
+  exception when check_violation then
+    perform pg_temp.reg('44 tipo fora do formato é recusado', true);
+  end;
+
+  begin
+    -- Id inexistente no catálogo publicado, pelo mesmo motivo da linha da
+    -- asserção 40: no --remoto um id real cairia na chave primária
+    -- (unique_violation) antes de chegar ao check que se quer provar.
+    insert into public.catalogo_itens (tipo, id, conteudo)
+    values ('tabela_irpf', 'suite-irpf-teste', '{"id": "outro-id"}');
+    perform pg_temp.reg('45 conteúdo com id divergente da linha é recusado',
+                        false, 'o insert passou — o catálogo mentiria sobre '
+                        'o que serve');
+  exception when check_violation then
+    perform pg_temp.reg('45 conteúdo com id divergente da linha é recusado',
+                        true);
+  end;
 end;
 $bloco$;
 
@@ -390,8 +467,8 @@ declare
 begin
   select count(*) filter (where not ok), count(*) into v_falhou, v_total from _res;
 
-  if v_total < 39 then
-    raise exception 'a suíte registrou só % asserções; esperado ao menos 39', v_total;
+  if v_total < 45 then
+    raise exception 'a suíte registrou só % asserções; esperado ao menos 45', v_total;
   end if;
   if v_falhou > 0 then
     raise exception '% de % asserções falharam (ver a coluna detalhe acima)',

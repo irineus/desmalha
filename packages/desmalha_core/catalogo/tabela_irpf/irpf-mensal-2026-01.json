@@ -1,0 +1,22 @@
+{
+  "id": "irpf-mensal-2026-01",
+  "fonte": "Tabela progressiva mensal vigente desde mai/2025, mantida em 2026; redutor conforme orientação oficial da RFB sobre a Lei 15.270/2025, publicada em 11/12/2025. Mesmos valores validados pelos cenários table-driven do motor (cenarios/cenarios_carne_leao.json) — teste reprova divergência.",
+  "vigenciaInicio": "2026-01",
+  "vigenciaFim": null,
+  "valorDependenteCentavos": 18959,
+  "descontoSimplificadoCentavos": 60720,
+  "faixas": [
+    { "limiteSuperiorCentavos": 242880, "aliquotaPontosBase": 0, "parcelaDeduzirCentavos": 0 },
+    { "limiteSuperiorCentavos": 282665, "aliquotaPontosBase": 750, "parcelaDeduzirCentavos": 18216 },
+    { "limiteSuperiorCentavos": 375105, "aliquotaPontosBase": 1500, "parcelaDeduzirCentavos": 39416 },
+    { "limiteSuperiorCentavos": 466468, "aliquotaPontosBase": 2250, "parcelaDeduzirCentavos": 67549 },
+    { "limiteSuperiorCentavos": null, "aliquotaPontosBase": 2750, "parcelaDeduzirCentavos": 90873 }
+  ],
+  "redutor": {
+    "tetoCentavos": 31289,
+    "limiteIsencaoCentavos": 500000,
+    "limiteTransicaoCentavos": 735000,
+    "coefACentavos": 97862,
+    "coefBMilionesimos": 133145
+  }
+}

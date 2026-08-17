@@ -19,6 +19,9 @@ Fonte do schema: **"Resultado: Revisar modelagem de dados para local-first
 | `20260815000352_exclusao_e_expurgo` | encerramento de conta e as duas rotinas de expurgo |
 | `20260815000359_trava_sem_senha` | trava de servidor contra conta com senha |
 | `20260817010000_rpc_encerrar_conta` | porta em `public` pela qual a edge function alcança o encerramento |
+| `20260817040000_trava_sem_senha_nao_bloqueia_otp` | correção 1: a trava recusava o cadastro por OTP (superada pela seguinte) |
+| `20260817050000_trava_sem_senha_neutraliza` | correção 2: a trava NEUTRALIZA a senha em vez de recusar — o marcador do GoTrue é indistinguível de senha real |
+| `20260817200000_catalogo` | `catalogo_itens` — catálogo versionado só-leitura (tabela IRPF, feriados, perfis de parser, layout de DARF) |
 
 | Edge function | Conteúdo |
 |---|---|
@@ -34,10 +37,23 @@ Não é migration porque depende da plataforma (Vault, `pg_cron`), e as migratio
 precisam continuar aplicáveis num Postgres pelado — é isso que
 `tool/testar_supabase.sh` verifica.
 
-Ainda **não** existem: `assinaturas`, `eventos_pagamento`, `backups_metadados`,
-`envios_suporte` e as sete tabelas do catálogo versionado. São escopo de outros
-cards (assinaturas na Fase 6; catálogo no card "Conteúdo versionado por API";
+Ainda **não** existem: `assinaturas`, `eventos_pagamento`, `backups_metadados`
+e `envios_suporte`. São escopo de outros cards (assinaturas na Fase 6;
 metadados de backup no card de backup E2E).
+
+**Catálogo versionado (ago/2026, card "Conteúdo versionado por API"):** a
+modelagem original previa sete tabelas tipadas + `catalogo_versoes`; virou
+**uma** tabela genérica `catalogo_itens (tipo, id, conteudo jsonb)`. Desvio
+deliberado: os cards posteriores do motor e do parser tornaram canônicos os
+DOCUMENTOS JSON (`TabelaIrpf.fromJson`, `PerfilCsv.fromJson`,
+`LayoutCodigoBarrasDarf.fromJson` no `desmalha_core`, todos com validação
+testada) — normalizar no Postgres duplicaria cada schema em SQL sem ganhar
+nada, e tipo novo de conteúdo passaria a exigir migration. O EXCLUDE de
+vigência sobreposta das tabelas do IRPF não sumiu: mudou de camada, vive em
+`Catalogo.fromItens`, por onde TODO catálogo passa (teste do repositório,
+seed embarcado e cada carga no app). A fonte da verdade é o repositório
+(`packages/desmalha_core/catalogo/` + `perfis/`); o workflow sincroniza e
+confere lendo de volta (`tool/publicar_catalogo.ts`).
 
 ## A correção do `ON DELETE RESTRICT`
 
