@@ -1,12 +1,17 @@
--- Desmalha — chave de pseudonimização dos aceites (passo MANUAL, por projeto).
+-- Desmalha — chave de pseudonimização dos aceites.
 --
--- Rodar UMA VEZ por projeto, ANTES do primeiro aceite de termos:
---   psql "$SUPABASE_DB_URL" -f supabase/manual/chave_hmac_aceites.sql
+-- ⚙️ PÓS-DEPLOY, rodado pelo CI a cada publicação (.github/workflows/supabase.yml),
+-- depois das migrations. Não é passo manual: era, e um passo manual esquecido
+-- faz `registrar_aceite` falhar no primeiro aceite de termos do projeto.
 --
--- Não é migration porque o valor é segredo: migration fica versionada no
--- repositório, e a regra permanente 1 do CLAUDE.md proíbe segredo em repo. A
--- chave é sorteada DENTRO do banco (gen_random_bytes) e guardada no Vault, de
--- modo que o valor nunca passa por uma sessão, por um log ou por um commit.
+-- Não é migration porque depende do **Vault**, que existe na plataforma Supabase
+-- e não num Postgres pelado. As migrations precisam continuar aplicáveis numa
+-- base limpa sem nuvem — é o que `tool/testar_supabase.sh` verifica, e é o que
+-- responde "as migrations do repositório reproduzem o schema sozinhas?".
+-- (O valor NÃO é o motivo: a chave é sorteada DENTRO do banco por
+-- gen_random_bytes, e nunca passa por uma sessão, por um log ou por um commit.)
+--
+-- Idempotente: rodar de novo não troca a chave.
 --
 -- 🔴 NÃO ROTACIONAR sem plano. Trocar a chave torna todos os `titular_hash` já
 -- gravados incomparáveis com os novos: o registro de aceite deixa de provar a

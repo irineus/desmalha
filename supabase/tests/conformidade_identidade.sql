@@ -341,4 +341,26 @@ select count(*) filter (where ok)        as passou,
        count(*)                          as total
   from _res;
 
+-- Sem este bloco, a suíte IMPRIME "FALHOU" e o psql ainda sai com código 0 — o
+-- que basta para uma pessoa lendo a tela e não basta para nada mais. Um portão
+-- de CI que não reprova é pior do que portão nenhum: dá a sensação de cobertura
+-- sem a cobertura. A âncora do total pega o caso oposto, o de uma suíte que não
+-- executou nada e passaria por vacuidade.
+do $bloco$
+declare
+  v_falhou integer;
+  v_total  integer;
+begin
+  select count(*) filter (where not ok), count(*) into v_falhou, v_total from _res;
+
+  if v_total < 36 then
+    raise exception 'a suíte registrou só % asserções; esperado ao menos 36', v_total;
+  end if;
+  if v_falhou > 0 then
+    raise exception '% de % asserções falharam (ver a coluna detalhe acima)',
+                    v_falhou, v_total;
+  end if;
+end;
+$bloco$;
+
 rollback;

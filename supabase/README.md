@@ -22,7 +22,17 @@ Fonte do schema: **"Resultado: Revisar modelagem de dados para local-first
 
 | Edge function | Conteúdo |
 |---|---|
-| `excluir-conta` | fluxo de exclusão + página pública exigida pelo Google Play ([manual](manual/edge_functions.md)) |
+| `excluir-conta` | fluxo de exclusão + página pública exigida pelo Google Play |
+
+| Pós-deploy | Conteúdo |
+|---|---|
+| `10_chave_hmac_aceites` | sorteia a chave de pseudonimização no Vault, se ainda não houver |
+| `20_agendamento_expurgo` | habilita `pg_cron` e agenda as duas rotinas de expurgo |
+
+O pós-deploy roda **automaticamente** a cada publicação, depois das migrations.
+Não é migration porque depende da plataforma (Vault, `pg_cron`), e as migrations
+precisam continuar aplicáveis num Postgres pelado — é isso que
+`tool/testar_supabase.sh` verifica.
 
 Ainda **não** existem: `assinaturas`, `eventos_pagamento`, `backups_metadados`,
 `envios_suporte` e as sete tabelas do catálogo versionado. São escopo de outros
@@ -92,7 +102,7 @@ A mesma função serve a **página pública** de exclusão exigida pelo Google P
 de quem deixa criar conta no app: quem trocou de celular ou já desinstalou
 precisa conseguir excluir a conta assim mesmo. A página prova a posse do e-mail
 com o mesmo código de 8 dígitos do login. Publicação, endereço e roteiro de
-conferência em [`manual/edge_functions.md`](manual/edge_functions.md).
+conferência em [`operacao/publicacao.md`](operacao/publicacao.md).
 
 ⚠️ Falta do card: o botão **dentro do app**. O Google Play exige os dois
 caminhos — no app e na web — de quem permite criar conta pelo app.
@@ -111,10 +121,10 @@ SDK de auth entra no app por **um arquivo só** (`porta_auth_supabase.dart`), e
 qualquer menção a API de senha ou de provedor social — mais o próprio
 isolamento do SDK, para que a auditoria continue cabendo em um arquivo.
 
-A configuração que só existe no painel (código de 8 dígitos, validade de 600s,
-*secure email change* e os templates com `{{ .Token }}`) está em
-[`manual/auth_otp.md`](manual/auth_otp.md), e precisa ser repetida em cada
-projeto.
+Código de 8 dígitos, validade de 600s, *secure email change* e os templates com
+`{{ .Token }}` **não são mais passos de painel**: estão em
+[`config.toml`](config.toml) e são aplicados por `supabase config push`. Ver
+[`operacao/autenticacao.md`](operacao/autenticacao.md).
 
 Para desligar numa emergência de autenticação:
 
@@ -122,32 +132,35 @@ Para desligar numa emergência de autenticação:
 alter table auth.users disable trigger trg_auth_users_sem_senha;
 ```
 
-## Aplicando num projeto novo (ex.: `desmalha-prod`)
+## Publicação automática
 
-```bash
-supabase link --project-ref <ref>
-supabase db push                                        # migrations
-psql "$SUPABASE_DB_URL" -f supabase/manual/chave_hmac_aceites.sql
-# habilitar pg_cron no dashboard (Database → Extensions), então:
-psql "$SUPABASE_DB_URL" -f supabase/manual/agendamento_expurgo.sql
-supabase functions deploy excluir-conta          # ver manual/edge_functions.md
-```
+Não há passo manual recorrente. O workflow
+[`.github/workflows/supabase.yml`](../.github/workflows/supabase.yml) verifica e
+publica: suítes → migrations → pós-deploy → configuração de Auth → edge
+functions → conferência do que ficou de pé.
 
-A ordem importa: a edge function chama `encerrar_conta_do_usuario`, e publicá-la
-antes das migrations deixaria a exclusão falhando no passo 2 — depois de os
-arquivos do usuário já terem sido apagados.
+Push no `main` publica no **dev**; produção é disparo explícito. O único trabalho
+seu é registrar as credenciais do projeto uma vez, em Settings → Environments —
+a tabela está em [`operacao/publicacao.md`](operacao/publicacao.md), com o
+roteiro de publicação à mão para o caso de precisar.
 
-Os dois arquivos em `manual/` não são migrations de propósito: um cria um
-**segredo** (que não pode ficar versionado) e o outro depende de uma extensão
-habilitada pela interface.
+A ordem das etapas importa: a edge function chama `encerrar_conta_do_usuario`, e
+publicá-la antes das migrations deixaria a exclusão falhando no passo 2 — depois
+de os arquivos do usuário já terem sido apagados.
 
 ## Testes
 
 ```bash
 ./tool/testar_supabase.sh                 # Postgres local descartável, sem nuvem
 SUPABASE_DB_URL='postgresql://…' ./tool/testar_supabase.sh --remoto
+./tool/testar_supabase.sh --descartavel 'postgresql://…'   # modo do CI: ESCREVE
 ./tool/testar_edge.sh                     # edge functions (Deno), sem nuvem
 ```
+
+As três primeiras rodam a mesma suíte; mudam só em quem sobe o banco. O CI usa
+`--descartavel` contra um *service container*, e o nome avisa o que importa: esse
+modo **escreve** (aplica shims e migrations), então apontá-lo para um banco com
+dados reais não é teste, é acidente.
 
 O modo local sobe um Postgres do zero, aplica `supabase/tests/shims_locais.sql`
 (arremedos mínimos de `auth`, `vault` e `storage`), aplica **todas** as migrations
@@ -166,6 +179,12 @@ nem por `authenticated`.
 
 Não usa pgTAP de propósito: a extensão teria de ser instalada no projeto, e um
 arcabouço de teste não precisa existir em produção para o teste rodar.
+
+⚠️ A suíte **reprova de verdade**: ao final, levanta exceção se qualquer asserção
+falhou e também se o total ficou abaixo do esperado. Sem isso ela imprimiria
+"FALHOU" e sairia com código 0 — o que basta para uma pessoa lendo a tela e não
+basta para um portão de CI. Portão que não reprova é pior do que portão nenhum:
+dá a sensação de cobertura sem a cobertura.
 
 ## Aviso do linter aceito conscientemente
 
