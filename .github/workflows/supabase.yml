@@ -228,7 +228,9 @@ jobs:
         run: |
           for f in supabase/pos_deploy/*.sql; do
             echo "→ $f"
-            psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+            # projeto_url: o agendamento do expurgo do suporte chama a edge
+            # function do próprio projeto pelo pg_net.
+            psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -v projeto_url="https://$REF.supabase.co" -f "$f"
           done
 
       - name: Catálogo versionado
@@ -346,7 +348,9 @@ jobs:
           fi
 
       - name: Edge functions
-        run: supabase functions deploy excluir-conta --project-ref "$REF"
+        run: |
+          supabase functions deploy excluir-conta --project-ref "$REF"
+          supabase functions deploy expurgar-suporte --project-ref "$REF"
 
       - name: Conferir o que ficou de pé
         # Publicação que reporta sucesso sem olhar o resultado é a mesma classe
@@ -361,5 +365,15 @@ jobs:
                  case when active then '' else ' (INATIVO)' end
             from cron.job where jobname like 'desmalha-%' order by jobname;
           SQL
+          # Prazo que existe só no texto não é prazo: envio ao suporte vencido
+          # há mais de 2 dias sem exclusão confirmada significa que o job
+          # diário não está apagando — e é o dado mais sensível que o servidor
+          # vê. Reprova a publicação em vez de só listar.
+          atrasados=$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -At -c "select count(*) from public.envios_suporte where excluido_em is null and expira_em < now() - interval '2 days'")
+          echo "envios ao suporte vencidos há mais de 2 dias: $atrasados"
+          if [[ "$atrasados" != "0" ]]; then
+            echo "há $atrasados envio(s) ao suporte retidos além dos 30 dias consentidos — ver o job desmalha-expurgar-envios-suporte e o log da função expurgar-suporte" >&2
+            exit 1
+          fi
           echo "função publicada:"
           supabase functions list --project-ref "$REF"

@@ -8,10 +8,10 @@ Não há passo manual recorrente.
 |---|---|---|
 | 1 | Suítes do backend | `tool/testar_edge.sh` + `tool/testar_supabase.sh --descartavel` num Postgres limpo |
 | 2 | Schema | `supabase db push` |
-| 3 | Bootstrap do projeto | `psql -f supabase/pos_deploy/*.sql` (Vault + agendamento do expurgo) |
+| 3 | Bootstrap do projeto | `psql -v projeto_url=https://<ref>.supabase.co -f supabase/pos_deploy/*.sql` (Vault + agendamento dos expurgos) |
 | 4 | Configuração de Auth | `supabase config push` |
-| 5 | Edge functions | `supabase functions deploy excluir-conta` |
-| 6 | Conferência | lê de volta a chave, os jobs de cron e a lista de funções |
+| 5 | Edge functions | `supabase functions deploy excluir-conta` e `expurgar-suporte` |
+| 6 | Conferência | lê de volta a chave, os jobs de cron e a lista de funções; **reprova** se houver envio ao suporte vencido há mais de 2 dias sem exclusão |
 
 A etapa 1 é portão: `publicar` depende de `verificar`. Publicar migration não
 verificada seria automatizar o erro em vez do trabalho. E a suíte SQL **reprova
@@ -158,9 +158,10 @@ O workflow é a forma normal. Se for necessário publicar de uma máquina:
 
 ```bash
 supabase db push --db-url "$SUPABASE_DB_URL"
-for f in supabase/pos_deploy/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+for f in supabase/pos_deploy/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -v projeto_url=https://<ref>.supabase.co -f "$f"; done
 supabase link --project-ref <ref> && supabase config push
 supabase functions deploy excluir-conta --project-ref <ref>
+supabase functions deploy expurgar-suporte --project-ref <ref>
 ```
 
 A ordem importa: a edge function chama `encerrar_conta_do_usuario`, e publicá-la
