@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../auth/porta_auth_falsa.dart';
+import '../servicos_falsos.dart';
 import 'porta_exclusao_falsa.dart';
 
 void main() {
@@ -41,7 +42,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: temaDesmalha(),
-          home: PortalAuth(servico: servico, exclusao: exclusao),
+          home: PortalAuth(
+          servico: servico,
+          servicos: servicosFalsos(exclusao: exclusao),
+        ),
         ),
       );
       await tester.tap(find.text('Ajustes'));

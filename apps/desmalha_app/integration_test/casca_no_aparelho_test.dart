@@ -21,7 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import '../test/auth/porta_auth_falsa.dart';
-import '../test/conta/porta_exclusao_falsa.dart';
+import '../test/servicos_falsos.dart';
 
 const _captura = bool.fromEnvironment('CAPTURA');
 
@@ -61,7 +61,7 @@ void main() {
         theme: temaDesmalha(),
         home: CascaDoApp(
           construir: (aba) =>
-              conteudoDaAba(aba, servico, PortaExclusaoFalsa()),
+              conteudoDaAba(aba, servico, servicosFalsos()),
         ),
       ),
     );
