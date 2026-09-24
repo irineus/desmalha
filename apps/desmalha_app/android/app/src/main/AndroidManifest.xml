@@ -38,6 +38,40 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Extrato vindo de outro app: "Compartilhar -> Desmalha" e
+                 "Abrir com". Mesmos MIMEs do seletor
+                 (lib/importacao/seletor_arquivo_sistema.dart): o Android nao
+                 tem MIME para .ofx, que chega como octet-stream. Lido por
+                 MainActivity.kt; a previa decide pelo conteudo. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="application/octet-stream"/>
+                <data android:mimeType="application/x-ofx"/>
+                <data android:mimeType="application/ofx"/>
+                <data android:mimeType="application/vnd.intu.qfx"/>
+                <data android:mimeType="text/x-ofx"/>
+                <data android:mimeType="text/csv"/>
+                <data android:mimeType="text/comma-separated-values"/>
+                <data android:mimeType="application/csv"/>
+                <data android:mimeType="application/vnd.ms-excel"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="content"/>
+                <data android:mimeType="application/octet-stream"/>
+                <data android:mimeType="application/x-ofx"/>
+                <data android:mimeType="application/ofx"/>
+                <data android:mimeType="application/vnd.intu.qfx"/>
+                <data android:mimeType="text/x-ofx"/>
+                <data android:mimeType="text/csv"/>
+                <data android:mimeType="text/comma-separated-values"/>
+                <data android:mimeType="application/csv"/>
+                <data android:mimeType="application/vnd.ms-excel"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
         </activity>
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">

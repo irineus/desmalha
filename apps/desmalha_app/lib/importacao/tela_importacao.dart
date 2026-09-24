@@ -11,6 +11,7 @@ import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
 import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
+import 'arquivo_recebido.dart';
 import 'controlador_importacao.dart';
 
 /// `'2026-08-03'` → `'03/08/2026'`.
@@ -50,8 +51,19 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
   @override
   void initState() {
     super.initState();
+    // Importação que entrou por outro caminho ("Compartilhar → Desmalha")
+    // também atualiza a lista.
+    widget.servicos.dadosAlterados.addListener(_recarregar);
     unawaited(_carregar());
   }
+
+  @override
+  void dispose() {
+    widget.servicos.dadosAlterados.removeListener(_recarregar);
+    super.dispose();
+  }
+
+  void _recarregar() => unawaited(_carregar());
 
   Future<void> _carregar() async {
     final lista = await widget.servicos.importacao.importacoesConfirmadas();
@@ -65,7 +77,6 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
       ),
     );
     widget.servicos.dadosAlterados.value++;
-    await _carregar();
   }
 
   @override
@@ -123,9 +134,13 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
 // ─── Tela de importação ─────────────────────────────────────────────
 
 class TelaImportacao extends StatefulWidget {
-  const TelaImportacao({super.key, required this.servicos});
+  const TelaImportacao({super.key, required this.servicos, this.recebido});
 
   final ServicosDoApp servicos;
+
+  /// Arquivo entregue por outro app: a tela já abre na prévia dele (ou no
+  /// motivo de não ter sido lido).
+  final RecebimentoDeArquivo? recebido;
 
   @override
   State<TelaImportacao> createState() => _TelaImportacaoState();
@@ -137,6 +152,17 @@ class _TelaImportacaoState extends State<TelaImportacao> {
     seletor: widget.servicos.seletorDeArquivo,
     carregarCatalogo: widget.servicos.catalogo,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    final recebido = widget.recebido;
+    if (recebido?.arquivo != null) {
+      unawaited(_c.usarArquivo(recebido!.arquivo!));
+    } else if (recebido?.erro != null) {
+      _c.falharRecebimento(recebido!.erro!);
+    }
+  }
 
   @override
   void dispose() {

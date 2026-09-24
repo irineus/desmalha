@@ -20,6 +20,7 @@ import 'conta/porta_exclusao_conta_http.dart';
 import 'catalogo/repositorio_catalogo.dart';
 import 'dados/conexao_cifrada.dart';
 import 'dados/repositorio_importacao.dart';
+import 'importacao/arquivo_recebido.dart';
 import 'importacao/seletor_arquivo_sistema.dart';
 import 'lembretes/controlador_lembretes.dart';
 import 'lembretes/porta_notificacoes_locais.dart';
@@ -60,6 +61,8 @@ Future<void> main() async {
         if (atualizou) return lembretes.sincronizar();
       }),
     );
+    final arquivoRecebido = ValueNotifier<RecebimentoDeArquivo?>(null);
+    unawaited(ArquivoRecebidoDoSistema(arquivoRecebido).iniciar());
     final portaAuth = PortaAuthSupabase.doClienteGlobal();
     final chavesBackup = ChavesBackup();
     runApp(
@@ -105,6 +108,7 @@ Future<void> main() async {
           catalogo: catalogo.carregar,
           painel: RepositorioPainelDrift(bancoDoApp()),
           dadosAlterados: ValueNotifier(0),
+          arquivoRecebido: arquivoRecebido,
         ),
       ),
     );

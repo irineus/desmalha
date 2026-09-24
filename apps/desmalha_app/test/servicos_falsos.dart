@@ -8,6 +8,7 @@ import 'package:desmalha_app/conta/porta_exclusao_conta.dart';
 import 'package:desmalha_app/dados/banco.dart';
 import 'package:desmalha_app/dados/chave_banco.dart';
 import 'package:desmalha_app/dados/repositorio_importacao.dart';
+import 'package:desmalha_app/importacao/arquivo_recebido.dart';
 import 'package:desmalha_app/importacao/controlador_importacao.dart';
 import 'package:desmalha_app/lembretes/controlador_lembretes.dart';
 import 'package:desmalha_app/onboarding/controlador_onboarding.dart';
@@ -95,6 +96,7 @@ ServicosDoApp servicosFalsos({
   SeletorDeArquivo? seletorDeArquivo,
   Future<Catalogo> Function()? catalogo,
   RepositorioPainel? painel,
+  ValueNotifier<RecebimentoDeArquivo?>? arquivoRecebido,
 }) {
   final chaves =
       chavesBackup ??
@@ -110,6 +112,7 @@ ServicosDoApp servicosFalsos({
     catalogo: catalogo ?? () async => Catalogo.fromItens(const []),
     painel: painel ?? PainelFalso(),
     dadosAlterados: ValueNotifier(0),
+    arquivoRecebido: arquivoRecebido ?? ValueNotifier(null),
   );
 }
 
