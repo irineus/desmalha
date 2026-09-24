@@ -2,16 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../navegacao/abas.dart';
+import '../navegacao/casca.dart';
 import 'estado_auth.dart';
 import 'servico_auth.dart';
-import 'tela_conta.dart';
 import 'tela_login.dart';
 
-/// Porteiro do app: mostra o login enquanto não há sessão e a conta depois.
-///
-/// Quando o app tiver as telas fiscais, é aqui que elas entram no lugar de
-/// [TelaConta] — o card da Fase 5. Por ora a conta é a única coisa atrás da
-/// porta, e serve para provar o fluxo ponta a ponta no aparelho.
+/// Porteiro do app: mostra o login enquanto não há sessão e, depois, a casca
+/// com as cinco abas (a conta mora em Ajustes).
 class PortalAuth extends StatefulWidget {
   const PortalAuth({super.key, required this.servico});
 
@@ -27,8 +25,15 @@ class _PortalAuthState extends State<PortalAuth> {
   @override
   void initState() {
     super.initState();
-    _assinatura = widget.servico.mudancas.listen((_) {
-      if (mounted) setState(() {});
+    _assinatura = widget.servico.mudancas.listen((estado) {
+      if (!mounted) return;
+      // Saiu da conta com uma tela empilhada por cima (ex.: Ajustes > Sua
+      // conta): sem este pop, o login ficaria ESCONDIDO atrás de uma tela que
+      // já não tem conta para mostrar.
+      if (estado is! Autenticado) {
+        Navigator.of(context).popUntil((rota) => rota.isFirst);
+      }
+      setState(() {});
     });
   }
 
@@ -40,7 +45,9 @@ class _PortalAuthState extends State<PortalAuth> {
 
   @override
   Widget build(BuildContext context) => switch (widget.servico.estado) {
-    Autenticado() => TelaConta(servico: widget.servico),
+    Autenticado() => CascaDoApp(
+      construir: (aba) => conteudoDaAba(aba, widget.servico),
+    ),
     _ => TelaLogin(servico: widget.servico),
   };
 }

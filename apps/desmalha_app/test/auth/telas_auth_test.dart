@@ -29,7 +29,8 @@ void main() {
     MaterialApp(home: PortalAuth(servico: servico)),
   );
 
-  /// Entra na conta pelo caminho do usuário: e-mail, código, conta.
+  /// Entra na conta pelo caminho do usuário: e-mail, código, e então
+  /// Ajustes > Sua conta — é lá que a conta mora desde que o app tem abas.
   Future<void> entrarPelaTela(
     WidgetTester tester, {
     String email = 'pessoa@exemplo.com',
@@ -39,6 +40,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('campo_codigo')), '12345678');
     await tester.tap(find.byKey(const Key('botao_confirmar_codigo')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ajustes'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sua conta'));
     await tester.pumpAndSettle();
   }
 
@@ -89,7 +94,7 @@ void main() {
     expect(find.byKey(const Key('campo_codigo')), findsNothing);
   });
 
-  testWidgets('entrar com o código abre a conta', (tester) async {
+  testWidgets('entrar com o código abre o app no Mês', (tester) async {
     await montar(tester);
 
     await tester.enterText(
@@ -100,6 +105,15 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('campo_codigo')), '12345678');
     await tester.tap(find.byKey(const Key('botao_confirmar_codigo')));
+    await tester.pumpAndSettle();
+
+    // Home é o mês, não a caixa de entrada nem a conta.
+    expect(find.text('Seu mês'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    await tester.tap(find.text('Ajustes'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sua conta'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('email_da_conta')), findsOneWidget);
