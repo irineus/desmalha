@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';
-import '../backup/tela_codigo_recuperacao.dart';
+import '../backup/tela_backup.dart';
 import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
 import '../tema/tokens.dart';
@@ -22,11 +22,15 @@ Widget conteudoDaAba(
   ServicoAutenticacao servico,
   ServicosDoApp servicos,
 ) => switch (aba) {
-  AbaDoApp.mes => const AbaProvisoria(
+  AbaDoApp.mes => AbaProvisoria(
     titulo: 'Seu mês',
     mensagem:
         'Aqui vai aparecer o imposto do mês, com o vencimento e o '
         'que falta resolver — calculado só sobre o que você classificar.',
+    aviso: AvisoBackup(
+      controlador: servicos.backup,
+      aoTocar: () => abrirTelaBackup(servicos),
+    ),
   ),
   AbaDoApp.lancamentos => const AbaProvisoria(
     titulo: 'Lançamentos',
@@ -55,10 +59,14 @@ class AbaProvisoria extends StatelessWidget {
     super.key,
     required this.titulo,
     required this.mensagem,
+    this.aviso,
   });
 
   final String titulo;
   final String mensagem;
+
+  /// Aviso no topo (ex.: backup desligado/desatualizado).
+  final Widget? aviso;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -67,6 +75,7 @@ class AbaProvisoria extends StatelessWidget {
       children: [
         Text(titulo, style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: EspacosDesmalha.s4),
+        ?aviso,
         EstadoVazio(mensagem: mensagem),
       ],
     ),
@@ -102,59 +111,59 @@ class TelaAjustes extends StatelessWidget {
             ),
           ),
         ),
-        _ItemCodigoRecuperacao(servicos: servicos),
+        _ItemBackup(servicos: servicos),
       ],
     ),
   );
 }
 
-/// Ajustes > Código de recuperação, com o estado atual escrito — sem código
-/// confirmado o backup automático fica desligado, e isso aparece AQUI, não
-/// só quando alguém procura.
-class _ItemCodigoRecuperacao extends StatefulWidget {
-  const _ItemCodigoRecuperacao({required this.servicos});
+/// Navegador global do app — o aviso de backup no Mês abre a tela de backup
+/// a partir de uma aba que não tem a rota de Ajustes por perto.
+final chaveNavegadorDoApp = GlobalKey<NavigatorState>();
+
+void abrirTelaBackup(ServicosDoApp servicos) {
+  chaveNavegadorDoApp.currentState?.push(
+    MaterialPageRoute<void>(
+      builder: (_) => TelaBackup(controlador: servicos.backup),
+    ),
+  );
+}
+
+/// Ajustes > Backup, com o estado escrito no próprio item: sem código
+/// confirmado o automático fica desligado, e isso aparece AQUI.
+class _ItemBackup extends StatelessWidget {
+  const _ItemBackup({required this.servicos});
 
   final ServicosDoApp servicos;
 
   @override
-  State<_ItemCodigoRecuperacao> createState() => _ItemCodigoRecuperacaoState();
-}
-
-class _ItemCodigoRecuperacaoState extends State<_ItemCodigoRecuperacao> {
-  late Future<bool> _confirmado = widget.servicos.chavesBackup
-      .codigoConfirmado();
-
-  @override
   Widget build(BuildContext context) => Card(
-    child: FutureBuilder<bool>(
-      future: _confirmado,
-      builder: (context, estado) {
-        final confirmado = estado.data;
+    child: ListenableBuilder(
+      listenable: servicos.backup,
+      builder: (context, _) {
+        final c = servicos.backup;
+        final (subtitulo, selo) = !c.carregado
+            ? ('Conferindo…', null)
+            : !c.codigoConfirmado
+            ? (
+                'Desligado — falta confirmar o código de recuperação.',
+                const Selo('desligado', tipo: TipoSelo.falha),
+              )
+            : c.desatualizado
+            ? (
+                'Desatualizado — mais de 7 dias sem backup.',
+                const Selo('desatualizado', tipo: TipoSelo.falha),
+              )
+            : ('Em dia. Automático 1× por dia no Wi-Fi.', null);
         return ListTile(
-          key: const Key('item_codigo_recuperacao'),
-          leading: const Icon(Icons.key_outlined),
-          title: const Text('Código de recuperação'),
-          subtitle: Text(switch (confirmado) {
-            null => 'Conferindo…',
-            true => 'Confirmado. Abre seus backups em outro celular.',
-            false => 'Não configurado — o backup automático está desligado.',
-          }),
-          trailing: confirmado == false
-              ? const Selo('pendente', tipo: TipoSelo.obrigacao)
-              : const Icon(Icons.chevron_right),
-          onTap: () async {
-            await Navigator.of(context).push(
-              MaterialPageRoute<bool>(
-                builder: (_) =>
-                    TelaCodigoRecuperacao(chaves: widget.servicos.chavesBackup),
-              ),
-            );
-            if (mounted) {
-              setState(() {
-                _confirmado = widget.servicos.chavesBackup.codigoConfirmado();
-              });
-            }
-          },
+          key: const Key('item_backup'),
+          leading: const Icon(Icons.cloud_upload_outlined),
+          title: const Text('Backup'),
+          subtitle: Text(subtitulo),
+          trailing: selo ?? const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => TelaBackup(controlador: c)),
+          ),
         );
       },
     ),

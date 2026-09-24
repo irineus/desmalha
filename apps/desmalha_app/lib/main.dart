@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -9,13 +10,20 @@ import 'auth/porta_auth_supabase.dart';
 import 'auth/portal_auth.dart';
 import 'auth/servico_auth.dart';
 import 'backup/chaves_backup.dart';
+import 'backup/controlador_backup.dart';
+import 'backup/estado_backup.dart';
+import 'backup/exportacao_local.dart';
+import 'backup/porta_armazenamento_backup_http.dart';
+import 'backup/servico_backup.dart';
 import 'catalogo/porta_catalogo_rest.dart';
 import 'conta/porta_exclusao_conta_http.dart';
 import 'catalogo/repositorio_catalogo.dart';
 import 'dados/conexao_cifrada.dart';
 import 'monitoring.dart';
+import 'navegacao/abas.dart';
 import 'servicos_do_app.dart';
 import 'tema/tema.dart';
+import 'versao.dart';
 
 Future<void> main() async {
   await bootstrap(() async {
@@ -33,6 +41,7 @@ Future<void> main() async {
       return;
     }
     final portaAuth = PortaAuthSupabase.doClienteGlobal();
+    final chavesBackup = ChavesBackup();
     runApp(
       DesmalhaApp(
         servico: ServicoAutenticacao(portaAuth),
@@ -42,11 +51,35 @@ Future<void> main() async {
             chavePublicavel: supabasePublishableKey,
             tokenDaSessao: () => portaAuth.tokenDeAcesso,
           ),
-          chavesBackup: ChavesBackup(),
+          chavesBackup: chavesBackup,
+          backup: ControladorBackup(
+            servico: () => ServicoBackup(
+              porta: PortaArmazenamentoBackupHttp(
+                url: supabaseUrl,
+                chavePublicavel: supabasePublishableKey,
+                tokenDaSessao: () => portaAuth.tokenDeAcesso,
+              ),
+              chaves: chavesBackup,
+              fonte: ExportacaoLocal(bancoDoApp()),
+              usuarioId: () => portaAuth.usuarioAtual?.id,
+              appVersao: versaoDoApp,
+            ),
+            chaves: chavesBackup,
+            estadoPersistido: RepositorioEstadoBackupDrift(bancoDoApp()),
+            emWifi: _emWifi,
+            comSessao: () => portaAuth.usuarioAtual != null,
+          ),
         ),
       ),
     );
   });
+}
+
+/// Wi-Fi (ou cabo): o backup automático não gasta o plano de dados.
+Future<bool> _emWifi() async {
+  final redes = await Connectivity().checkConnectivity();
+  return redes.contains(ConnectivityResult.wifi) ||
+      redes.contains(ConnectivityResult.ethernet);
 }
 
 /// Atualiza o cache local do catálogo versionado a partir do servidor.
@@ -85,6 +118,7 @@ class DesmalhaApp extends StatelessWidget {
     final servicos = this.servicos;
     return MaterialApp(
       title: 'Desmalha',
+      navigatorKey: chaveNavegadorDoApp,
       theme: temaDesmalha(),
       home: servico == null || servicos == null
           ? const TelaSemConfiguracao()

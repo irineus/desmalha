@@ -5,14 +5,22 @@
 library;
 
 import 'backup/chaves_backup.dart';
+import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
 
 class ServicosDoApp {
-  const ServicosDoApp({required this.exclusao, required this.chavesBackup});
+  const ServicosDoApp({
+    required this.exclusao,
+    required this.chavesBackup,
+    required this.backup,
+  });
 
   /// Exclusão da conta pelo app (Ajustes > Sua conta).
   final PortaExclusaoConta exclusao;
 
   /// Chave-mestra e código de recuperação do backup (Ajustes).
   final ChavesBackup chavesBackup;
+
+  /// Estado, automático e "Fazer backup agora" (Ajustes > Backup).
+  final ControladorBackup backup;
 }

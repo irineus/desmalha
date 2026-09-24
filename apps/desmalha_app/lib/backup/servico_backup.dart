@@ -33,9 +33,14 @@ class ResultadoBackup {
     required this.seq,
     required this.tamanhoBytes,
     required this.sha256,
+    required this.hashConteudo,
     required this.removidos,
   });
   final int seq;
+
+  /// `hash_conteudo` dos documentos deste backup — o "nada mudou" do
+  /// próximo automático compara com ele.
+  final String hashConteudo;
   final int tamanhoBytes;
   final String sha256;
 
@@ -84,9 +89,13 @@ class ServicoBackup {
     return m == null ? null : int.parse(m.group(1)!);
   }
 
-  Future<ResultadoBackup> fazerBackup() async {
+  /// Faz o backup. Com [pularSeConteudoFor] igual ao hash atual dos
+  /// documentos, não faz nada e devolve `null` — antes de qualquer rede.
+  Future<ResultadoBackup?> fazerBackup({String? pularSeConteudoFor}) async {
     final uid = usuarioId();
-    if (uid == null) throw const FalhaBackup('Entre na sua conta para fazer backup.');
+    if (uid == null) {
+      throw const FalhaBackup('Entre na sua conta para fazer backup.');
+    }
 
     final ChavesParaSelar paraSelar;
     try {
@@ -98,6 +107,12 @@ class ServicoBackup {
     // A próxima seq olha registros E objetos: um upload cujo registro falhou
     // deixa um blob órfão, e calcular só pelos registros reapontaria para o
     // caminho ocupado — o backup ficaria preso em "conflito" para sempre.
+    final documentos = await fonte.exportar();
+    final hashConteudo = await hashDoConteudo(documentos);
+    if (pularSeConteudoFor != null && hashConteudo == pularSeConteudoFor) {
+      return null;
+    }
+
     final existentes = await porta.listarMetadados();
     final objetosAntes = await porta.listarObjetos(uid);
     final seqsUsadas = [
@@ -110,7 +125,7 @@ class ServicoBackup {
     final path = caminhoDe(uid, seq);
 
     final payload = await serializarPayload(
-      documentos: await fonte.exportar(),
+      documentos: documentos,
       appVersao: appVersao,
       schemaLocalVersao: await fonte.versaoDoSchemaLocal(),
       geradoEm: _relogio(),
@@ -127,9 +142,11 @@ class ServicoBackup {
     try {
       await porta.enviar(path, dsmb);
     } on FalhaArmazenamentoBackup catch (e) {
-      throw FalhaBackup(e.conflito
-          ? 'Outro aparelho fez um backup ao mesmo tempo. Tente de novo.'
-          : 'O envio do backup falhou: ${e.mensagem}');
+      throw FalhaBackup(
+        e.conflito
+            ? 'Outro aparelho fez um backup ao mesmo tempo. Tente de novo.'
+            : 'O envio do backup falhou: ${e.mensagem}',
+      );
     }
 
     // 2xx diz que o pedido foi aceito, não que o arquivo está lá inteiro.
@@ -158,6 +175,7 @@ class ServicoBackup {
       seq: seq,
       tamanhoBytes: dsmb.length,
       sha256: sha,
+      hashConteudo: hashConteudo,
       removidos: removidos,
     );
   }
@@ -165,7 +183,10 @@ class ServicoBackup {
   /// Mantém os [manter] mais recentes. Objeto antes de registro: registro
   /// sem objeto se refaz no próximo prune; objeto sem registro, também —
   /// mas o contrário (registro apagado com blob vivo) esconderia dado.
-  Future<List<String>> _prune(String uid, List<ObjetoArmazenado> objetos) async {
+  Future<List<String>> _prune(
+    String uid,
+    List<ObjetoArmazenado> objetos,
+  ) async {
     final metas = await porta.listarMetadados()
       ..sort((a, b) => b.seq.compareTo(a.seq));
     final mantidos = metas.take(manter).toList();

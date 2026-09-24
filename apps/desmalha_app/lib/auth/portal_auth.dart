@@ -50,8 +50,11 @@ class _PortalAuthState extends State<PortalAuth> {
 
   @override
   Widget build(BuildContext context) => switch (widget.servico.estado) {
-    Autenticado() => CascaDoApp(
-      construir: (aba) => conteudoDaAba(aba, widget.servico, widget.servicos),
+    Autenticado() => GatilhoBackupAutomatico(
+      servicos: widget.servicos,
+      child: CascaDoApp(
+        construir: (aba) => conteudoDaAba(aba, widget.servico, widget.servicos),
+      ),
     ),
     _ => TelaLogin(servico: widget.servico),
   };
@@ -98,4 +101,49 @@ class TelaSemConfiguracao extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Dispara o backup automático ao entrar e a cada volta ao app — o dado só
+/// muda com o app aberto, então é aí que ele pode ter mudado. A decisão (1×
+/// por dia, Wi-Fi, código confirmado, conteúdo mudou) é da política, não
+/// daqui.
+class GatilhoBackupAutomatico extends StatefulWidget {
+  const GatilhoBackupAutomatico({
+    super.key,
+    required this.servicos,
+    required this.child,
+  });
+
+  final ServicosDoApp servicos;
+  final Widget child;
+
+  @override
+  State<GatilhoBackupAutomatico> createState() =>
+      _GatilhoBackupAutomaticoState();
+}
+
+class _GatilhoBackupAutomaticoState extends State<GatilhoBackupAutomatico>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(widget.servicos.backup.automatico());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(widget.servicos.backup.automatico());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
