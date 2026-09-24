@@ -1,0 +1,5 @@
+# Os bytes destas fixtures SÃO o que se testa: CRLF x LF, BOM, UTF-8 x
+# Latin-1 x Windows-1252. Sem isto, o autocrlf do Windows reescreveria as
+# quebras de linha no checkout e o teste compararia outra coisa.
+*.ofx binary
+manifesto.json -text
