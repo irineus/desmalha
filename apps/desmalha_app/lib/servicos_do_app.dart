@@ -4,9 +4,13 @@
 /// virar mais um parâmetro atravessando porteiro, casca e abas.
 library;
 
+import 'package:desmalha_core/desmalha_core.dart';
+
 import 'backup/chaves_backup.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
+import 'dados/repositorio_importacao.dart';
+import 'importacao/controlador_importacao.dart';
 import 'lembretes/controlador_lembretes.dart';
 import 'onboarding/controlador_onboarding.dart';
 
@@ -17,6 +21,9 @@ class ServicosDoApp {
     required this.backup,
     required this.lembretes,
     required this.onboarding,
+    required this.importacao,
+    required this.seletorDeArquivo,
+    required this.catalogo,
   });
 
   /// Exclusão da conta pelo app (Ajustes > Sua conta).
@@ -33,4 +40,13 @@ class ServicosDoApp {
 
   /// Aceite dos documentos legais, perfil e conclusão do onboarding.
   final ControladorOnboarding onboarding;
+
+  /// Importações de extrato e contas (aba Lançamentos).
+  final RepositorioImportacao importacao;
+
+  /// Seletor de arquivos do sistema (importação).
+  final SeletorDeArquivo seletorDeArquivo;
+
+  /// O catálogo versionado local (cache ou seed), sem rede.
+  final Future<Catalogo> Function() catalogo;
 }

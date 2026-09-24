@@ -5,13 +5,17 @@ import 'package:desmalha_app/backup/controlador_backup.dart';
 import 'package:desmalha_app/backup/estado_backup.dart';
 import 'package:desmalha_app/backup/servico_backup.dart';
 import 'package:desmalha_app/conta/porta_exclusao_conta.dart';
+import 'package:desmalha_app/dados/banco.dart';
 import 'package:desmalha_app/dados/chave_banco.dart';
+import 'package:desmalha_app/dados/repositorio_importacao.dart';
+import 'package:desmalha_app/importacao/controlador_importacao.dart';
 import 'package:desmalha_app/lembretes/controlador_lembretes.dart';
 import 'package:desmalha_app/onboarding/controlador_onboarding.dart';
 import 'package:desmalha_app/onboarding/porta_aceite.dart';
 import 'package:desmalha_app/onboarding/repositorio_onboarding.dart';
 import 'package:desmalha_app/servicos_do_app.dart';
 import 'package:desmalha_core/desmalha_core.dart';
+import 'package:drift/native.dart';
 
 import 'backup/armazenamento_falso.dart';
 import 'conta/porta_exclusao_falsa.dart';
@@ -85,6 +89,9 @@ ServicosDoApp servicosFalsos({
   ControladorBackup? backup,
   ControladorLembretes? lembretes,
   ControladorOnboarding? onboarding,
+  RepositorioImportacao? importacao,
+  SeletorDeArquivo? seletorDeArquivo,
+  Future<Catalogo> Function()? catalogo,
 }) {
   final chaves =
       chavesBackup ??
@@ -95,7 +102,22 @@ ServicosDoApp servicosFalsos({
     backup: backup ?? controladorBackupFalso(chaves: chaves),
     lembretes: lembretes ?? controladorLembretesFalso(),
     onboarding: onboarding ?? controladorOnboardingFalso(concluido: true),
+    importacao:
+        importacao ??
+        RepositorioImportacao(BancoLocal(NativeDatabase.memory())),
+    seletorDeArquivo: seletorDeArquivo ?? SeletorFalso(),
+    catalogo: catalogo ?? () async => Catalogo.fromItens(const []),
   );
+}
+
+/// Seletor de arquivo que entrega o que o teste mandar (ou desiste).
+class SeletorFalso implements SeletorDeArquivo {
+  SeletorFalso([this.proximo]);
+
+  ArquivoSelecionado? proximo;
+
+  @override
+  Future<ArquivoSelecionado?> escolher() async => proximo;
 }
 
 /// Aceite em memória: registra o que o servidor teria gravado.

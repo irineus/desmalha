@@ -19,6 +19,8 @@ import 'catalogo/porta_catalogo_rest.dart';
 import 'conta/porta_exclusao_conta_http.dart';
 import 'catalogo/repositorio_catalogo.dart';
 import 'dados/conexao_cifrada.dart';
+import 'dados/repositorio_importacao.dart';
+import 'importacao/seletor_arquivo_sistema.dart';
 import 'lembretes/controlador_lembretes.dart';
 import 'lembretes/porta_notificacoes_locais.dart';
 import 'monitoring.dart';
@@ -97,6 +99,9 @@ Future<void> main() async {
             carregarCatalogo: catalogo.carregar,
             usuarioId: () => portaAuth.usuarioAtual?.id,
           ),
+          importacao: RepositorioImportacao(bancoDoApp()),
+          seletorDeArquivo: const SeletorDeArquivoDoSistema(),
+          catalogo: catalogo.carregar,
         ),
       ),
     );
