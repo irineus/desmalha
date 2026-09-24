@@ -165,6 +165,18 @@ Future<List<int>> serializarPayload({
   return gzip.encode(utf8.encode(ndjson));
 }
 
+/// O `hash_conteudo` que o manifesto de [documentos] teria — sem montar o
+/// payload. Serve para saber se o banco mudou desde o último backup
+/// bem-sucedido (mesmos documentos = mesmo hash, pela forma canônica).
+Future<String> hashDoConteudo(List<DocumentoBackup> documentos) async {
+  final linhas = <String>[];
+  for (final doc in documentos) {
+    _validarDocumento(doc, formatoBackupAtual);
+    linhas.add(jsonEncode(_canonico(doc.toJson())));
+  }
+  return _hash(linhas.join('\n'));
+}
+
 /// Lê um payload gzipado: valida tudo e migra para [formatoBackupAtual].
 ///
 /// Qualquer divergência é recusa integral ([BackupInvalidoException] ou

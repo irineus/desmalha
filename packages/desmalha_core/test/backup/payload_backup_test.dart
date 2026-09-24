@@ -44,6 +44,18 @@ void main() {
         ndjson(await _serializar(amostraBackup)));
   });
 
+  test('hashDoConteudo = hash_conteudo do manifesto, e muda com o dado',
+      () async {
+    final lido = await lerPayload(await _serializar(amostraBackup));
+    expect(await hashDoConteudo(amostraBackup), lido.manifesto.hashConteudo);
+    final mudado = [
+      ...amostraBackup,
+      const DocumentoBackup('dependentes', {'id': 'd1', 'nome': 'X'}),
+    ];
+    expect(await hashDoConteudo(mudado),
+        isNot(lido.manifesto.hashConteudo));
+  });
+
   test('backup vazio (usuário novo) é válido', () async {
     final lido = await lerPayload(await _serializar(const []));
     expect(lido.documentos, isEmpty);
