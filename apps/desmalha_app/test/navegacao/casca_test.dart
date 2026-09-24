@@ -1,6 +1,7 @@
 import 'package:desmalha_app/navegacao/casca.dart';
 import 'package:desmalha_app/tema/tema.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Uma aba com contador — para provar que trocar de aba não perde estado.
@@ -82,6 +83,45 @@ void main() {
       final tamanho = tester.getSize(destino);
       expect(tamanho.height, greaterThanOrEqualTo(48), reason: rotulo);
       expect(tamanho.width, greaterThanOrEqualTo(48), reason: rotulo);
+    }
+  });
+
+  testWidgets('rótulo da aba não quebra linha com fonte grande em tela '
+      'estreita', (tester) async {
+    // Achado no Galaxy S23 do owner (384 dp, fonte do sistema 1,1×):
+    // "Lançamentos" quebrava em "Lançamento / s". Aqui, pior caso: 360 dp e
+    // fonte 1,3×.
+    // A fonte REAL da barra (IBM Plex Mono, 0,6 em por caractere): a fonte
+    // padrão do flutter_test desenha 1 em por caractere e reprovaria até o
+    // que cabe no aparelho.
+    final plex = FontLoader('IBMPlexMono');
+    for (final peso in ['Regular', 'Medium', 'SemiBold']) {
+      plex.addFont(rootBundle.load('assets/fonts/IBMPlexMono-$peso.ttf'));
+    }
+    await plex.load();
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(
+          size: Size(360, 800),
+          textScaler: TextScaler.linear(1.3),
+        ),
+        child: MaterialApp(
+          theme: temaDesmalha(),
+          home: CascaDoApp(construir: (aba) => _AbaContadora(aba.name)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final umaLinha = tester.getSize(find.text('Mês')).height;
+    for (final rotulo in ['Lançamentos', 'Despesas', 'Ajustes']) {
+      expect(
+        tester.getSize(find.text(rotulo)).height,
+        umaLinha,
+        reason: '"$rotulo" quebrou em mais de uma linha',
+      );
     }
   });
 }

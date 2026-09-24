@@ -65,18 +65,24 @@ class _CascaDoAppState extends State<CascaDoApp> {
             top: BorderSide(color: Theme.of(context).dividerColor),
           ),
         ),
-        child: NavigationBar(
-          selectedIndex: _atual.index,
-          onDestinationSelected: (i) =>
-              setState(() => _atual = AbaDoApp.values[i]),
-          destinations: [
-            for (final aba in AbaDoApp.values)
-              NavigationDestination(
-                icon: Icon(aba.icone),
-                selectedIcon: Icon(aba.iconeAtivo),
-                label: aba.rotulo,
-              ),
-          ],
+        // Rótulos da barra sem ampliação da fonte do sistema: com cinco abas
+        // e a voz fiscal (monoespaçada), "Lançamentos" quebrava em duas
+        // linhas no Galaxy S23 do owner (384 dp, fonte 1,1×). O ícone já
+        // identifica a aba; o resto do app segue a escala escolhida.
+        child: MediaQuery.withNoTextScaling(
+          child: NavigationBar(
+            selectedIndex: _atual.index,
+            onDestinationSelected: (i) =>
+                setState(() => _atual = AbaDoApp.values[i]),
+            destinations: [
+              for (final aba in AbaDoApp.values)
+                NavigationDestination(
+                  icon: Icon(aba.icone),
+                  selectedIcon: Icon(aba.iconeAtivo),
+                  label: aba.rotulo,
+                ),
+            ],
+          ),
         ),
       ),
     ),
