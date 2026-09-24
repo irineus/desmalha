@@ -12,6 +12,7 @@ import 'catalogo/porta_catalogo_rest.dart';
 import 'catalogo/repositorio_catalogo.dart';
 import 'dados/conexao_cifrada.dart';
 import 'monitoring.dart';
+import 'tema/tema.dart';
 
 Future<void> main() async {
   await bootstrap(() async {
@@ -68,9 +69,7 @@ class DesmalhaApp extends StatelessWidget {
     final servico = this.servico;
     return MaterialApp(
       title: 'Desmalha',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0F6E4F)),
-      ),
+      theme: temaDesmalha(),
       home: servico == null
           ? const TelaSemConfiguracao()
           : PortalAuth(servico: servico),

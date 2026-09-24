@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desmalha — Sistema visual v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Karla:wght@400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ---- Cor: 6 valores nomeados por papel ---- */
+  --papel:        #EEF2EC;  /* fundo do app: off-white com viés vegetal */
+  --superficie:   #FFFFFF;  /* cartões */
+  --tinta:        #16241F;  /* texto principal, verde quase preto */
+  --tinta-fraca:  #48594F;  /* texto secundário — 6,6:1 sobre papel */
+  --salvia:       #3E6B5A;  /* marca e ação primária */
+  --salvia-escura:#2B5142;  /* texto/ícone sobre preenchimento sálvia */
+  --salvia-clara: #D8E5DA;  /* preenchimentos calmos */
+  --obrigacao:    #2E4C7E;  /* ÚNICA cor de atenção fiscal */
+  --obrigacao-bg: #E3EAF5;
+  --falha:        #A32B22;  /* só erro real: atraso, importação quebrada */
+  --linha:        #D3DDD3;
+
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:72px;
+  --sombra: 0 1px 2px rgba(22,36,31,.05), 0 8px 24px -12px rgba(22,36,31,.18);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{animation:none!important;transition:none!important}}
+body{
+  margin:0; background:var(--papel); color:var(--tinta);
+  font-family:'Karla',system-ui,sans-serif; font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--salvia)}
+:focus-visible{outline:2px solid var(--obrigacao); outline-offset:3px; border-radius:4px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 var(--s5)}
+.disp{font-family:'Fraunces',Georgia,serif; font-variation-settings:'opsz' 96; font-weight:600; letter-spacing:-.02em; line-height:1.1}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums}
+
+/* ---------- topo ---------- */
+.hero{padding:var(--s8) 0 var(--s7)}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-fraca)}
+.hero h1{font-size:clamp(38px,6vw,64px);margin:var(--s3) 0 var(--s4)}
+.hero p{max-width:60ch;color:var(--tinta-fraca);margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s5)}
+.meta span{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--salvia-clara);color:var(--salvia-escura);padding:5px 10px;border-radius:999px}
+
+section{padding:var(--s7) 0;border-top:1px solid var(--linha)}
+.sec-head{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s5)}
+.sec-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:28px;margin:0;letter-spacing:-.01em}
+.sec-head .tag{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--tinta-fraca);letter-spacing:.1em;text-transform:uppercase}
+.lede{max-width:68ch;color:var(--tinta-fraca);margin:calc(-1 * var(--s3)) 0 var(--s5)}
+.grid{display:grid;gap:var(--s4)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.card{background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r-lg);padding:var(--s5)}
+.card h3{margin:0 0 var(--s2);font-size:17px;font-weight:700}
+.card p{margin:0;color:var(--tinta-fraca);font-size:14.5px}
+
+/* ---------- marca ---------- */
+.lockup{display:flex;align-items:center;gap:14px}
+.wordmark{font-family:'Fraunces',serif;font-variation-settings:'opsz' 144;font-weight:600;font-size:40px;letter-spacing:-.025em;color:var(--salvia);position:relative;display:inline-block}
+.wordmark .fio{position:absolute;left:-4%;right:-4%;top:57%;height:1.5px;background:var(--salvia);opacity:.85;
+  /* o fio da malha atravessa o nome e é interrompido: a malha que não fecha */
+  -webkit-mask-image:linear-gradient(90deg,#000 0 46%,transparent 46% 62%,#000 62% 100%);
+          mask-image:linear-gradient(90deg,#000 0 46%,transparent 46% 62%,#000 62% 100%);}
+.brandbox{background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r-lg);padding:var(--s6) var(--s5);display:flex;flex-direction:column;gap:var(--s5);align-items:flex-start}
+.brandbox .rot{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-fraca)}
+.icon-row{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap}
+.appicon{border-radius:22%;background:var(--salvia);display:grid;place-items:center;box-shadow:var(--sombra)}
+.appicon.s96{width:96px;height:96px}
+.appicon.s48{width:48px;height:48px}
+.appicon.s28{width:28px;height:28px}
+.tagline{font-family:'Karla',sans-serif;font-size:13px;letter-spacing:.02em;color:var(--tinta-fraca)}
+
+/* ---------- cor ---------- */
+.swatch{border:1px solid var(--linha);border-radius:var(--r-md);overflow:hidden;background:var(--superficie)}
+.chip{height:76px}
+.swatch .info{padding:var(--s3) var(--s4)}
+.swatch b{display:block;font-size:14px}
+.swatch code{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--tinta-fraca)}
+.swatch small{display:block;margin-top:4px;font-size:12.5px;color:var(--tinta-fraca);line-height:1.4}
+
+/* ---------- tipografia ---------- */
+.typerow{border-top:1px solid var(--linha);padding:var(--s4) 0;display:grid;grid-template-columns:130px 1fr;gap:var(--s4);align-items:baseline}
+.typerow .lbl{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-fraca)}
+
+/* ---------- assinatura: linha de apuração ---------- */
+.apur{background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r-lg);padding:var(--s5);max-width:520px}
+.apur .ln{display:grid;grid-template-columns:1fr auto;gap:var(--s3);padding:9px 0;font-size:14.5px}
+.apur .ln + .ln{border-top:1px solid var(--linha)}
+.apur .ln .v{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:14.5px}
+.apur .ln.neg .v{color:var(--tinta-fraca)}
+.apur .op{font-family:'IBM Plex Mono',monospace;color:var(--tinta-fraca);margin-right:6px}
+.apur .base{border-top:2px solid var(--tinta);margin-top:var(--s2);padding-top:var(--s3);font-weight:700}
+.apur .total{margin-top:var(--s4);background:var(--salvia);color:#fff;border-radius:var(--r-md);padding:var(--s4);display:flex;justify-content:space-between;align-items:baseline}
+.apur .total .rot{font-size:13px;opacity:.85}
+.apur .total .v{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600}
+.nota{font-size:12.5px;color:var(--tinta-fraca);margin-top:var(--s3)}
+
+/* ---------- componentes ---------- */
+.btn{font-family:'Karla',sans-serif;font-size:15px;font-weight:600;border-radius:var(--r-md);padding:13px 20px;border:1px solid transparent;cursor:pointer}
+.btn-primario{background:var(--salvia);color:#fff}
+.btn-secundario{background:transparent;color:var(--salvia);border-color:var(--salvia)}
+.btn-fantasma{background:transparent;color:var(--tinta-fraca)}
+.btn-destrutivo{background:transparent;color:var(--falha);border-color:var(--falha)}
+.chips{display:flex;flex-wrap:wrap;gap:var(--s2)}
+.selo{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.04em;padding:5px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.selo-obr{background:var(--obrigacao-bg);color:var(--obrigacao);border-color:#C6D5EC}
+.selo-ok{background:var(--salvia-clara);color:var(--salvia-escura)}
+.selo-neutro{background:#EAEEE9;color:var(--tinta-fraca)}
+.selo-falha{background:#F6E4E2;color:var(--falha)}
+.banner{display:flex;gap:var(--s3);border-radius:var(--r-md);padding:var(--s4);background:var(--obrigacao-bg);border-left:3px solid var(--obrigacao);font-size:14px}
+.banner b{color:var(--obrigacao)}
+.vazio{border:1px dashed var(--linha);border-radius:var(--r-md);padding:var(--s5);text-align:center;color:var(--tinta-fraca);font-size:14px}
+
+/* ---------- telas ---------- */
+.telas{display:flex;gap:var(--s5);flex-wrap:wrap;align-items:flex-start}
+.fone{width:320px;background:var(--papel);border:1px solid var(--linha);border-radius:28px;box-shadow:var(--sombra);overflow:hidden}
+.fone .barra{background:var(--superficie);padding:10px 16px 8px;display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tinta-fraca);border-bottom:1px solid var(--linha)}
+.fone .corpo{padding:var(--s4)}
+.fone .rotulo{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-fraca);margin:0 0 var(--s2)}
+.fone h4{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin:0 0 var(--s3);letter-spacing:-.01em}
+.bloco{background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r-md);padding:var(--s4);margin-bottom:var(--s3)}
+.valorao{font-family:'IBM Plex Mono',monospace;font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.sub{font-size:12.5px;color:var(--tinta-fraca)}
+.lanc{display:grid;grid-template-columns:1fr auto;gap:6px;padding:11px 0;font-size:14px;align-items:center}
+.lanc + .lanc{border-top:1px solid var(--linha)}
+.lanc .quem{font-weight:600}
+.lanc .qdo{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--tinta-fraca)}
+.lanc .val{font-family:'IBM Plex Mono',monospace;font-size:14px}
+.abas{display:flex;gap:var(--s1);margin-bottom:var(--s3);font-size:12.5px}
+.abas span{padding:6px 10px;border-radius:999px;color:var(--tinta-fraca);background:#E5EBE4}
+.abas span.on{background:var(--tinta);color:var(--papel);font-weight:600}
+.tabbar{display:flex;justify-content:space-between;border-top:1px solid var(--linha);background:var(--superficie);padding:10px 14px;font-size:10.5px;color:var(--tinta-fraca);font-family:'IBM Plex Mono',monospace}
+.tabbar span.on{color:var(--salvia);font-weight:600}
+.legenda{font-size:13px;color:var(--tinta-fraca);max-width:320px;margin-top:var(--s3)}
+.legenda b{color:var(--tinta)}
+
+/* ---------- regras / pendências ---------- */
+ul.regras{margin:0;padding-left:1.1em;color:var(--tinta-fraca);font-size:15px}
+ul.regras li{margin-bottom:var(--s2)}
+ul.regras b{color:var(--tinta)}
+.pend{background:#FFFDF6;border:1px solid #E8DFC4;border-radius:var(--r-md);padding:var(--s4);font-size:14.5px}
+.pend li{margin-bottom:var(--s2)}
+footer{padding:var(--s7) 0 var(--s8);color:var(--tinta-fraca);font-size:13.5px;border-top:1px solid var(--linha)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Fase 2 · Design de UI e identidade visual · ago/2026</div>
+    <h1 class="disp">O rigor mora no número.<br>A calma, em todo o resto.</h1>
+    <p>Sistema visual do Desmalha. A direção é <b>calma clínica</b>: superfícies claras, verde de consultório, formas sem aresta — e uma camada numérica monoespaçada, densa e conferível, que é onde a confiança realmente se constrói para quem tem medo de malha fina.</p>
+    <div class="meta">
+      <span>Fraunces · Karla · IBM Plex Mono</span>
+      <span>Tema claro (MVP)</span>
+      <span>Tokens prontos p/ ThemeData</span>
+    </div>
+  </header>
+
+  <!-- ============ MARCA ============ -->
+  <section id="marca">
+    <div class="sec-head"><h2>Marca</h2><span class="tag">duas opções de assinatura</span></div>
+    <p class="lede">O nome já carrega o símbolo: <i>malha</i> é a rede da Receita. As duas opções trabalhavam a mesma ideia — a malha que não fecha — em graus diferentes de literalidade. <b>Decisão: fica a B.</b> O argumento que decidiu não foi estético: o wordmark cortado, reduzido a um <span class="mono">d</span> no meio de dezenas de ícones na tela inicial, é indistinguível de um glifo com defeito de renderização. O símbolo de grade não tem esse risco e ainda rende ativo reutilizável — favicon, avatar de push, marca-d'água do relatório anual.</p>
+
+    <div class="grid g2">
+
+      <div class="brandbox">
+        <div class="rot" style="color:var(--salvia-escura)">Opção B — símbolo + wordmark · <b>escolhida</b></div>
+        <div class="lockup">
+          <svg width="46" height="46" viewBox="0 0 44 44" fill="none" aria-label="Símbolo Desmalha">
+            <g stroke="#3E6B5A" stroke-width="2.6" stroke-linecap="round">
+              <path d="M6 6 H38"/><path d="M6 22 H38"/><path d="M6 38 H24"/>
+              <path d="M6 6 V38"/><path d="M22 6 V38"/><path d="M38 6 V24"/>
+            </g>
+          </svg>
+          <div class="wordmark" style="font-size:34px">desmalha</div>
+        </div>
+        <p class="card" style="border:0;padding:0;background:none">Uma grade de rede em que <b>a célula inferior direita está aberta</b> — a saída. Lê a 28px, funciona monocromático, e dá um ativo reutilizável: o mesmo glifo vira marca-d'água do relatório anual e favicon. Custo: mais um elemento para manter alinhado em toda aplicação.</p>
+        <div class="icon-row">
+          <div class="appicon s96">
+            <svg width="52" height="52" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+              <g stroke="#EEF2EC" stroke-width="2.8" stroke-linecap="round">
+                <path d="M6 6 H38"/><path d="M6 22 H38"/><path d="M6 38 H24"/>
+                <path d="M6 6 V38"/><path d="M22 6 V38"/><path d="M38 6 V24"/>
+              </g>
+            </svg>
+          </div>
+          <div class="appicon s48">
+            <svg width="27" height="27" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+              <g stroke="#EEF2EC" stroke-width="3.4" stroke-linecap="round">
+                <path d="M6 6 H38"/><path d="M6 22 H38"/><path d="M6 38 H24"/>
+                <path d="M6 6 V38"/><path d="M22 6 V38"/><path d="M38 6 V24"/>
+              </g>
+            </svg>
+          </div>
+          <div class="appicon s28">
+            <svg width="16" height="16" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+              <g stroke="#EEF2EC" stroke-width="4.4" stroke-linecap="round">
+                <path d="M6 6 H38"/><path d="M6 22 H38"/><path d="M6 38 H24"/>
+                <path d="M6 6 V38"/><path d="M22 6 V38"/><path d="M38 6 V24"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="brandbox">
+        <div class="rot">Opção A — só wordmark · descartada (registro)</div>
+        <div class="wordmark">desmalha<span class="fio"></span></div>
+        <p class="card" style="border:0;padding:0;background:none">O fio horizontal é a linha da malha atravessando o nome — e ela <b>se interrompe no meio</b>. Sem símbolo separado, a marca vive inteira na palavra. Vantagem: assinatura adulta, barata de aplicar, difícil de imitar. Custo: o ícone do app precisa ser construído à parte (letra <span class="mono">d</span> com o fio rompido).</p>
+        <div class="icon-row">
+          <div class="appicon s96">
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-label="Ícone opção A">
+              <text x="26" y="38" text-anchor="middle" font-family="Fraunces, serif" font-size="40" font-weight="600" fill="#EEF2EC">d</text>
+              <path d="M6 27 H20 M32 27 H46" stroke="#EEF2EC" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="appicon s48">
+            <svg width="26" height="26" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+              <text x="26" y="38" text-anchor="middle" font-family="Fraunces, serif" font-size="40" font-weight="600" fill="#EEF2EC">d</text>
+              <path d="M6 27 H20 M32 27 H46" stroke="#EEF2EC" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="appicon s28">
+            <svg width="15" height="15" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+              <text x="26" y="38" text-anchor="middle" font-family="Fraunces, serif" font-size="40" font-weight="600" fill="#EEF2EC">d</text>
+              <path d="M6 27 H20 M32 27 H46" stroke="#EEF2EC" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card" style="margin-top:var(--s4)">
+      <h3>Uso da tagline</h3>
+      <p><b>“Receba certo, durma tranquilo”</b> aparece em Karla regular, sentence case, sempre <i>abaixo</i> do logo e nunca dentro dele — vive em splash, loja e site, não na interface. Apresentação institucional (lojas, jurídico, contador): <span class="mono">Desmalha — Carnê-leão e Pix para autônomos</span>.</p>
+    </div>
+  </section>
+
+  <!-- ============ COR ============ -->
+  <section id="cor">
+    <div class="sec-head"><h2>Cor</h2><span class="tag">seis papéis, nenhum decorativo</span></div>
+    <p class="lede">Regra herdada dos wireframes: existe <b>uma</b> cor de atenção fiscal e ela sinaliza obrigação. Aqui ela é o azul-obrigação — deliberadamente frio e separado do verde da marca, para que toda a faixa quente/vermelha fique reservada ao que deu errado de verdade. Pendência não é erro; quem já chega com medo não pode ver vermelho por causa de um CPF faltando.</p>
+    <div class="grid g3">
+      <div class="swatch"><div class="chip" style="background:#EEF2EC"></div><div class="info"><b>Papel</b><code>#EEF2EC</code><small>Fundo do app.</small></div></div>
+      <div class="swatch"><div class="chip" style="background:#16241F"></div><div class="info"><b>Tinta</b><code>#16241F</code><small>Texto e números principais.</small></div></div>
+      <div class="swatch"><div class="chip" style="background:#3E6B5A"></div><div class="info"><b>Sálvia</b><code>#3E6B5A</code><small>Marca e ação primária.</small></div></div>
+      <div class="swatch"><div class="chip" style="background:#D8E5DA"></div><div class="info"><b>Sálvia clara</b><code>#D8E5DA</code><small>Preenchimento de estado resolvido.</small></div></div>
+      <div class="swatch"><div class="chip" style="background:#2E4C7E"></div><div class="info"><b>Obrigação</b><code>#2E4C7E</code><small>Única cor de atenção fiscal.</small></div></div>
+      <div class="swatch"><div class="chip" style="background:#A32B22"></div><div class="info"><b>Falha</b><code>#A32B22</code><small>DARF vencido, importação quebrada, exclusão de conta.</small></div></div>
+    </div>
+    <div class="card" style="margin-top:var(--s4)">
+      <h3>Contraste medido</h3>
+      <p>Todos os pares em uso ficam acima de 4,5:1 (WCAG AA). O texto secundário foi escurecido de <span class="mono">#5C6F66</span> para <span class="mono">#48594F</span>: passava raspando em 4,73:1 e agora está em <b>6,6:1</b> sobre papel — decisivo porque a maior parte do texto explicativo do app é secundário e longo. Para texto sobre preenchimento sálvia existe um tom próprio, <span class="mono">#2B5142</span> (6,8:1), já que o verde da marca sobre o preenchimento claro ficava em 4,67:1 em corpo de 11,5px.</p>
+    </div>
+  </section>
+
+  <!-- ============ TIPOGRAFIA ============ -->
+  <section id="tipografia">
+    <div class="sec-head"><h2>Tipografia</h2><span class="tag">três vozes</span></div>
+    <p class="lede">Cada família tem um trabalho e não faz o do vizinho: Fraunces é a voz humana (títulos e marca), Karla é a voz da interface (tudo que se lê corrido), IBM Plex Mono é a voz fiscal (todo número, data, CPF e código). Um valor em R$ nunca aparece em Karla — a mudança de família é o sinal de “isto é conferível”.</p>
+    <div class="typerow"><div class="lbl">Fraunces 600<br>display / 28–64</div><div class="disp" style="font-size:34px">Agosto fechou com imposto a pagar</div></div>
+    <div class="typerow"><div class="lbl">Karla 600<br>título de bloco / 17</div><div style="font-weight:600;font-size:17px">Três recebimentos esperando classificação</div></div>
+    <div class="typerow"><div class="lbl">Karla 400<br>corpo / 15–16</div><div>Você importou o extrato de agosto. Separe o que veio de cliente do que é pessoal e o cálculo se atualiza sozinho.</div></div>
+    <div class="typerow"><div class="lbl">Plex Mono 600<br>valor / 26–34</div><div class="mono" style="font-size:30px;font-weight:600">R$ 1.757,86</div></div>
+    <div class="typerow"><div class="lbl">Plex Mono 400<br>dado / 11–15</div><div class="mono" style="font-size:14px">18/08/2026 · CPF 123.456.789-00 · DARF 0190</div></div>
+    <div class="typerow"><div class="lbl">Plex Mono 500<br>rótulo / 10–12</div><div class="mono" style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-fraca)">competência agosto/2026</div></div>
+    <div class="card" style="margin-top:var(--s5)">
+      <h3>Peso das fontes</h3>
+      <p>No app as fontes são <b>embarcadas no binário</b> via <span class="mono">pubspec.yaml</span> — não há requisição de rede nem risco de texto invisível esperando download. O que importa é o tamanho do pacote: Fraunces e Karla entram como <b>variáveis</b> (um arquivo cada, no lugar de um por peso), e a Plex Mono, que não tem versão variável, entra só nos três pesos usados. Fraunces é a mais pesada e aparece só em títulos, então é candidata a subconjunto de caracteres latin-ext. Este guia HTML e o site da Fase 8, sim, carregam por rede — daí os pesos declarados no <span class="mono">&lt;link&gt;</span> terem sido reduzidos exatamente ao que se usa.</p>
+    </div>
+  </section>
+
+  <!-- ============ ASSINATURA ============ -->
+  <section id="assinatura">
+    <div class="sec-head"><h2>A linha de apuração</h2><span class="tag">elemento de assinatura</span></div>
+    <p class="lede">É o elemento que o app será lembrado por, e não é decoração: é a ordem exata do cálculo definida com o contador, desenhada como uma conta de subtração que qualquer pessoa consegue seguir com o dedo. Filete fino entre as parcelas, régua grossa antes da base, resultado em caixa sálvia. Aparece na íntegra em M10 e em versão reduzida em toda tela que mostra valor.</p>
+
+    <div class="apur">
+      <div class="ln"><div>Recebido de pessoas físicas</div><div class="v">11.400,00</div></div>
+      <div class="ln neg"><div><span class="op">−</span>Livro-caixa de agosto</div><div class="v">1.240,00</div></div>
+      <div class="ln neg"><div><span class="op">−</span>INSS pago no mês</div><div class="v">320,00</div></div>
+      <div class="ln neg"><div><span class="op">−</span>1 dependente</div><div class="v">189,59</div></div>
+      <div class="ln base"><div>Base de cálculo</div><div class="v">9.650,41</div></div>
+      <div class="ln"><div>Alíquota 27,5%</div><div class="v">2.653,86</div></div>
+      <div class="ln neg"><div><span class="op">−</span>Parcela a deduzir</div><div class="v">896,00</div></div>
+      <div class="total"><div class="rot">Imposto de agosto<br><span class="mono" style="font-size:11px">vence 30/09/2026</span></div><div class="v">R$ 1.757,86</div></div>
+      <p class="nota">Pelo desconto simplificado dariam R$ 2.072,02. O app aplicou o cenário mais vantajoso.</p>
+    </div>
+    <p class="legenda" style="max-width:520px">Valores ilustrativos. A linha do redutor da Lei 15.270/2025 e a linha comparativa do simplificado ficam <b>atrás de flag</b> até a verificação empírica no Carnê-Leão Web (pendência aberta em “Especificar regras de cálculo”).</p>
+  </section>
+
+  <!-- ============ COMPONENTES ============ -->
+  <section id="componentes">
+    <div class="sec-head"><h2>Componentes</h2><span class="tag">estados e ações</span></div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>Botões</h3>
+        <div class="chips" style="gap:var(--s3);margin-top:var(--s3)">
+          <button class="btn btn-primario">Gerar DARF</button>
+          <button class="btn btn-secundario">Ver memória de cálculo</button>
+        </div>
+        <div class="chips" style="gap:var(--s3);margin-top:var(--s3)">
+          <button class="btn btn-fantasma">Informar depois</button>
+          <button class="btn btn-destrutivo">Excluir minha conta</button>
+        </div>
+        <p style="margin-top:var(--s3)">Uma ação primária por tela. O verbo do botão é o verbo do resultado: “Gerar DARF” produz “DARF gerado”.</p>
+      </div>
+
+      <div class="card">
+        <h3>Selos de estado</h3>
+        <div class="chips" style="margin-top:var(--s3)">
+          <span class="selo selo-obr">falta CPF</span>
+          <span class="selo selo-obr">a classificar</span>
+          <span class="selo selo-ok">pronto</span>
+          <span class="selo selo-ok">DARF pago</span>
+          <span class="selo selo-neutro">pessoal</span>
+          <span class="selo selo-falha">vencido</span>
+        </div>
+        <p style="margin-top:var(--s3)">Classificação e CPF são estados independentes — um lançamento pode estar classificado e ainda incompleto, e os dois selos convivem no mesmo item.</p>
+      </div>
+
+      <div class="card">
+        <h3>Banner de obrigação</h3>
+        <div class="banner" style="margin-top:var(--s3)">
+          <div><b>Dois recebimentos sem CPF do pagador.</b><br>Como psicóloga, o carnê-leão exige o CPF de quem pagou. O cálculo de agosto já conta esses valores — só o registro está incompleto.</div>
+        </div>
+        <p style="margin-top:var(--s3)">Nunca bloqueia o cálculo. Diz o que falta, por que é exigido e o que já está resolvido.</p>
+      </div>
+
+      <div class="card">
+        <h3>Estado vazio</h3>
+        <div class="vazio" style="margin-top:var(--s3)">Nenhuma despesa em agosto.<br><span style="color:var(--tinta)">Aluguel da sala, conselho, material — tudo isso reduz o imposto.</span><br><br><button class="btn btn-secundario">Adicionar despesa</button></div>
+        <p style="margin-top:var(--s3)">Vazio é convite, não lamento: sempre nomeia o ganho concreto e traz a ação.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TELAS ============ -->
+  <section id="telas">
+    <div class="sec-head"><h2>Aplicação</h2><span class="tag">4 telas críticas sobre os wireframes</span></div>
+    <p class="lede">M1, M3, M10 e D1 — as telas onde o sistema é testado de verdade: densidade numérica, convivência de pendências e o momento do valor a pagar.</p>
+
+    <div class="telas">
+
+      <!-- M1 -->
+      <div>
+        <div class="fone">
+          <div class="barra"><span>9:41</span><span>desmalha</span></div>
+          <div class="corpo">
+            <p class="rotulo">competência agosto/2026</p>
+            <h4>Imposto de agosto</h4>
+            <div class="bloco">
+              <div class="valorao">R$ 1.757,86</div>
+              <div class="sub mono">estimativa · vence 30/09/2026</div>
+              <div class="chips" style="margin-top:var(--s3)">
+                <span class="selo selo-obr">3 a classificar</span>
+                <span class="selo selo-obr">2 sem CPF</span>
+              </div>
+              <button class="btn btn-secundario" style="width:100%;margin-top:var(--s3);padding:10px">Ver memória de cálculo</button>
+            </div>
+            <div class="bloco">
+              <div style="font-weight:600;font-size:14.5px;margin-bottom:6px">Você pagou INSS em agosto?</div>
+              <div class="sub">Referência: <span class="mono">R$ 320,00</span>. Só entra na dedução se saiu no mês.</div>
+              <div class="chips" style="margin-top:var(--s3)">
+                <button class="btn btn-primario" style="padding:9px 16px;font-size:14px">Paguei</button>
+                <button class="btn btn-fantasma" style="padding:9px 12px;font-size:14px">Não paguei</button>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span class="on">Mês</span><span>Lançamentos</span><span>Despesas</span><span>Ano</span><span>Ajustes</span></div>
+        </div>
+        <p class="legenda"><b>M1 · Dashboard do mês.</b> O valor é a coisa maior da tela; as pendências ficam ao lado dele, não acima — sinalizam sem sequestrar.</p>
+      </div>
+
+      <!-- M3 -->
+      <div>
+        <div class="fone">
+          <div class="barra"><span>9:41</span><span>Lançamentos</span></div>
+          <div class="corpo">
+            <div class="abas"><span class="on">A classificar 3</span><span>Falta CPF 2</span><span>Prontos</span></div>
+            <div class="bloco" style="padding:var(--s3) var(--s4)">
+              <div class="lanc"><div><div class="quem">Marina A. Souza</div><div class="qdo">18/08 · Pix</div></div><div class="val">450,00</div></div>
+              <div class="lanc"><div><div class="quem">Rafael T. Lima</div><div class="qdo">19/08 · Pix</div></div><div class="val">450,00</div></div>
+              <div class="lanc"><div><div class="quem">Célia M. Duarte</div><div class="qdo">21/08 · Pix</div></div><div class="val">380,00</div></div>
+            </div>
+            <div class="banner" style="font-size:13px"><div><b>Marina e Rafael já são clientes.</b><br>Marcar os dois como atendimento tributável, R$ 900,00 no total?</div></div>
+            <button class="btn btn-primario" style="width:100%;margin-top:var(--s3);padding:11px">Marcar os 2 como cliente</button>
+            <button class="btn btn-secundario" style="width:100%;margin-top:var(--s2);padding:11px">Classificar um a um</button>
+          </div>
+          <div class="tabbar"><span>Mês</span><span class="on">Lançamentos</span><span>Despesas</span><span>Ano</span><span>Ajustes</span></div>
+        </div>
+        <p class="legenda"><b>M3 · Lista.</b> Regra aprendida por remetente sempre <b>propõe</b>; quem confirma é a pessoa. O botão em lote é a confirmação — por isso diz quantos itens e quanto dinheiro serão afetados antes do toque, nunca só “aplicar”.</p>
+      </div>
+
+      <!-- M10 -->
+      <div>
+        <div class="fone">
+          <div class="barra"><span>9:41</span><span>Memória de cálculo</span></div>
+          <div class="corpo">
+            <p class="rotulo">agosto/2026</p>
+            <div class="bloco" style="padding:var(--s4)">
+              <div class="apur" style="border:0;padding:0;max-width:none">
+                <div class="ln"><div>Recebido de PF</div><div class="v">11.400,00</div></div>
+                <div class="ln neg"><div><span class="op">−</span>Livro-caixa</div><div class="v">1.240,00</div></div>
+                <div class="ln neg"><div><span class="op">−</span>INSS</div><div class="v">320,00</div></div>
+                <div class="ln neg"><div><span class="op">−</span>1 dependente</div><div class="v">189,59</div></div>
+                <div class="ln base"><div>Base</div><div class="v">9.650,41</div></div>
+                <div class="ln"><div>27,5%</div><div class="v">2.653,86</div></div>
+                <div class="ln neg"><div><span class="op">−</span>Parcela a deduzir</div><div class="v">896,00</div></div>
+                <div class="total"><div class="rot">Imposto</div><div class="v">1.757,86</div></div>
+              </div>
+            </div>
+            <div class="bloco" style="padding:var(--s4)">
+              <div class="sub">Pelo desconto simplificado seriam <span class="mono">R$ 2.072,02</span>. Mantivemos as deduções reais.</div>
+            </div>
+          </div>
+          <div class="tabbar"><span class="on">Mês</span><span>Lançamentos</span><span>Despesas</span><span>Ano</span><span>Ajustes</span></div>
+        </div>
+        <p class="legenda"><b>M10 · Memória de cálculo.</b> A tela inteira é a assinatura. Nada de gráfico: a prova é a conta.</p>
+      </div>
+
+      <!-- D1 -->
+      <div>
+        <div class="fone">
+          <div class="barra"><span>9:41</span><span>DARF</span></div>
+          <div class="corpo">
+            <p class="rotulo">darf gerado</p>
+            <div class="bloco">
+              <div class="valorao">R$ 1.757,86</div>
+              <div class="sub mono">código 0190 · vence 30/09/2026</div>
+              <div style="margin:var(--s4) 0;height:44px;background:repeating-linear-gradient(90deg,#16241F 0 2px,transparent 2px 4px,#16241F 4px 7px,transparent 7px 11px);border-radius:4px"></div>
+              <div class="mono" style="font-size:11px;color:var(--tinta-fraca);word-break:break-all">85800000017 5 57860190 2 20260930 1</div>
+              <button class="btn btn-primario" style="width:100%;margin-top:var(--s4);padding:12px">Copiar código de barras</button>
+              <button class="btn btn-secundario" style="width:100%;margin-top:var(--s2);padding:12px">Salvar ou enviar o DARF em PDF</button>
+              <button class="btn btn-fantasma" style="width:100%;margin-top:var(--s2);padding:12px">Marquei como pago</button>
+            </div>
+            <div class="banner" style="font-size:13px"><div><b>Falta o e-CAC.</b><br>Pagar o DARF não registra o livro-caixa. Leve os consolidados de agosto para o Carnê-Leão Web.</div></div>
+          </div>
+          <div class="tabbar"><span class="on">Mês</span><span>Lançamentos</span><span>Despesas</span><span>Ano</span><span>Ajustes</span></div>
+        </div>
+        <p class="legenda"><b>D1 · DARF.</b> O momento de maior alívio é onde o app tem que ser mais honesto sobre o que ainda falta. O PDF usa o compartilhamento nativo do sistema: é assim que a guia chega ao contador sem print de tela.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ REGRAS ============ -->
+  <section id="regras">
+    <div class="sec-head"><h2>Regras de aplicação</h2><span class="tag">o que vale em toda tela</span></div>
+    <ul class="regras">
+      <li><b>Todo valor em R$ é monoespaçado e alinhado à direita</b>, com dígitos tabulares. Colunas de número precisam bater na vertical.</li>
+      <li><b>Azul-obrigação só marca obrigação fiscal.</b> Não é cor de link, de botão, nem de ênfase.</li>
+      <li><b>Vermelho só quando algo falhou</b> — DARF vencido, importação quebrada, exclusão irreversível. Pendência nunca é vermelha.</li>
+      <li><b>Uma ação primária por tela.</b> O resto é secundário ou fantasma.</li>
+      <li><b>Nenhum valor sem caminho para a memória de cálculo</b>, no máximo a um toque.</li>
+      <li><b>Sentence case em tudo</b>, inclusive botões. Sem caixa alta em rótulo de ação.</li>
+      <li><b>Área de toque mínima de 48px</b> e foco de teclado visível — o público inclui gente com pouca familiaridade e telas pequenas.</li>
+    </ul>
+  </section>
+
+  <section id="pendencias">
+    <div class="sec-head"><h2>Pendências geradas</h2><span class="tag">destinos no board</span></div>
+    <div class="pend">
+      <ul style="margin:0;padding-left:1.1em">
+        <li><b>Lockup: resolvido nesta sessão</b> — fica a opção B. Libera ícone das lojas, splash e ativos de marketing da Fase 8.</li>
+        <li><b>Saída em PDF do DARF</b> — vira requisito de backend (geração do PDF) e de app (compartilhamento nativo). Encaminhar para os cards de DARF na Fase 4 e Fase 5; não estava explícito no escopo do MVP.</li>
+        <li><b>Ação em lote em M3</b> — a proposta em lote precisa declarar quantidade e valor total antes do toque, e precisa de desfazer. Registrar como requisito no card de classificação da Fase 5.</li>
+        <li><b>Tema escuro</b> — fora do MVP por decisão desta sessão. Tokens já nomeados por papel (e não por cor), então a troca é uma tabela nova, não um retrabalho.</li>
+        <li><b>Licenças das fontes</b> — Fraunces, Karla e IBM Plex Mono são SIL OFL, livres para embarcar no app e usar em material comercial. Registrar os arquivos no repositório na Fase 3.</li>
+        <li><b>Acessibilidade</b> — contraste de todos os pares medido e corrigido nesta sessão. Falta validar daltonismo na Fase 7: o par sálvia × azul-obrigação carrega significado, e em deuteranopia os dois se aproximam — por isso nenhum estado depende só de cor, todo selo tem texto.</li>
+        <li><b>Ícone do app na loja</b> — Apple e Google exigem versões sem transparência e em múltiplos tamanhos; produzir na Fase 8 a partir do lockup escolhido.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    Desmalha · sistema visual v0.1 · agosto de 2026 · valores das telas são ilustrativos e não constituem orientação fiscal.
+  </footer>
+
+</div>
+</body>
+</html>
