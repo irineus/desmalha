@@ -27,6 +27,10 @@ const _permitidos = {
   // edge function excluir-conta. Porta própria, e não método da PortaAuth,
   // para a superfície do SDK de auth continuar mínima (trava anti-senha).
   'lib/conta/porta_exclusao_conta_http.dart',
+  // +1 (24/09/2026, card "Backup cifrado ponta a ponta", PR 3/4): Storage e
+  // PostgREST do backup, com o token da sessão. Porta própria pelo mesmo
+  // motivo da exclusão.
+  'lib/backup/porta_armazenamento_backup_http.dart',
 };
 
 /// O que conta como "falar Supabase" em CÓDIGO (comentários descartados;

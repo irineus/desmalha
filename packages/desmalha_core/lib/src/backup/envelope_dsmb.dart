@@ -344,4 +344,11 @@ Future<String> impressaoDaChaveMestra(List<int> chaveMestra) async {
       .sublist(0, 16)
       .map((b) => b.toRadixString(16).padLeft(2, '0'))
       .join();
+}
+
+/// SHA-256 em hex minúsculo — o hash do CIPHERTEXT que vai para
+/// `backups_metadados` (a camada de integridade de trânsito/armazenamento).
+Future<String> sha256Hex(List<int> bytes) async {
+  final h = await Sha256().hash(bytes);
+  return h.bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 }

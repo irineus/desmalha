@@ -133,6 +133,20 @@ jobs:
           [[ "$a" == "$b" ]] || { echo "✗ o blob baixado difere do enviado" >&2; exit 1; }
           echo "✓ sha256 do download = do upload"
 
+          # 8b. NUNCA sobrescrever: reenviar para o mesmo caminho é recusado
+          #     (x-upsert false + bucket sem policy de UPDATE).
+          c=$(curl -sS -o /dev/null -w '%{http_code}' -X POST             "$GW/storage/v1/object/backups/$CAMINHO" "${ten[@]}"             -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/octet-stream"             -H "x-upsert: true" --data-binary @/tmp/blob.dsmb)
+          [[ "$c" != "200" ]] || { echo "✗ o blob foi SOBRESCRITO" >&2; exit 1; }
+          echo "✓ sobrescrever é recusado: HTTP $c"
+
+          # 8c. o metadado do backup pelo gateway (backups_metadados, RLS)
+          SHA=$(sha256sum < /tmp/blob.dsmb | cut -d' ' -f1)
+          c=$(curl -sS -o /tmp/meta.json -w '%{http_code}' -X POST             "$GW/rest/v1/backups_metadados" "${ten[@]}" -H "Authorization: Bearer $TOKEN"             -H "Content-Type: application/json" -H "Prefer: return=minimal"             --data "{\"seq\":1,\"path\":\"$CAMINHO\",\"tamanho_bytes\":4096,\"sha256\":\"$SHA\",\"formato_versao\":1,\"app_versao\":\"prova\",\"plataforma\":\"android\"}")
+          esperar "registrar backups_metadados pelo gateway" 201 "$c"
+          n=$(curl -sS "$GW/rest/v1/backups_metadados?select=seq" "${ten[@]}"             -H "Authorization: Bearer $TOKEN" | jq length)
+          [[ "$n" == "1" ]] || { echo "✗ backups_metadados devolveu $n linhas" >&2; exit 1; }
+          echo "✓ backups_metadados lido de volta: 1 linha"
+
           # 9. sem sessão, o mesmo objeto não sai (bucket privado, RLS)
           c=$(curl -sS -o /dev/null -w '%{http_code}' \
             "$GW/storage/v1/object/backups/$CAMINHO" "${ten[@]}" -H "Authorization: Bearer $TENANT_KEY")
