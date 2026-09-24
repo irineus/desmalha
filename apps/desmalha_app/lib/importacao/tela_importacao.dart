@@ -178,6 +178,14 @@ class _TelaImportacaoState extends State<TelaImportacao> {
       'Nada é gravado antes de você conferir a prévia.',
       style: Theme.of(context).textTheme.bodyMedium,
     ),
+    const SizedBox(height: EspacosDesmalha.s2),
+    Text(
+      'O seletor abre na pasta Download: salve ou copie o extrato para lá. '
+      'Pastas internas de outros apps (Android/data) não aparecem para '
+      'nenhum seletor de arquivos.',
+      key: const Key('dica_pasta_download'),
+      style: Theme.of(context).textTheme.bodySmall,
+    ),
     const SizedBox(height: EspacosDesmalha.s4),
     FilledButton(
       key: const Key('botao_escolher_arquivo'),
