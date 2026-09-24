@@ -50,7 +50,7 @@ class _PortalAuthState extends State<PortalAuth> {
 
   @override
   Widget build(BuildContext context) => switch (widget.servico.estado) {
-    Autenticado() => GatilhoBackupAutomatico(
+    Autenticado() => GatilhosDeAbertura(
       servicos: widget.servicos,
       child: CascaDoApp(
         construir: (aba) => conteudoDaAba(aba, widget.servico, widget.servicos),
@@ -103,12 +103,15 @@ class TelaSemConfiguracao extends StatelessWidget {
   );
 }
 
-/// Dispara o backup automático ao entrar e a cada volta ao app — o dado só
-/// muda com o app aberto, então é aí que ele pode ter mudado. A decisão (1×
-/// por dia, Wi-Fi, código confirmado, conteúdo mudou) é da política, não
-/// daqui.
-class GatilhoBackupAutomatico extends StatefulWidget {
-  const GatilhoBackupAutomatico({
+/// Rotinas de abertura: ao entrar e a cada volta ao app.
+///
+/// - Backup automático — o dado só muda com o app aberto, então é aí que
+///   ele pode ter mudado. A decisão (1× por dia, Wi-Fi, código confirmado,
+///   conteúdo mudou) é da política, não daqui.
+/// - Lembretes do DARF — reagendados com o catálogo local do momento, para
+///   acompanhar feriado novo e o calendário do ano seguinte.
+class GatilhosDeAbertura extends StatefulWidget {
+  const GatilhosDeAbertura({
     super.key,
     required this.servicos,
     required this.child,
@@ -118,17 +121,16 @@ class GatilhoBackupAutomatico extends StatefulWidget {
   final Widget child;
 
   @override
-  State<GatilhoBackupAutomatico> createState() =>
-      _GatilhoBackupAutomaticoState();
+  State<GatilhosDeAbertura> createState() => _GatilhosDeAberturaState();
 }
 
-class _GatilhoBackupAutomaticoState extends State<GatilhoBackupAutomatico>
+class _GatilhosDeAberturaState extends State<GatilhosDeAbertura>
     with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    unawaited(widget.servicos.backup.automatico());
+    _rodar();
   }
 
   @override
@@ -139,9 +141,12 @@ class _GatilhoBackupAutomaticoState extends State<GatilhoBackupAutomatico>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      unawaited(widget.servicos.backup.automatico());
-    }
+    if (state == AppLifecycleState.resumed) _rodar();
+  }
+
+  void _rodar() {
+    unawaited(widget.servicos.backup.automatico());
+    unawaited(widget.servicos.lembretes.sincronizar());
   }
 
   @override
