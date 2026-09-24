@@ -5,6 +5,9 @@
 /// dinheiro em `int` de centavos, percentuais em pontos-base, nunca `double`.
 library;
 
+export 'src/backup/envelope_dsmb.dart';
+export 'src/backup/excecoes_backup.dart';
+export 'src/backup/payload_backup.dart';
 export 'src/carne_leao/apuracao.dart';
 export 'src/carne_leao/darf.dart';
 export 'src/carne_leao/repasse.dart';

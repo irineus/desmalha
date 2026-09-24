@@ -1,0 +1,3 @@
+# O golden de cada formato é artefato histórico, byte a byte.
+*.dsmb binary
+*.json -text
