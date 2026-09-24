@@ -19,6 +19,8 @@ import 'catalogo/porta_catalogo_rest.dart';
 import 'conta/porta_exclusao_conta_http.dart';
 import 'catalogo/repositorio_catalogo.dart';
 import 'dados/conexao_cifrada.dart';
+import 'lembretes/controlador_lembretes.dart';
+import 'lembretes/porta_notificacoes_locais.dart';
 import 'monitoring.dart';
 import 'navegacao/abas.dart';
 import 'servicos_do_app.dart';
@@ -33,13 +35,25 @@ Future<void> main() async {
     // gravando dado fiscal em claro (ver conexao_cifrada.dart).
     await abrirBancoNoBoot();
     await inicializarSupabase();
-    // Em segundo plano, sem segurar o boot: o catálogo local (cache ou seed)
-    // já serve qualquer cálculo; isto só o mantém fresco quando há rede.
-    unawaited(_atualizarCatalogo());
     if (!supabaseConfigurado) {
       runApp(const DesmalhaApp(servico: null, servicos: null));
       return;
     }
+    final catalogo = await _repositorioCatalogo();
+    final lembretes = ControladorLembretes(
+      porta: PortaNotificacoesLocais(),
+      carregarCatalogo: catalogo.carregar,
+    );
+    // Em segundo plano, sem segurar o boot: o catálogo local (cache ou seed)
+    // já serve qualquer cálculo; isto só o mantém fresco quando há rede.
+    // Falhar é rotina (avião, servidor fora) e `atualizar()` devolve `false`
+    // em vez de lançar. Se trouxe feriado ou ano novo, os lembretes são
+    // reagendados com ele.
+    unawaited(
+      catalogo.atualizar().then((atualizou) {
+        if (atualizou) return lembretes.sincronizar();
+      }),
+    );
     final portaAuth = PortaAuthSupabase.doClienteGlobal();
     final chavesBackup = ChavesBackup();
     runApp(
@@ -69,6 +83,7 @@ Future<void> main() async {
             emWifi: _emWifi,
             comSessao: () => portaAuth.usuarioAtual != null,
           ),
+          lembretes: lembretes,
         ),
       ),
     );
@@ -82,27 +97,16 @@ Future<bool> _emWifi() async {
       redes.contains(ConnectivityResult.ethernet);
 }
 
-/// Atualiza o cache local do catálogo versionado a partir do servidor.
-///
-/// Falhar aqui é rotina (avião, sem configuração, servidor fora): o app
-/// segue com o último snapshot — cache ou seed embarcado. Por isso nada
-/// sobe: `atualizar()` já devolve `false` em vez de lançar, e o guarda
-/// externo cobre só o `path_provider`.
-Future<void> _atualizarCatalogo() async {
-  if (!supabaseConfigurado) return;
-  try {
-    final diretorio = await getApplicationSupportDirectory();
-    final repositorio = RepositorioCatalogo(
-      remota: PortaCatalogoRest(
-        url: supabaseUrl,
-        chavePublicavel: supabasePublishableKey,
-      ),
-      arquivoCache: File('${diretorio.path}/catalogo_cache.json'),
-    );
-    await repositorio.atualizar();
-  } on Exception {
-    // Offline é o estado normal de um app local-first.
-  }
+/// Repositório do catálogo versionado: rede → cache local → seed.
+Future<RepositorioCatalogo> _repositorioCatalogo() async {
+  final diretorio = await getApplicationSupportDirectory();
+  return RepositorioCatalogo(
+    remota: PortaCatalogoRest(
+      url: supabaseUrl,
+      chavePublicavel: supabasePublishableKey,
+    ),
+    arquivoCache: File('${diretorio.path}/catalogo_cache.json'),
+  );
 }
 
 class DesmalhaApp extends StatelessWidget {

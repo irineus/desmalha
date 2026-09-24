@@ -7,12 +7,14 @@ library;
 import 'backup/chaves_backup.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
+import 'lembretes/controlador_lembretes.dart';
 
 class ServicosDoApp {
   const ServicosDoApp({
     required this.exclusao,
     required this.chavesBackup,
     required this.backup,
+    required this.lembretes,
   });
 
   /// Exclusão da conta pelo app (Ajustes > Sua conta).
@@ -23,4 +25,7 @@ class ServicosDoApp {
 
   /// Estado, automático e "Fazer backup agora" (Ajustes > Backup).
   final ControladorBackup backup;
+
+  /// Lembrete local de vencimento do DARF (Ajustes > Lembrete do DARF).
+  final ControladorLembretes lembretes;
 }

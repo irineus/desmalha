@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Lembrete LOCAL de vencimento do DARF (flutter_local_notifications):
+         o plugin reagenda os avisos depois de reiniciar o aparelho. Sem
+         SCHEDULE_EXACT_ALARM/USE_EXACT_ALARM de propósito: um lembrete de
+         DATA não justifica alarme exato (e a Play audita essa permissão) —
+         o agendamento é inexato (inexactAllowWhileIdle). POST_NOTIFICATIONS
+         vem do manifesto do próprio plugin. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- allowBackup=false: o banco local cifrado NÃO pode ir para o backup
          automático do Google — deixar o SO copiar o arquivo para uma nuvem
          que não controlamos fura o claim "nem nós conseguimos ver seus
@@ -32,6 +39,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';
 import '../backup/tela_backup.dart';
+import '../lembretes/controlador_lembretes.dart';
 import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
 import '../tema/tokens.dart';
@@ -112,6 +113,7 @@ class TelaAjustes extends StatelessWidget {
           ),
         ),
         _ItemBackup(servicos: servicos),
+        _ItemLembreteDarf(controlador: servicos.lembretes),
       ],
     ),
   );
@@ -164,6 +166,76 @@ class _ItemBackup extends StatelessWidget {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => TelaBackup(controlador: c)),
           ),
+        );
+      },
+    ),
+  );
+}
+
+/// Ajustes > Lembrete do DARF: o próximo vencimento avisado ou, em
+/// vermelho, por que o aviso NÃO vai aparecer — notificação não autorizada,
+/// ano sem calendário de feriados, erro ao agendar.
+class _ItemLembreteDarf extends StatelessWidget {
+  const _ItemLembreteDarf({required this.controlador});
+
+  final ControladorLembretes controlador;
+
+  static const _textoSemPermissao =
+      'O aparelho não autorizou. Libere em Configurações > Apps > Desmalha '
+      '> Notificações.';
+
+  Future<void> _permitir(BuildContext context) async {
+    final mensageiro = ScaffoldMessenger.of(context);
+    if (!await controlador.permitir()) {
+      mensageiro.showSnackBar(
+        const SnackBar(content: Text(_textoSemPermissao)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: ListenableBuilder(
+      listenable: controlador,
+      builder: (context, _) {
+        final c = controlador;
+        final proximo = c.agendados.isEmpty ? null : c.agendados.first;
+        final falha = c.falhaDeCalendario;
+        final (subtitulo, selo) = !c.carregado
+            ? ('Conferindo…', null)
+            : c.erro != null
+            ? (c.erro!, const Selo('erro', tipo: TipoSelo.falha))
+            : !c.permitidas
+            ? (
+                'Desligado — o aparelho não autorizou notificações. '
+                    'Toque para permitir.',
+                const Selo('desligado', tipo: TipoSelo.falha),
+              )
+            : proximo == null && falha != null
+            ? (
+                'Sem aviso: o calendário de feriados de '
+                    '${falha.anoDoVencimento} ainda não foi publicado, e o '
+                    'vencimento não é calculado sem ele.',
+                const Selo('sem calendário', tipo: TipoSelo.falha),
+              )
+            : proximo == null
+            ? ('Nenhum vencimento a avisar.', null)
+            : (
+                'Próximo: ${dataCurta(proximo.vencimento)} (competência '
+                    '${competenciaPorExtenso(proximo.competencia)}). Aviso '
+                    '3 dias antes e no dia, às 9h.'
+                    '${falha == null ? '' : ' Depois disso, falta o '
+                              'calendário de feriados de '
+                              '${falha.anoDoVencimento}.'}',
+                null,
+              );
+        return ListTile(
+          key: const Key('item_lembrete_darf'),
+          leading: const Icon(Icons.notifications_outlined),
+          title: const Text('Lembrete do DARF'),
+          subtitle: Text(subtitulo),
+          trailing: selo,
+          onTap: c.carregado && !c.permitidas ? () => _permitir(context) : null,
         );
       },
     ),

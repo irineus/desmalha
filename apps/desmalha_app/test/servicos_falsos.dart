@@ -6,11 +6,13 @@ import 'package:desmalha_app/backup/estado_backup.dart';
 import 'package:desmalha_app/backup/servico_backup.dart';
 import 'package:desmalha_app/conta/porta_exclusao_conta.dart';
 import 'package:desmalha_app/dados/chave_banco.dart';
+import 'package:desmalha_app/lembretes/controlador_lembretes.dart';
 import 'package:desmalha_app/servicos_do_app.dart';
 import 'package:desmalha_core/desmalha_core.dart';
 
 import 'backup/armazenamento_falso.dart';
 import 'conta/porta_exclusao_falsa.dart';
+import 'lembretes/notificacoes_falsas.dart';
 
 /// Cofre do sistema em memória, com contagem de gravações.
 class CofreEmMemoria implements CofreSeguro {
@@ -78,6 +80,7 @@ ServicosDoApp servicosFalsos({
   PortaExclusaoConta? exclusao,
   ChavesBackup? chavesBackup,
   ControladorBackup? backup,
+  ControladorLembretes? lembretes,
 }) {
   final chaves =
       chavesBackup ??
@@ -86,5 +89,6 @@ ServicosDoApp servicosFalsos({
     exclusao: exclusao ?? PortaExclusaoFalsa(),
     chavesBackup: chaves,
     backup: backup ?? controladorBackupFalso(chaves: chaves),
+    lembretes: lembretes ?? controladorLembretesFalso(),
   );
 }
