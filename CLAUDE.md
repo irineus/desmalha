@@ -38,7 +38,7 @@ imposto mensal, gera DARF (código 0190) e prepara os consolidados para o e-CAC.
 ## Mapa de pastas
 ```
 .fvmrc                     # pin do Flutter (3.44.7) — só o .fvmrc é versionado, .fvm/ não
-codemagic.yaml             # CI: android-verify (push) + ios-simulator-nightly (cron/manual)
+codemagic.yaml             # CI: android-verify (tag verificar-*) + ios-simulator-nightly (cron/manual)
 tool/setup_env.sh          # bootstrap idempotente de ambiente Linux (JDK, FVM, Android SDK)
 tool/verificar_ambiente.dart  # verificador de ambiente (Dart puro; roda nos 3 ambientes)
 docs/ambiente-windows.md   # roteiro da máquina de UI (emulador, hot reload, Android Studio)
