@@ -1,0 +1,151 @@
+# Desmalha — prova ponta a ponta do app atrás do gateway Fulcrum (dev).
+#
+# O que o app faz de verdade, pelo mesmo caminho: chave do TENANT no
+# `apikey`, sessão de usuário no `Authorization`, host api-dev.desmalha.app.
+# Prova que o gateway entrega ao destino as quatro coisas de que o app
+# depende — catálogo (anon), pedido de sessão por código, e objeto no bucket
+# `backups` (upload, download conferido por sha256, recusa sem sessão) —,
+# e desfaz tudo o que criou.
+#
+# Por que no Actions e não na máquina de dev: criar o usuário de teste e
+# gerar o código dele exige a chave de SERVIÇO do projeto, que só existe
+# aqui (lida em tempo de execução pela Management API com o
+# SUPABASE_ACCESS_TOKEN que o workflow `Supabase` já usa, mascarada no log).
+# As chamadas administrativas vão DIRETO ao projeto — são do operador, não
+# do app —; tudo o que o app faz passa pelo gateway.
+#
+# Manual (workflow_dispatch): é uma prova de integração, não um portão de
+# PR. Roda de novo sempre que o gateway ou a chave do tenant mudarem.
+
+name: Prova do gateway (dev)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prova:
+    name: App atrás do gateway — catálogo, sessão e storage
+    runs-on: ubuntu-latest
+    env:
+      GW: https://api-dev.desmalha.app
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      TENANT_KEY: ${{ secrets.DESMALHA_TENANT_KEY_DEV }}
+      REF: ${{ vars.SUPABASE_PROJECT_REF_DEV || secrets.SUPABASE_PROJECT_REF_DEV }}
+    steps:
+      - name: Pré-condições
+        run: |
+          faltam=()
+          [[ -n "${SUPABASE_ACCESS_TOKEN:-}" ]] || faltam+=(SUPABASE_ACCESS_TOKEN)
+          [[ -n "${TENANT_KEY:-}" ]] || faltam+=(DESMALHA_TENANT_KEY_DEV)
+          [[ -n "${REF:-}" ]] || faltam+=(SUPABASE_PROJECT_REF_DEV)
+          if (( ${#faltam[@]} )); then
+            echo "faltam no repositório: ${faltam[*]}" >&2
+            exit 1
+          fi
+
+      - name: Prova
+        run: |
+          set -euo pipefail
+          DIRETO="https://$REF.supabase.co"
+          EMAIL="prova-gateway+${GITHUB_RUN_ID}@desmalha.invalid"
+          CAMINHO=""
+          UID_TESTE=""
+
+          # ─── chave de serviço, só em memória e mascarada ─────────────────
+          curl -sS "https://api.supabase.com/v1/projects/$REF/api-keys?reveal=true" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" > /tmp/chaves.json
+          SK=$(jq -r '[.[] | select(.name=="service_role")][0].api_key // empty' /tmp/chaves.json)
+          rm -f /tmp/chaves.json
+          [[ -n "$SK" ]] || { echo "chave service_role não encontrada no projeto" >&2; exit 1; }
+          echo "::add-mask::$SK"
+          echo "::add-mask::$TENANT_KEY"
+          adm=(-H "apikey: $SK" -H "Authorization: Bearer $SK" -H "Content-Type: application/json")
+          ten=(-H "apikey: $TENANT_KEY")
+
+          # Desfaz o que criou, passe ou falhe a prova.
+          limpar() {
+            if [[ -n "$CAMINHO" && -n "${TOKEN:-}" ]]; then
+              curl -sS -o /dev/null -X DELETE "$GW/storage/v1/object/backups/$CAMINHO" \
+                "${ten[@]}" -H "Authorization: Bearer $TOKEN" || true
+            fi
+            if [[ -n "$UID_TESTE" ]]; then
+              curl -sS -o /dev/null -X DELETE "$DIRETO/auth/v1/admin/users/$UID_TESTE" "${adm[@]}" || true
+            fi
+          }
+          trap limpar EXIT
+
+          esperar() { # esperar <rótulo> <código esperado> <código obtido>
+            if [[ "$3" != "$2" ]]; then echo "✗ $1: HTTP $3 (esperado $2)" >&2; exit 1; fi
+            echo "✓ $1: HTTP $3"
+          }
+
+          # 1. o gateway responde como o tenant certo
+          curl -sS "$GW/health" | tee /tmp/health.json; echo
+          [[ "$(jq -r .tenant /tmp/health.json)" == "desmalha" ]] || { echo "✗ /health não é do tenant desmalha" >&2; exit 1; }
+
+          # 2. catálogo (anon) pelo gateway
+          c=$(curl -sS -o /tmp/cat.json -w '%{http_code}' \
+            "$GW/rest/v1/catalogo_itens?select=tipo,id" "${ten[@]}" -H "Authorization: Bearer $TENANT_KEY")
+          esperar "GET catálogo pelo gateway" 200 "$c"
+          echo "  itens: $(jq length /tmp/cat.json)"
+
+          # 3. sem chave do tenant, o gateway recusa
+          c=$(curl -sS -o /dev/null -w '%{http_code}' "$GW/rest/v1/catalogo_itens?select=id")
+          esperar "sem chave do tenant é recusado" 401 "$c"
+
+          # 4. usuário de teste descartável (operador, direto no projeto)
+          curl -sS "$DIRETO/auth/v1/admin/users" "${adm[@]}" \
+            --data "{\"email\":\"$EMAIL\",\"email_confirm\":true}" > /tmp/u.json
+          UID_TESTE=$(jq -r '.id // empty' /tmp/u.json)
+          [[ -n "$UID_TESTE" ]] || { echo "✗ não criou o usuário de teste: $(jq -c . /tmp/u.json)" >&2; exit 1; }
+          echo "✓ usuário de teste criado"
+
+          # 5. código de acesso gerado pelo operador, SEM e-mail enviado
+          curl -sS "$DIRETO/auth/v1/admin/generate_link" "${adm[@]}" \
+            --data "{\"type\":\"magiclink\",\"email\":\"$EMAIL\"}" > /tmp/l.json
+          OTP=$(jq -r '.email_otp // .properties.email_otp // empty' /tmp/l.json)
+          rm -f /tmp/l.json
+          [[ -n "$OTP" ]] || { echo "✗ generate_link não devolveu o código" >&2; exit 1; }
+          echo "::add-mask::$OTP"
+
+          # 6. o app troca o código por sessão PELO GATEWAY
+          c=$(curl -sS -o /tmp/s.json -w '%{http_code}' -X POST "$GW/auth/v1/verify" \
+            "${ten[@]}" -H "Authorization: Bearer $TENANT_KEY" -H "Content-Type: application/json" \
+            --data "{\"type\":\"email\",\"email\":\"$EMAIL\",\"token\":\"$OTP\"}")
+          esperar "verificar código pelo gateway" 200 "$c"
+          TOKEN=$(jq -r .access_token /tmp/s.json); rm -f /tmp/s.json
+          echo "::add-mask::$TOKEN"
+
+          # 7. upload de um blob opaco no backups/<uid>/ pelo gateway
+          CAMINHO="$UID_TESTE/000001.dsmb"
+          head -c 4096 /dev/urandom > /tmp/blob.dsmb
+          c=$(curl -sS -o /tmp/up.json -w '%{http_code}' -X POST \
+            "$GW/storage/v1/object/backups/$CAMINHO" "${ten[@]}" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/octet-stream" \
+            --data-binary @/tmp/blob.dsmb)
+          esperar "upload no bucket backups pelo gateway" 200 "$c"
+
+          # 8. download pelo gateway, byte a byte igual
+          c=$(curl -sS -o /tmp/baixado.dsmb -w '%{http_code}' \
+            "$GW/storage/v1/object/backups/$CAMINHO" "${ten[@]}" -H "Authorization: Bearer $TOKEN")
+          esperar "download pelo gateway" 200 "$c"
+          a=$(sha256sum < /tmp/blob.dsmb | cut -d' ' -f1); b=$(sha256sum < /tmp/baixado.dsmb | cut -d' ' -f1)
+          [[ "$a" == "$b" ]] || { echo "✗ o blob baixado difere do enviado" >&2; exit 1; }
+          echo "✓ sha256 do download = do upload"
+
+          # 9. sem sessão, o mesmo objeto não sai (bucket privado, RLS)
+          c=$(curl -sS -o /dev/null -w '%{http_code}' \
+            "$GW/storage/v1/object/backups/$CAMINHO" "${ten[@]}" -H "Authorization: Bearer $TENANT_KEY")
+          [[ "$c" != "200" ]] || { echo "✗ objeto de backup baixado sem sessão" >&2; exit 1; }
+          echo "✓ sem sessão o objeto não sai: HTTP $c"
+
+          # 10. remoção pelo gateway e releitura: sumiu mesmo
+          c=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE \
+            "$GW/storage/v1/object/backups/$CAMINHO" "${ten[@]}" -H "Authorization: Bearer $TOKEN")
+          esperar "remoção pelo gateway" 200 "$c"
+          c=$(curl -sS -o /dev/null -w '%{http_code}' \
+            "$GW/storage/v1/object/backups/$CAMINHO" "${ten[@]}" -H "Authorization: Bearer $TOKEN")
+          [[ "$c" != "200" ]] || { echo "✗ o objeto continua lá depois da remoção" >&2; exit 1; }
+          echo "✓ releitura depois da remoção: HTTP $c"
+          CAMINHO=""
+          echo "PROVA DO GATEWAY: OK"

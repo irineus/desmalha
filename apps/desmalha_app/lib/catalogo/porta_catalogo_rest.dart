@@ -16,7 +16,8 @@ import 'porta_catalogo.dart';
 class PortaCatalogoRest implements PortaCatalogoRemota {
   PortaCatalogoRest({required this.url, required this.chavePublicavel});
 
-  /// URL do projeto, ex.: `https://<ref>.supabase.co`.
+  /// URL do gateway, ex.: `https://api-dev.desmalha.app` — nunca
+  /// `*.supabase.co` (ver `configuracao_supabase.dart`).
   final String url;
 
   /// Chave publicável (pública por construção; quem protege é o RLS).
