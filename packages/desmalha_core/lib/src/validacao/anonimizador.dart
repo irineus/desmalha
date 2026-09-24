@@ -480,7 +480,9 @@ String anonimizarCsv(
 
     for (var c = 0; c < campos.length; c++) {
       final campo = campos[c];
-      if (c == perfil.colunaValor) {
+      if (c == perfil.colunaValor ||
+          c == perfil.colunaCredito ||
+          c == perfil.colunaDebito) {
         final perturbado =
             _perturbarCampoValor(campo.texto, perfil.formatoValor, anon);
         if (perturbado != null) campo.texto = perturbado;

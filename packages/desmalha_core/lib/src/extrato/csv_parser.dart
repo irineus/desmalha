@@ -28,13 +28,7 @@ ExtratoImportado parseCsv(String conteudo, PerfilCsv perfil) {
     );
   }
 
-  final maiorColuna = [
-    perfil.colunaData,
-    perfil.colunaValor,
-    perfil.colunaDescricao,
-    if (perfil.colunaIdExterno != null) perfil.colunaIdExterno!,
-    if (perfil.colunaTipo != null) perfil.colunaTipo!,
-  ].reduce((a, b) => a > b ? a : b);
+  final maiorColuna = perfil.colunasLidas.reduce((a, b) => a > b ? a : b);
 
   final transacoes = <TransacaoImportada>[];
   final avisos = <AvisoImportacao>[];
@@ -70,21 +64,39 @@ ExtratoImportado parseCsv(String conteudo, PerfilCsv perfil) {
       continue;
     }
 
-    final valorBruto = campos[perfil.colunaValor];
-    var valor = parseValorMonetario(valorBruto, perfil.formatoValor);
-    if (valor == null) {
-      avisos.add(AvisoImportacao(
-        linha: linha.numero,
-        mensagem: 'valor inválido: "${valorBruto.trim()}" — linha pulada',
-      ));
-      continue;
-    }
-
-    final colunaTipo = perfil.colunaTipo;
-    if (colunaTipo != null) {
-      final tipo = campos[colunaTipo].trim().toLowerCase();
-      final debito = perfil.marcadorDebito!.trim().toLowerCase();
-      valor = tipo == debito ? -valor.abs() : valor.abs();
+    final int valor;
+    if (perfil.creditoDebitoSeparados) {
+      final resultado = _valorDeCreditoDebito(
+        campos[perfil.colunaCredito!],
+        campos[perfil.colunaDebito!],
+        perfil.formatoValor,
+      );
+      if (resultado.aviso != null) {
+        avisos.add(AvisoImportacao(
+          linha: linha.numero,
+          mensagem: '${resultado.aviso} — linha pulada',
+        ));
+        continue;
+      }
+      valor = resultado.valor!;
+    } else {
+      final valorBruto = campos[perfil.colunaValor!];
+      final lido = parseValorMonetario(valorBruto, perfil.formatoValor);
+      if (lido == null) {
+        avisos.add(AvisoImportacao(
+          linha: linha.numero,
+          mensagem: 'valor inválido: "${valorBruto.trim()}" — linha pulada',
+        ));
+        continue;
+      }
+      final colunaTipo = perfil.colunaTipo;
+      if (colunaTipo != null) {
+        final tipo = campos[colunaTipo].trim().toLowerCase();
+        final debito = perfil.marcadorDebito!.trim().toLowerCase();
+        valor = tipo == debito ? -lido.abs() : lido.abs();
+      } else {
+        valor = lido;
+      }
     }
 
     final colunaId = perfil.colunaIdExterno;
@@ -105,6 +117,54 @@ ExtratoImportado parseCsv(String conteudo, PerfilCsv perfil) {
     avisos: avisos,
     banco: perfil.banco,
   );
+}
+
+/// Valor de uma linha no layout de crédito e débito em colunas separadas.
+///
+/// O sinal vem da COLUNA, não do número: crédito entra positivo, débito
+/// negativo — `850,00` e `-850,00` na coluna Débito dão o mesmo lançamento,
+/// porque bancos escrevem das duas formas. Coluna com `0,00` conta como
+/// vazia (há banco que preenche a outra coluna com zero).
+///
+/// Tudo o que não fecha vira aviso e a linha é pulada, nunca adivinhada:
+/// - as duas preenchidas com valor diferente de zero;
+/// - nenhuma preenchida (ou as duas zeradas);
+/// - valor negativo na coluna Crédito. Um estorno escrito ali pode ser
+///   "crédito negativo" ou "débito na coluna errada", e tratar como receita
+///   positiva inflaria o rendimento — o erro não se escolhe, se mostra.
+({int? valor, String? aviso}) _valorDeCreditoDebito(
+  String creditoBruto,
+  String debitoBruto,
+  FormatoValor formato,
+) {
+  int? ler(String bruto) =>
+      bruto.trim().isEmpty ? 0 : parseValorMonetario(bruto, formato);
+
+  final credito = ler(creditoBruto);
+  if (credito == null) {
+    return (valor: null, aviso: 'crédito inválido: "${creditoBruto.trim()}"');
+  }
+  final debito = ler(debitoBruto);
+  if (debito == null) {
+    return (valor: null, aviso: 'débito inválido: "${debitoBruto.trim()}"');
+  }
+  if (credito < 0) {
+    return (
+      valor: null,
+      aviso: 'valor negativo na coluna de crédito: "${creditoBruto.trim()}"',
+    );
+  }
+  if (credito != 0 && debito != 0) {
+    return (
+      valor: null,
+      aviso: 'crédito e débito preenchidos na mesma linha '
+          '("${creditoBruto.trim()}" / "${debitoBruto.trim()}")',
+    );
+  }
+  if (credito == 0 && debito == 0) {
+    return (valor: null, aviso: 'linha sem valor de crédito nem de débito');
+  }
+  return (valor: credito != 0 ? credito : -debito.abs(), aviso: null);
 }
 
 class _Linha {
