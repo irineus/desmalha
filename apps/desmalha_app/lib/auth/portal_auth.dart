@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../importacao/tela_importacao.dart';
 import '../navegacao/abas.dart';
 import '../navegacao/casca.dart';
 import '../onboarding/telas_onboarding.dart';
@@ -149,12 +150,34 @@ class _GatilhosDeAberturaState extends State<GatilhosDeAbertura>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _rodar();
+    widget.servicos.arquivoRecebido.addListener(_abrirArquivoRecebido);
+    // Abertura a frio: o arquivo pode ter chegado antes do login.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _abrirArquivoRecebido(),
+    );
   }
 
   @override
   void dispose() {
+    widget.servicos.arquivoRecebido.removeListener(_abrirArquivoRecebido);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  /// "Compartilhar → Desmalha": abre a importação já com o arquivo. Só
+  /// aqui, atrás do login e do onboarding, porque a importação grava no
+  /// banco da conta.
+  Future<void> _abrirArquivoRecebido() async {
+    final recebido = widget.servicos.arquivoRecebido.value;
+    if (recebido == null || !mounted) return;
+    widget.servicos.arquivoRecebido.value = null;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            TelaImportacao(servicos: widget.servicos, recebido: recebido),
+      ),
+    );
+    widget.servicos.dadosAlterados.value++;
   }
 
   @override

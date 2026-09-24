@@ -112,6 +112,12 @@ class ControladorImportacao extends ChangeNotifier {
   Future<void> escolherArquivo() async {
     final arquivo = await seletor.escolher();
     if (arquivo == null) return;
+    await usarArquivo(arquivo);
+  }
+
+  /// O mesmo caminho do seletor para um arquivo que chegou de outro app
+  /// ("Compartilhar → Desmalha"): hash, já importado?, formato, prévia.
+  Future<void> usarArquivo(ArquivoSelecionado arquivo) async {
     _reiniciar();
     _arquivo = arquivo;
     _mudar(EstadoImportacao.lendo);
@@ -231,6 +237,13 @@ class ControladorImportacao extends ChangeNotifier {
       _mensagem = 'A importação não foi gravada: $e';
       _mudar(EstadoImportacao.previa);
     }
+  }
+
+  /// O outro app entregou algo que não deu para ler: a tela diz o motivo e
+  /// oferece o seletor.
+  void falharRecebimento(String mensagem) {
+    _reiniciar();
+    _falhar(mensagem);
   }
 
   void recomecar() {

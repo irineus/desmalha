@@ -11,6 +11,7 @@ import 'backup/chaves_backup.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
 import 'dados/repositorio_importacao.dart';
+import 'importacao/arquivo_recebido.dart';
 import 'importacao/controlador_importacao.dart';
 import 'painel/repositorio_painel.dart';
 import 'lembretes/controlador_lembretes.dart';
@@ -28,6 +29,7 @@ class ServicosDoApp {
     required this.catalogo,
     required this.painel,
     required this.dadosAlterados,
+    required this.arquivoRecebido,
   });
 
   /// Exclusão da conta pelo app (Ajustes > Sua conta).
@@ -59,4 +61,8 @@ class ServicosDoApp {
 
   /// Sobe a cada importação confirmada: a aba Mês recalcula.
   final ValueNotifier<int> dadosAlterados;
+
+  /// Extrato entregue por outro app ("Compartilhar → Desmalha"), à espera
+  /// de ser aberto na importação quando o app estiver pronto.
+  final ValueNotifier<RecebimentoDeArquivo?> arquivoRecebido;
 }
