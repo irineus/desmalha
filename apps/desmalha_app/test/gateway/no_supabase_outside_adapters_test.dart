@@ -23,6 +23,10 @@ import '../auth/trava_sem_senha_test.dart' show semComentarios;
 const _permitidos = {
   'lib/auth/porta_auth_supabase.dart', // SDK: auth por código de e-mail
   'lib/catalogo/porta_catalogo_rest.dart', // REST cru: GET do catálogo
+  // +1 (24/09/2026, card "Botão de exclusão de conta dentro do app"): POST na
+  // edge function excluir-conta. Porta própria, e não método da PortaAuth,
+  // para a superfície do SDK de auth continuar mínima (trava anti-senha).
+  'lib/conta/porta_exclusao_conta_http.dart',
 };
 
 /// O que conta como "falar Supabase" em CÓDIGO (comentários descartados;

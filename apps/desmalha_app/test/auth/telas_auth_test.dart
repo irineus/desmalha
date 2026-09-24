@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'porta_auth_falsa.dart';
+import '../conta/porta_exclusao_falsa.dart';
 
 /// Texto do widget de uma chave — evita casar por acaso com o mesmo endereço
 /// escrito em outro canto da tela.
@@ -26,7 +27,9 @@ void main() {
   });
 
   Future<void> montar(WidgetTester tester) => tester.pumpWidget(
-    MaterialApp(home: PortalAuth(servico: servico)),
+    MaterialApp(
+      home: PortalAuth(servico: servico, exclusao: PortaExclusaoFalsa()),
+    ),
   );
 
   /// Entra na conta pelo caminho do usuário: e-mail, código, e então
