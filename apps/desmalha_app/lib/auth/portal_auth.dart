@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../navegacao/abas.dart';
 import '../navegacao/casca.dart';
+import 'configuracao_supabase.dart';
 import 'estado_auth.dart';
 import 'servico_auth.dart';
 import 'tela_login.dart';
@@ -52,9 +53,11 @@ class _PortalAuthState extends State<PortalAuth> {
   };
 }
 
-/// Tela de um build sem `SUPABASE_URL`/`SUPABASE_ANON_KEY`.
+/// Tela de um build sem configuração de servidor válida: sem
+/// `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY`, ou com a URL apontando direto
+/// para o Supabase em vez do gateway (ver `configuracao_supabase.dart`).
 ///
-/// Diz o que está faltando em vez de abrir um login que erraria na rede — a
+/// Diz o que está errado em vez de abrir um login que erraria na rede — a
 /// mesma escolha da guia de DARF que sai sem código de barras: falhar visível
 /// vale mais do que parecer funcionar.
 class TelaSemConfiguracao extends StatelessWidget {
@@ -77,10 +80,12 @@ class TelaSemConfiguracao extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Este build não recebeu SUPABASE_URL e '
-                'SUPABASE_PUBLISHABLE_KEY, então não há como entrar na conta. '
-                'Rode com --dart-define para as duas variáveis.',
+              Text(
+                '${problemaDeConfiguracao ?? 'configuração inválida'}. '
+                'Sem o endereço do gateway e a chave do tenant não há como '
+                'entrar na conta — rode com '
+                '--dart-define-from-file=<arquivo fora do repositório>.',
+                key: const Key('motivo_sem_configuracao'),
                 textAlign: TextAlign.center,
               ),
             ],
