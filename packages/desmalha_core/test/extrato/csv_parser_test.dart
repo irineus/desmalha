@@ -42,6 +42,22 @@ const _perfilBancoDoBrasil = PerfilCsv(
   descricoesIgnoradas: ['Saldo Anterior', 'S A L D O'],
 );
 
+/// Layout de DUAS colunas de valor (Crédito/Débito), descrito no card a
+/// partir do que se sabe de Bradesco/Santander/Banrisul — AINDA NÃO
+/// conferido contra CSV real. Nenhum perfil de banco é publicado com ele.
+const _perfilCreditoDebito = PerfilCsv(
+  id: 'banco-separado-conta-csv-v1',
+  banco: 'Banco Separado',
+  delimitador: ';',
+  linhasCabecalho: 1,
+  formatoData: 'dd/MM/yyyy',
+  formatoValor: FormatoValor.virgulaDecimal,
+  colunaData: 0,
+  colunaDescricao: 1,
+  colunaCredito: 3,
+  colunaDebito: 4,
+);
+
 void main() {
   group('parseCsv — perfil estilo Nubank', () {
     test('extrai transações com identificador', () {
@@ -183,6 +199,115 @@ void main() {
         () => parseCsv('so uma linha', _perfilInter),
         throwsA(isA<ExtratoInvalidoException>()),
       );
+    });
+  });
+
+  group('parseCsv — os três layouts de valor dão o mesmo lançamento', () {
+    // Um crédito de R$ 1.200,00 e um débito de R$ 850,00 escritos nos três
+    // layouts que o PerfilCsv representa.
+    const esperado = [
+      TransacaoImportada(
+          data: '2026-07-10', valorCentavos: 120000, descricao: 'PIX RECEBIDO'),
+      TransacaoImportada(
+          data: '2026-07-15', valorCentavos: -85000, descricao: 'ALUGUEL'),
+    ];
+
+    test('1. valor assinado numa coluna', () {
+      const perfil = PerfilCsv(
+        id: 'assinado',
+        banco: 'X',
+        delimitador: ';',
+        formatoData: 'dd/MM/yyyy',
+        formatoValor: FormatoValor.virgulaDecimal,
+        colunaData: 0,
+        colunaValor: 2,
+        colunaDescricao: 1,
+      );
+      const csv = 'Data;Histórico;Valor\n'
+          '10/07/2026;PIX RECEBIDO;1.200,00\n'
+          '15/07/2026;ALUGUEL;-850,00\n';
+      final extrato = parseCsv(csv, perfil);
+      expect(extrato.avisos, isEmpty);
+      expect(extrato.transacoes, esperado);
+    });
+
+    test('2. valor sem sinal + coluna de tipo', () {
+      const perfil = PerfilCsv(
+        id: 'tipo',
+        banco: 'X',
+        delimitador: ';',
+        formatoData: 'dd/MM/yyyy',
+        formatoValor: FormatoValor.virgulaDecimal,
+        colunaData: 0,
+        colunaValor: 2,
+        colunaDescricao: 1,
+        colunaTipo: 3,
+        marcadorDebito: 'D',
+      );
+      const csv = 'Data;Histórico;Valor;Tipo\n'
+          '10/07/2026;PIX RECEBIDO;1.200,00;C\n'
+          '15/07/2026;ALUGUEL;850,00;D\n';
+      final extrato = parseCsv(csv, perfil);
+      expect(extrato.avisos, isEmpty);
+      expect(extrato.transacoes, esperado);
+    });
+
+    test('3. crédito e débito em colunas separadas', () {
+      const csv = 'Data;Histórico;Docto.;Crédito (R\$);Débito (R\$);Saldo (R\$)\n'
+          '10/07/2026;PIX RECEBIDO;001;"1.200,00";;"3.450,00"\n'
+          '15/07/2026;ALUGUEL;002;;"850,00";"2.600,00"\n';
+      final extrato = parseCsv(csv, _perfilCreditoDebito);
+      expect(extrato.avisos, isEmpty);
+      expect(extrato.transacoes, esperado);
+    });
+  });
+
+  group('parseCsv — crédito/débito separados: o que não fecha vira aviso', () {
+    List<TransacaoImportada> ok(String linha) {
+      final e = parseCsv('cab\n$linha\n', _perfilCreditoDebito);
+      expect(e.avisos, isEmpty, reason: linha);
+      return e.transacoes;
+    }
+
+    String aviso(String linha) {
+      final e = parseCsv('cab\n$linha\n', _perfilCreditoDebito);
+      expect(e.transacoes, isEmpty, reason: linha);
+      return e.avisos.single.mensagem;
+    }
+
+    test('débito com sinal negativo é o mesmo débito', () {
+      expect(ok('15/07/2026;ALUGUEL;;;-850,00').single.valorCentavos, -85000);
+    });
+
+    test('a outra coluna preenchida com zero conta como vazia', () {
+      expect(ok('10/07/2026;PIX;;1.200,00;0,00').single.valorCentavos, 120000);
+      expect(ok('15/07/2026;ALUGUEL;;0,00;850,00').single.valorCentavos, -85000);
+    });
+
+    test('as duas preenchidas: pula, não soma nem escolhe', () {
+      expect(aviso('10/07/2026;PIX;;100,00;50,00'),
+          contains('crédito e débito preenchidos'));
+    });
+
+    test('nenhuma preenchida: pula', () {
+      expect(aviso('10/07/2026;PIX;;;'), contains('sem valor'));
+      expect(aviso('10/07/2026;PIX;;0,00;0,00'), contains('sem valor'));
+    });
+
+    test('negativo na coluna de crédito: pula, nunca vira receita positiva', () {
+      // Estorno escrito como crédito negativo é ambíguo; tratá-lo como
+      // receita de R$ 300 inflaria o rendimento.
+      expect(aviso('10/07/2026;ESTORNO;;-300,00;'),
+          contains('negativo na coluna de crédito'));
+    });
+
+    test('valor ilegível em qualquer das colunas: pula', () {
+      expect(aviso('10/07/2026;PIX;;abc;'), contains('crédito inválido'));
+      expect(aviso('10/07/2026;PIX;;;xyz'), contains('débito inválido'));
+    });
+
+    test('linha curta demais para a coluna de débito: pula', () {
+      expect(aviso('10/07/2026;PIX;;1,00'), contains('colunas'));
     });
   });
 }

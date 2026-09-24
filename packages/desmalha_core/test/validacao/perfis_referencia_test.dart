@@ -16,18 +16,12 @@ String _dataNoFormato(String formato) => formato
 /// contagem de colunas, formato de data e de valor vêm todos do próprio
 /// perfil, e não de uma cópia escrita à mão no teste.
 String _csvNaFormaDoPerfil(PerfilCsv perfil, String descricao) {
-  final colunas = [
-    perfil.colunaData,
-    perfil.colunaValor,
-    perfil.colunaDescricao,
-    perfil.colunaIdExterno ?? 0,
-    perfil.colunaTipo ?? 0,
-  ].reduce((a, b) => a > b ? a : b) +
-      1;
+  final colunas = perfil.colunasLidas.reduce((a, b) => a > b ? a : b) + 1;
 
   final campos = List.filled(colunas, '');
   campos[perfil.colunaData] = _dataNoFormato(perfil.formatoData);
-  campos[perfil.colunaValor] =
+  // A linha é um crédito: no layout separado, o valor vai na coluna Crédito.
+  campos[perfil.colunaValor ?? perfil.colunaCredito!] =
       perfil.formatoValor == FormatoValor.virgulaDecimal ? '1500,00' : '1500.00';
   campos[perfil.colunaDescricao] = descricao;
   if (perfil.colunaIdExterno != null) {

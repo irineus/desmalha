@@ -655,6 +655,52 @@ void main() {
       expect(extrato.transacoes[1].valorCentavos, isNegative);
     });
 
+    test('o layout Crédito/Débito separado também fecha o ciclo', () {
+      // O csvBancoNovo tem Crédito e Débito em colunas separadas — agora
+      // representável no PerfilCsv. Anonimizar e parsear com o perfil
+      // escrito a partir da estrutura precisa manter o sinal de cada lado.
+      final r = anonimizarCsvSemPerfil(csvBancoNovo);
+      const perfilSeparado = PerfilCsv(
+        id: 'banco-novo-conta-csv-v1',
+        banco: 'Banco Novo',
+        delimitador: ';',
+        linhasCabecalho: 4,
+        formatoData: 'dd/MM/yyyy',
+        formatoValor: FormatoValor.virgulaDecimal,
+        colunaData: 0,
+        colunaDescricao: 1,
+        colunaCredito: 3,
+        colunaDebito: 4,
+      );
+      final extrato = parseCsv(r.conteudo, perfilSeparado);
+      expect(extrato.avisos, isEmpty);
+      expect(extrato.transacoes, hasLength(2));
+      expect(extrato.transacoes[0].valorCentavos, isPositive);
+      expect(extrato.transacoes[1].valorCentavos, isNegative);
+    });
+
+    test('anonimizar COM perfil separado perturba crédito e débito', () {
+      const perfilSeparado = PerfilCsv(
+        id: 'banco-novo-conta-csv-v1',
+        banco: 'Banco Novo',
+        delimitador: ';',
+        linhasCabecalho: 4,
+        formatoData: 'dd/MM/yyyy',
+        formatoValor: FormatoValor.virgulaDecimal,
+        colunaData: 0,
+        colunaDescricao: 1,
+        colunaCredito: 3,
+        colunaDebito: 4,
+      );
+      final saida = anonimizarCsv(csvBancoNovo, perfilSeparado);
+      // Os valores reais não sobrevivem em nenhuma das duas colunas.
+      expect(saida, isNot(contains('1.200,00')));
+      expect(saida, isNot(contains('"850,00"')));
+      final extrato = parseCsv(saida, perfilSeparado);
+      expect(extrato.avisos, isEmpty);
+      expect(extrato.transacoes[1].valorCentavos, isNegative);
+    });
+
     test('é determinística: mesma entrada, mesma saída', () {
       expect(
         anonimizarCsvSemPerfil(csvBancoNovo).conteudo,

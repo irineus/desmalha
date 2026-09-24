@@ -18,15 +18,29 @@ class PerfilCsv {
     required this.formatoData,
     required this.formatoValor,
     required this.colunaData,
-    required this.colunaValor,
+    this.colunaValor,
     required this.colunaDescricao,
+    this.colunaCredito,
+    this.colunaDebito,
     this.encoding,
     this.linhasCabecalho = 1,
     this.colunaIdExterno,
     this.colunaTipo,
     this.marcadorDebito,
     this.descricoesIgnoradas = const [],
-  });
+  })  : assert(
+          (colunaValor != null) !=
+              (colunaCredito != null && colunaDebito != null),
+          'colunaValor OU o par colunaCredito/colunaDebito, nunca os dois',
+        ),
+        assert(
+          (colunaCredito == null) == (colunaDebito == null),
+          'colunaCredito e colunaDebito andam juntas',
+        ),
+        assert(
+          colunaTipo == null || colunaValor != null,
+          'colunaTipo só faz sentido com colunaValor',
+        );
 
   /// Identificador estável do perfil no catálogo versionado,
   /// ex.: `nubank-conta-csv-v1`.
@@ -53,8 +67,37 @@ class PerfilCsv {
 
   /// Índices (0-based) das colunas no arquivo.
   final int colunaData;
-  final int colunaValor;
   final int colunaDescricao;
+
+  /// Coluna única de valor (assinado, ou sem sinal com [colunaTipo]).
+  /// Mutuamente exclusiva com o par [colunaCredito]/[colunaDebito]: todo
+  /// perfil tem exatamente um dos dois layouts.
+  final int? colunaValor;
+
+  /// Layout de DUAS colunas de valor — `Crédito (R$)` e `Débito (R$)` —, em
+  /// que cada lançamento preenche uma e deixa a outra vazia. O sinal vem da
+  /// coluna preenchida, não do número. Campos novos e opcionais: os perfis
+  /// publicados antes deles (Nubank, Inter, BB) seguem válidos sem mudança.
+  ///
+  /// ⚠️ Layout ainda NÃO conferido contra CSV real de Bradesco, Santander ou
+  /// Banrisul — o card fica em aberto por isso.
+  final int? colunaCredito;
+  final int? colunaDebito;
+
+  /// `true` quando o perfil usa o layout de crédito e débito separados.
+  bool get creditoDebitoSeparados => colunaCredito != null;
+
+  /// Todas as colunas que o parser lê — para exigir a largura mínima da
+  /// linha e para quem trata colunas "fora do perfil" como texto livre.
+  List<int> get colunasLidas => [
+        colunaData,
+        colunaDescricao,
+        ?colunaValor,
+        ?colunaCredito,
+        ?colunaDebito,
+        ?colunaIdExterno,
+        ?colunaTipo,
+      ];
 
   /// Coluna com identificador único do lançamento, quando o banco fornece.
   final int? colunaIdExterno;
@@ -131,6 +174,43 @@ class PerfilCsv {
       );
     }
 
+    // Exatamente um layout de valor. Perfil ambíguo no catálogo precisa
+    // falhar alto: escolher um dos dois em silêncio seria importar com o
+    // sinal de outra coluna.
+    final colunaValor = inteiroOpcional('colunaValor');
+    final colunaCredito = inteiroOpcional('colunaCredito');
+    final colunaDebito = inteiroOpcional('colunaDebito');
+    if ((colunaCredito == null) != (colunaDebito == null)) {
+      throw const FormatException(
+        'perfil CSV: "colunaCredito" e "colunaDebito" andam juntas',
+      );
+    }
+    final separadas = colunaCredito != null;
+    if (colunaValor != null && separadas) {
+      throw const FormatException(
+        'perfil CSV: "colunaValor" é mutuamente exclusiva com '
+        '"colunaCredito"/"colunaDebito"',
+      );
+    }
+    if (colunaValor == null && !separadas) {
+      throw const FormatException(
+        'perfil CSV: falta a coluna de valor — "colunaValor" ou o par '
+        '"colunaCredito"/"colunaDebito"',
+      );
+    }
+    if (separadas && colunaCredito == colunaDebito) {
+      throw const FormatException(
+        'perfil CSV: "colunaCredito" e "colunaDebito" precisam ser colunas '
+        'diferentes',
+      );
+    }
+    if (separadas && colunaTipo != null) {
+      throw const FormatException(
+        'perfil CSV: "colunaTipo" não se combina com crédito/débito '
+        'separados — o sinal já vem da coluna preenchida',
+      );
+    }
+
     final ignoradasBruto = json['descricoesIgnoradas'];
     final descricoesIgnoradas = switch (ignoradasBruto) {
       null => const <String>[],
@@ -166,7 +246,9 @@ class PerfilCsv {
       formatoData: texto('formatoData'),
       formatoValor: formatoValor,
       colunaData: inteiro('colunaData'),
-      colunaValor: inteiro('colunaValor'),
+      colunaValor: colunaValor,
+      colunaCredito: colunaCredito,
+      colunaDebito: colunaDebito,
       colunaDescricao: inteiro('colunaDescricao'),
       colunaIdExterno: inteiroOpcional('colunaIdExterno'),
       colunaTipo: colunaTipo,
@@ -185,7 +267,9 @@ class PerfilCsv {
         'formatoData': formatoData,
         'formatoValor': formatoValor.name,
         'colunaData': colunaData,
-        'colunaValor': colunaValor,
+        if (colunaValor != null) 'colunaValor': colunaValor,
+        if (colunaCredito != null) 'colunaCredito': colunaCredito,
+        if (colunaDebito != null) 'colunaDebito': colunaDebito,
         'colunaDescricao': colunaDescricao,
         if (colunaIdExterno != null) 'colunaIdExterno': colunaIdExterno,
         if (colunaTipo != null) 'colunaTipo': colunaTipo,

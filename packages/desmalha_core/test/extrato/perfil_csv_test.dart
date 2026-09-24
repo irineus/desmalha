@@ -72,4 +72,74 @@ void main() {
       expect(() => PerfilCsv.fromJson(json), throwsFormatException);
     });
   });
+
+  group('PerfilCsv — crédito e débito em colunas separadas', () {
+    Map<String, Object?> jsonSeparado() => {
+          'id': 'banco-sep-conta-csv-v1',
+          'banco': 'Banco Separado',
+          'delimitador': ';',
+          'formatoData': 'dd/MM/yyyy',
+          'formatoValor': 'virgulaDecimal',
+          'colunaData': 0,
+          'colunaDescricao': 1,
+          'colunaCredito': 3,
+          'colunaDebito': 4,
+        };
+
+    test('carrega e faz round-trip sem inventar colunaValor', () {
+      final perfil = PerfilCsv.fromJson(jsonSeparado());
+      expect(perfil.creditoDebitoSeparados, isTrue);
+      expect(perfil.colunaValor, isNull);
+      expect(jsonDecode(jsonEncode(perfil.toJson())),
+          {...jsonSeparado(), 'linhasCabecalho': 1});
+    });
+
+    test('perfil publicado (coluna única) segue idêntico: campo novo é '
+        'opcional e nunca aparece no JSON dele', () {
+      final perfil = PerfilCsv.fromJson({
+        'id': 'nubank-conta-csv-v1',
+        'banco': 'Nubank',
+        'delimitador': ',',
+        'formatoData': 'dd/MM/yyyy',
+        'formatoValor': 'pontoDecimal',
+        'colunaData': 0,
+        'colunaValor': 1,
+        'colunaDescricao': 3,
+      });
+      expect(perfil.creditoDebitoSeparados, isFalse);
+      expect(perfil.toJson().keys,
+          isNot(anyOf(contains('colunaCredito'), contains('colunaDebito'))));
+    });
+
+    test('colunaValor junto com crédito/débito é recusado (ambíguo)', () {
+      final json = jsonSeparado()..['colunaValor'] = 2;
+      expect(() => PerfilCsv.fromJson(json), throwsFormatException);
+    });
+
+    test('crédito sem débito (e vice-versa) é recusado', () {
+      expect(() => PerfilCsv.fromJson(jsonSeparado()..remove('colunaDebito')),
+          throwsFormatException);
+      expect(() => PerfilCsv.fromJson(jsonSeparado()..remove('colunaCredito')),
+          throwsFormatException);
+    });
+
+    test('nenhum layout de valor é recusado', () {
+      final json = jsonSeparado()
+        ..remove('colunaCredito')
+        ..remove('colunaDebito');
+      expect(() => PerfilCsv.fromJson(json), throwsFormatException);
+    });
+
+    test('crédito e débito na mesma coluna é recusado', () {
+      final json = jsonSeparado()..['colunaDebito'] = 3;
+      expect(() => PerfilCsv.fromJson(json), throwsFormatException);
+    });
+
+    test('colunaTipo com crédito/débito separados é recusado', () {
+      final json = jsonSeparado()
+        ..['colunaTipo'] = 5
+        ..['marcadorDebito'] = 'D';
+      expect(() => PerfilCsv.fromJson(json), throwsFormatException);
+    });
+  });
 }
