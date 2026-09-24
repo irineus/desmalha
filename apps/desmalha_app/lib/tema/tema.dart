@@ -160,13 +160,17 @@ ThemeData temaDesmalha() {
               : CoresDesmalha.tintaFraca,
         ),
       ),
+      // Sem espaçamento entre letras, como o `.tabbar` do design system: o
+      // 0,5 herdado do labelSmall do Material levava "Lançamentos" a 74,8 dp
+      // e quebrava a linha em telas de 360–384 dp (Galaxy S23 do owner).
       labelTextStyle: WidgetStateProperty.resolveWith(
         (estados) => estados.contains(WidgetState.selected)
             ? texto.labelSmall!.copyWith(
                 color: CoresDesmalha.salvia,
                 fontWeight: FontWeight.w600,
+                letterSpacing: 0,
               )
-            : texto.labelSmall,
+            : texto.labelSmall!.copyWith(letterSpacing: 0),
       ),
     ),
     snackBarTheme: const SnackBarThemeData(
