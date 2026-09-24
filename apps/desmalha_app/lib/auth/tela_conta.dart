@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../conta/porta_exclusao_conta.dart';
+import '../conta/tela_exclusao_conta.dart';
+import '../tema/componentes.dart';
 import 'estado_auth.dart';
 import 'porta_auth.dart';
 import 'servico_auth.dart';
@@ -12,9 +15,10 @@ import 'servico_auth.dart';
 /// só mudou quando os dois endereços responderem — inclusive porque, se ele
 /// perder o acesso à caixa antiga no meio do caminho, a troca não se completa.
 class TelaConta extends StatefulWidget {
-  const TelaConta({super.key, required this.servico});
+  const TelaConta({super.key, required this.servico, required this.exclusao});
 
   final ServicoAutenticacao servico;
+  final PortaExclusaoConta exclusao;
 
   @override
   State<TelaConta> createState() => _TelaContaState();
@@ -99,6 +103,25 @@ class _TelaContaState extends State<TelaConta> {
                             return null;
                           }),
                     child: const Text('Sair desta conta'),
+                  ),
+                  const SizedBox(height: 8),
+                  // Exigência do Google Play: excluir a conta DENTRO do app,
+                  // além da página web. Peso visual de ação destrutiva; a
+                  // explicação e a confirmação ficam na tela seguinte.
+                  OutlinedButton(
+                    key: const Key('botao_excluir_conta'),
+                    style: estiloBotaoDestrutivo(),
+                    onPressed: _ocupado
+                        ? null
+                        : () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => TelaExclusaoConta(
+                                servico: widget.servico,
+                                exclusao: widget.exclusao,
+                              ),
+                            ),
+                          ),
+                    child: const Text('Excluir minha conta'),
                   ),
                   if (_erro != null) ...[
                     const SizedBox(height: 16),

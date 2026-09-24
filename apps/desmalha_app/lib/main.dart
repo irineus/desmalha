@@ -9,6 +9,8 @@ import 'auth/porta_auth_supabase.dart';
 import 'auth/portal_auth.dart';
 import 'auth/servico_auth.dart';
 import 'catalogo/porta_catalogo_rest.dart';
+import 'conta/porta_exclusao_conta.dart';
+import 'conta/porta_exclusao_conta_http.dart';
 import 'catalogo/repositorio_catalogo.dart';
 import 'dados/conexao_cifrada.dart';
 import 'monitoring.dart';
@@ -25,11 +27,19 @@ Future<void> main() async {
     // Em segundo plano, sem segurar o boot: o catálogo local (cache ou seed)
     // já serve qualquer cálculo; isto só o mantém fresco quando há rede.
     unawaited(_atualizarCatalogo());
+    if (!supabaseConfigurado) {
+      runApp(const DesmalhaApp(servico: null, exclusao: null));
+      return;
+    }
+    final portaAuth = PortaAuthSupabase.doClienteGlobal();
     runApp(
       DesmalhaApp(
-        servico: supabaseConfigurado
-            ? ServicoAutenticacao(PortaAuthSupabase.doClienteGlobal())
-            : null,
+        servico: ServicoAutenticacao(portaAuth),
+        exclusao: PortaExclusaoContaHttp(
+          url: supabaseUrl,
+          chavePublicavel: supabasePublishableKey,
+          tokenDaSessao: () => portaAuth.tokenDeAcesso,
+        ),
       ),
     );
   });
@@ -59,20 +69,22 @@ Future<void> _atualizarCatalogo() async {
 }
 
 class DesmalhaApp extends StatelessWidget {
-  const DesmalhaApp({super.key, required this.servico});
+  const DesmalhaApp({super.key, required this.servico, required this.exclusao});
 
   /// `null` num build sem configuração de servidor — ver [TelaSemConfiguracao].
   final ServicoAutenticacao? servico;
+  final PortaExclusaoConta? exclusao;
 
   @override
   Widget build(BuildContext context) {
     final servico = this.servico;
+    final exclusao = this.exclusao;
     return MaterialApp(
       title: 'Desmalha',
       theme: temaDesmalha(),
-      home: servico == null
+      home: servico == null || exclusao == null
           ? const TelaSemConfiguracao()
-          : PortalAuth(servico: servico),
+          : PortalAuth(servico: servico, exclusao: exclusao),
     );
   }
 }

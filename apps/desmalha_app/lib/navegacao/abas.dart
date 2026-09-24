@@ -10,13 +10,17 @@ import 'package:flutter/material.dart';
 
 import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';
+import '../conta/porta_exclusao_conta.dart';
 import '../tema/componentes.dart';
 import '../tema/tokens.dart';
 import 'casca.dart';
 
 /// O que o porteiro põe em cada aba depois do login.
-Widget conteudoDaAba(AbaDoApp aba, ServicoAutenticacao servico) =>
-    switch (aba) {
+Widget conteudoDaAba(
+  AbaDoApp aba,
+  ServicoAutenticacao servico,
+  PortaExclusaoConta exclusao,
+) => switch (aba) {
       AbaDoApp.mes => const AbaProvisoria(
         titulo: 'Seu mês',
         mensagem: 'Aqui vai aparecer o imposto do mês, com o vencimento e o '
@@ -37,7 +41,7 @@ Widget conteudoDaAba(AbaDoApp aba, ServicoAutenticacao servico) =>
         mensagem: 'O fechamento do ano, mês a mês, para a declaração — chega '
             'numa próxima versão.',
       ),
-      AbaDoApp.ajustes => TelaAjustes(servico: servico),
+      AbaDoApp.ajustes => TelaAjustes(servico: servico, exclusao: exclusao),
     };
 
 /// Uma aba que ainda não tem tela: título + estado vazio honesto.
@@ -67,9 +71,10 @@ class AbaProvisoria extends StatelessWidget {
 /// Ajustes: a conta hoje; backup e exclusão de conta entram pelos cards
 /// seguintes.
 class TelaAjustes extends StatelessWidget {
-  const TelaAjustes({super.key, required this.servico});
+  const TelaAjustes({super.key, required this.servico, required this.exclusao});
 
   final ServicoAutenticacao servico;
+  final PortaExclusaoConta exclusao;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -82,11 +87,12 @@ class TelaAjustes extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.person_outline),
             title: const Text('Sua conta'),
-            subtitle: const Text('E-mail de acesso e saída'),
+            subtitle: const Text('E-mail de acesso, saída e exclusão'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => TelaConta(servico: servico),
+                builder: (_) =>
+                    TelaConta(servico: servico, exclusao: exclusao),
               ),
             ),
           ),

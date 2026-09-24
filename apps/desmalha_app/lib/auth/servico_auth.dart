@@ -115,6 +115,21 @@ class ServicoAutenticacao {
     _trocarEstado(const Deslogado());
   }
 
+  /// Derruba a sessão local depois que o SERVIDOR confirmou a exclusão.
+  ///
+  /// Diferente de [sair]: a conta já não existe para o servidor (banida), e o
+  /// aviso de logout dele pode ser recusado. Nada disso muda o fato — a tela
+  /// volta à entrada de qualquer jeito, porque ficar "logado" numa conta
+  /// excluída seria mentir para o usuário.
+  Future<void> encerrarAposExclusao() async {
+    try {
+      await _porta.sair();
+    } on FalhaAuth {
+      // Esperado com a conta banida; a sessão local é descartada abaixo.
+    }
+    _trocarEstado(const Deslogado());
+  }
+
   // ─── Troca de e-mail ──────────────────────────────────────────────────────
 
   /// Pede a troca do e-mail da conta para [novoEmail].

@@ -101,6 +101,11 @@ class PortaAuthSupabase implements PortaAuth {
   @override
   Future<void> sair() => _executar(_auth.signOut);
 
+  /// Token de acesso da sessão em curso — para as portas HTTP que falam
+  /// com o servidor em nome do usuário (ex.: exclusão de conta). Não é
+  /// método da [PortaAuth]: nenhuma tela precisa dele.
+  String? get tokenDeAcesso => _auth.currentSession?.accessToken;
+
   @override
   UsuarioAutenticado? get usuarioAtual {
     final usuario = _auth.currentUser;

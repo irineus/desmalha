@@ -221,3 +221,20 @@ class _BordaTracejada extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+/// Botão destrutivo (sistema visual: `.btn-destrutivo`): contorno e texto em
+/// vermelho-falha — o único vermelho de ação, reservado ao irreversível.
+/// Desabilitado, esmaece por inteiro: contorno vermelho num botão que não
+/// responde pareceria um erro, não uma espera.
+ButtonStyle estiloBotaoDestrutivo() => OutlinedButton.styleFrom(
+  foregroundColor: CoresDesmalha.falha,
+  disabledForegroundColor: CoresDesmalha.tintaFraca,
+).copyWith(
+  side: WidgetStateProperty.resolveWith(
+    (estados) => BorderSide(
+      color: estados.contains(WidgetState.disabled)
+          ? CoresDesmalha.linha
+          : CoresDesmalha.falha,
+    ),
+  ),
+);
