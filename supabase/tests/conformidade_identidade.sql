@@ -20,9 +20,13 @@ create temp table _res (
     detalhe text
 ) on commit drop;
 
+-- ok NULL é FALHA. Uma comparação com valor ausente (v_txt = 'x' com v_txt
+-- nulo) dá NULL, e "not ok" também é NULL: sem o coalesce, a asserção aparecia
+-- como FALHOU na tabela e NÃO contava no portão do fim — descoberto na prova
+-- negativa da allowlist (24/09/2026), com dois FALHOU e o total dizendo 1.
 create function pg_temp.reg(p_nome text, p_ok boolean, p_detalhe text default '')
 returns void language sql as $$
-  insert into _res (nome, ok, detalhe) values (p_nome, p_ok, p_detalhe);
+  insert into _res (nome, ok, detalhe) values (p_nome, coalesce(p_ok, false), p_detalhe);
 $$;
 
 do $bloco$
@@ -79,11 +83,30 @@ begin
 
   ----------------------------------------------------------------------------
   -- 3. Registro de aceite
+  --
+  -- Desde a allowlist, só se aceita versão PUBLICADA. A suíte publica as suas
+  -- pelo caminho real — um item documento_legal no catálogo, que o gatilho
+  -- materializa em documentos_legais — com versões de 1900, que nenhum
+  -- documento verdadeiro vai ter: no modo --remoto a suíte roda contra o
+  -- desmalha-dev, e uma versão real conflitaria na chave primária. O
+  -- rollback final leva tudo embora.
   ----------------------------------------------------------------------------
+  insert into public.catalogo_itens (tipo, id, conteudo) values
+    ('documento_legal', 'termos-uso-1900-01-v1',
+     jsonb_build_object('id', 'termos-uso-1900-01-v1',
+       'documento', 'termos_uso', 'versao', '1900-01-v1',
+       'publicado_em', '1900-01-01', 'url', 'https://exemplo.invalid/termos',
+       'sha256_texto', repeat('a', 64), 'fonte', 'suíte')),
+    ('documento_legal', 'politica-privacidade-1900-01-v1',
+     jsonb_build_object('id', 'politica-privacidade-1900-01-v1',
+       'documento', 'politica_privacidade', 'versao', '1900-01-v1',
+       'publicado_em', '1900-01-01', 'url', 'https://exemplo.invalid/pp',
+       'sha256_texto', repeat('b', 64), 'fonte', 'suíte'));
+
   perform set_config('request.jwt.claims',
                      json_build_object('sub', u1, 'role', 'authenticated')::text, true);
 
-  v_id := public.registrar_aceite('termos_uso', '2026-09-v1');
+  v_id := public.registrar_aceite('termos_uso', '1900-01-v1');
   perform pg_temp.reg('05 registrar_aceite grava o aceite', v_id is not null);
 
   -- O hash é derivado do e-mail no servidor, normalizado (minúsculas, sem espaço).
@@ -95,9 +118,9 @@ begin
   perform pg_temp.reg('07 titular_hash não é o e-mail em claro',
                       v_txt not ilike '%exemplo.com%' and length(v_txt) = 64, v_txt);
 
-  v_id2 := public.registrar_aceite('termos_uso', '2026-09-v1');
+  v_id2 := public.registrar_aceite('termos_uso', '1900-01-v1');
   select count(*) into v_n from public.aceites_termos
-   where usuario_id = u1 and documento = 'termos_uso' and versao = '2026-09-v1';
+   where usuario_id = u1 and documento = 'termos_uso' and versao = '1900-01-v1';
   perform pg_temp.reg('08 reaceitar a mesma versão é idempotente',
                       v_id2 = v_id and v_n = 1, format('id=%s n=%s', v_id2, v_n));
 
@@ -144,7 +167,7 @@ begin
     execute 'set local role authenticated';
     execute format(
       'insert into public.aceites_termos (usuario_id, titular_hash, documento, versao)
-       values (%L, %L, %L, %L)', u2, 'hash-forjado', 'termos_uso', '2026-09-v1');
+       values (%L, %L, %L, %L)', u2, 'hash-forjado', 'termos_uso', '1900-01-v1');
     execute 'reset role';
     perform pg_temp.reg('13 cliente não insere aceite direto', false,
                         'o insert passou — titular_hash poderia ser forjado');
@@ -249,7 +272,7 @@ begin
   insert into auth.users (id, email) values (u3, 'titular.tres@exemplo.com');
   perform set_config('request.jwt.claims',
                      json_build_object('sub', u3, 'role', 'authenticated')::text, true);
-  v_id := public.registrar_aceite('politica_privacidade', '2026-09-v1');
+  v_id := public.registrar_aceite('politica_privacidade', '1900-01-v1');
 
   begin
     delete from public.aceites_termos where id = v_id;
@@ -271,12 +294,112 @@ begin
     perform pg_temp.reg('29 versão fora da convenção é recusada', true, sqlerrm);
   end;
 
+  -- 29b–29k: a allowlist. O formato certo não basta — a versão precisa ter
+  -- sido PUBLICADA, e o aceite carrega o hash do texto publicado.
+  begin
+    perform public.registrar_aceite('termos_uso', '1900-02-v1');
+    perform pg_temp.reg('29b versão no formato mas NÃO publicada é recusada',
+                        false, 'gravou aceite de versão que nunca existiu');
+  exception when others then
+    perform pg_temp.reg('29b versão no formato mas NÃO publicada é recusada',
+                        sqlstate = 'P0002' and sqlerrm like '%não está publicada%',
+                        sqlstate || ' ' || sqlerrm);
+  end;
+
+  -- v_id é o aceite da política registrado pelo u3 no bloco 9.
+  select sha256_texto into v_txt from public.aceites_termos where id = v_id;
+  perform pg_temp.reg('29c o aceite grava o hash do texto publicado',
+                      v_txt = repeat('b', 64), coalesce(v_txt, '(nulo)'));
+
+  select count(*) into v_n from public.documentos_legais
+   where versao = '1900-01-v1'
+     and url like 'https://exemplo.invalid/%';
+  perform pg_temp.reg('29d o item do catálogo materializa a allowlist',
+                      v_n = 2, v_n::text);
+
+  begin
+    update public.catalogo_itens
+       set conteudo = jsonb_set(conteudo, '{sha256_texto}', to_jsonb(repeat('c', 64)))
+     where tipo = 'documento_legal' and id = 'termos-uso-1900-01-v1';
+    perform pg_temp.reg('29e trocar o texto de versão publicada é recusado',
+                        false, 'o catálogo aceitou texto novo na mesma versão');
+  exception when others then
+    perform pg_temp.reg('29e trocar o texto de versão publicada é recusado',
+                        sqlerrm like '%versão nova%', sqlerrm);
+  end;
+
+  begin
+    delete from public.catalogo_itens
+     where tipo = 'documento_legal' and id = 'termos-uso-1900-01-v1';
+    perform pg_temp.reg('29f despublicar documento do catálogo é recusado',
+                        false, 'o documento saiu do catálogo');
+  exception when others then
+    perform pg_temp.reg('29f despublicar documento do catálogo é recusado',
+                        sqlerrm like '%versão nova%', sqlerrm);
+  end;
+
+  begin
+    update public.documentos_legais set url = 'https://exemplo.invalid/outra'
+     where documento = 'termos_uso' and versao = '1900-01-v1';
+    perform pg_temp.reg('29g alterar a allowlist direto é recusado', false,
+                        'o update passou');
+  exception when others then
+    perform pg_temp.reg('29g alterar a allowlist direto é recusado',
+                        sqlerrm like '%imutável%', sqlerrm);
+  end;
+
+  begin
+    insert into public.catalogo_itens (tipo, id, conteudo) values
+      ('documento_legal', 'termos-uso-escolhido',
+       jsonb_build_object('id', 'termos-uso-escolhido',
+         'documento', 'termos_uso', 'versao', '1900-03-v1',
+         'publicado_em', '1900-03-01', 'url', 'https://exemplo.invalid/t3',
+         'sha256_texto', repeat('d', 64), 'fonte', 'suíte'));
+    perform pg_temp.reg('29h id fora da derivação documento+versão é recusado',
+                        false, 'o insert passou');
+  exception when others then
+    perform pg_temp.reg('29h id fora da derivação documento+versão é recusado',
+                        sqlerrm like '%documento-com-hífen%', sqlerrm);
+  end;
+
+  execute 'set local role anon';
+  select count(*) into v_n from public.documentos_legais where versao = '1900-01-v1';
+  execute 'reset role';
+  perform pg_temp.reg('29i anon lê a allowlist sem login', v_n = 2, v_n::text);
+
+  begin
+    execute 'set local role authenticated';
+    execute $sql$insert into public.documentos_legais
+      (documento, versao, publicado_em, url, sha256_texto)
+      values ('termos_uso', '1900-04-v1', '1900-04-01',
+              'https://exemplo.invalid/forjado', repeat('e', 64))$sql$;
+    execute 'reset role';
+    perform pg_temp.reg('29j cliente NÃO publica documento', false,
+                        'o insert passou — o cliente escolheria o que aceitou');
+  exception when others then
+    execute 'reset role';
+    perform pg_temp.reg('29j cliente NÃO publica documento', true, sqlerrm);
+  end;
+
+  -- A FK composta, provada por quem passa por cima de registrar_aceite: nem
+  -- o dono do banco grava aceite com hash que não é o daquela versão.
+  begin
+    insert into public.aceites_termos
+        (usuario_id, titular_hash, documento, versao, sha256_texto)
+    values (u3, 'hash-qualquer', 'termos_uso', '1900-01-v1', repeat('f', 64));
+    perform pg_temp.reg('29k hash divergente do publicado é recusado pela FK',
+                        false, 'o insert passou');
+  exception when foreign_key_violation then
+    perform pg_temp.reg('29k hash divergente do publicado é recusado pela FK',
+                        true);
+  end;
+
   -- ip e user_agent saem dos cabeçalhos da requisição, não de parâmetro: o
   -- registro existe para ser prova, e prova ditada pelo titular não é prova.
   perform set_config('request.headers',
     '{"x-forwarded-for":"203.0.113.9, 70.41.3.18","user-agent":"Desmalha/1.0 (Android)"}',
     true);
-  v_id := public.registrar_aceite('termos_uso', '2026-09-v1');
+  v_id := public.registrar_aceite('termos_uso', '1900-01-v1');
 
   -- host() porque inet::text traz a máscara ('203.0.113.9/32').
   select host(ip) into v_txt from public.aceites_termos where id = v_id;
@@ -467,8 +590,8 @@ declare
 begin
   select count(*) filter (where not ok), count(*) into v_falhou, v_total from _res;
 
-  if v_total < 45 then
-    raise exception 'a suíte registrou só % asserções; esperado ao menos 45', v_total;
+  if v_total < 55 then
+    raise exception 'a suíte registrou só % asserções; esperado ao menos 55', v_total;
   end if;
   if v_falhou > 0 then
     raise exception '% de % asserções falharam (ver a coluna detalhe acima)',

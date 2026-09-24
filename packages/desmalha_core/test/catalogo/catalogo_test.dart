@@ -300,4 +300,131 @@ void main() {
       );
     });
   });
+
+  group('DocumentoLegal', () {
+    const hash =
+        '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08';
+    Map<String, Object?> base({
+      String documento = 'termos_uso',
+      String versao = '2026-09-v1',
+      String? id,
+      String publicadoEm = '2026-09-24',
+    }) => {
+      'id': id ?? DocumentoLegal.idDe(documento, versao),
+      'documento': documento,
+      'versao': versao,
+      'publicado_em': publicadoEm,
+      'url': 'https://desmalha.app/termos/$versao',
+      'sha256_texto': hash,
+      'fonte': 'teste',
+    };
+    Map<String, Object?> item(Map<String, Object?> conteudo) => {
+      'tipo': TipoCatalogo.documentoLegal,
+      'id': conteudo['id'],
+      'conteudo': conteudo,
+    };
+
+    test('carrega pelo catálogo e o id é derivado de documento + versão', () {
+      final c = Catalogo.fromItens([item(base())]);
+      expect(c.tiposIgnorados, isEmpty);
+      expect(c.documentosLegais.single.id, 'termos-uso-2026-09-v1');
+      expect(c.documentosLegais.single.sha256Texto, hash);
+    });
+
+    test('id escolhido à mão, fora da derivação, é recusado', () {
+      // Dois arquivos para a mesma versão com ids diferentes seriam dois
+      // textos disputando o mesmo aceite.
+      expect(
+        () => DocumentoLegal.fromJson(base(id: 'termos-uso-bis')),
+        throwsFormatException,
+      );
+    });
+
+    test('documento desconhecido é recusado', () {
+      expect(
+        () => DocumentoLegal.fromJson(base(documento: 'contrato')),
+        throwsFormatException,
+      );
+    });
+
+    test('versão fora da convenção YYYY-MM-vN é recusada', () {
+      expect(
+        () => DocumentoLegal.fromJson(base(versao: 'v0.2')),
+        throwsFormatException,
+      );
+    });
+
+    test('hash que não é SHA-256 hex minúsculo é recusado', () {
+      expect(
+        () => DocumentoLegal.fromJson(
+          base()..['sha256_texto'] = hash.toUpperCase(),
+        ),
+        throwsFormatException,
+      );
+      expect(
+        () => DocumentoLegal.fromJson(
+          base()..['sha256_texto'] = hash.substring(1),
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('url sem https é recusada', () {
+      expect(
+        () => DocumentoLegal.fromJson(
+          base()..['url'] = 'http://desmalha.app/termos',
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('data de publicação inexistente é recusada', () {
+      expect(
+        () => DocumentoLegal.fromJson(base(publicadoEm: '2026-02-30')),
+        throwsFormatException,
+      );
+    });
+
+    test('sem fonte é recusado', () {
+      expect(
+        () => DocumentoLegal.fromJson(base()..['fonte'] = ''),
+        throwsFormatException,
+      );
+    });
+
+    test(
+      'vigente = a de publicação mais recente; v10 vence v9 no mesmo dia',
+      () {
+        final c = Catalogo.fromItens([
+          item(base(versao: '2026-09-v9')),
+          item(base(versao: '2026-09-v10')),
+          item(base(versao: '2026-08-v1', publicadoEm: '2026-08-01')),
+          item(base(documento: 'politica_privacidade', versao: '2026-07-v1')),
+        ]);
+        expect(c.documentoLegalVigente('termos_uso')!.versao, '2026-09-v10');
+        expect(
+          c.documentoLegalVigente('politica_privacidade')!.versao,
+          '2026-07-v1',
+        );
+      },
+    );
+
+    test('nada publicado: vigente é nulo, não um documento inventado', () {
+      expect(
+        Catalogo.fromItens(const []).documentoLegalVigente('termos_uso'),
+        isNull,
+      );
+    });
+
+    test('round-trip do snapshot preserva o documento', () {
+      final c = Catalogo.fromItens([item(base())]);
+      final relido = Catalogo.fromJson(
+        jsonDecode(jsonEncode(c.toJson())) as Map<String, Object?>,
+      );
+      expect(
+        jsonEncode(relido.documentosLegais.single.toJson()),
+        jsonEncode(base()),
+      );
+    });
+  });
 }

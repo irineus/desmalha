@@ -22,6 +22,7 @@ Fonte do schema: **"Resultado: Revisar modelagem de dados para local-first
 | `20260817040000_trava_sem_senha_nao_bloqueia_otp` | correção 1: a trava recusava o cadastro por OTP (superada pela seguinte) |
 | `20260817050000_trava_sem_senha_neutraliza` | correção 2: a trava NEUTRALIZA a senha em vez de recusar — o marcador do GoTrue é indistinguível de senha real |
 | `20260817200000_catalogo` | `catalogo_itens` — catálogo versionado só-leitura (tabela IRPF, feriados, perfis de parser, layout de DARF) |
+| `20260924120000_documentos_legais` | allowlist `documentos_legais` (materializada do catálogo, imutável); `registrar_aceite` recusa versão não publicada e grava o `sha256_texto` do texto aceito |
 
 | Edge function | Conteúdo |
 |---|---|
