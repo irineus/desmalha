@@ -11,11 +11,13 @@ import 'package:desmalha_app/dados/repositorio_importacao.dart';
 import 'package:desmalha_app/importacao/controlador_importacao.dart';
 import 'package:desmalha_app/lembretes/controlador_lembretes.dart';
 import 'package:desmalha_app/onboarding/controlador_onboarding.dart';
+import 'package:desmalha_app/painel/repositorio_painel.dart';
 import 'package:desmalha_app/onboarding/porta_aceite.dart';
 import 'package:desmalha_app/onboarding/repositorio_onboarding.dart';
 import 'package:desmalha_app/servicos_do_app.dart';
 import 'package:desmalha_core/desmalha_core.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 
 import 'backup/armazenamento_falso.dart';
 import 'conta/porta_exclusao_falsa.dart';
@@ -92,6 +94,7 @@ ServicosDoApp servicosFalsos({
   RepositorioImportacao? importacao,
   SeletorDeArquivo? seletorDeArquivo,
   Future<Catalogo> Function()? catalogo,
+  RepositorioPainel? painel,
 }) {
   final chaves =
       chavesBackup ??
@@ -102,13 +105,33 @@ ServicosDoApp servicosFalsos({
     backup: backup ?? controladorBackupFalso(chaves: chaves),
     lembretes: lembretes ?? controladorLembretesFalso(),
     onboarding: onboarding ?? controladorOnboardingFalso(concluido: true),
-    importacao:
-        importacao ??
-        RepositorioImportacao(BancoLocal(NativeDatabase.memory())),
+    importacao: importacao ?? _importacaoPadrao,
     seletorDeArquivo: seletorDeArquivo ?? SeletorFalso(),
     catalogo: catalogo ?? () async => Catalogo.fromItens(const []),
+    painel: painel ?? PainelFalso(),
+    dadosAlterados: ValueNotifier(0),
   );
 }
+
+/// Agregados do painel em memória, sem banco.
+class PainelFalso implements RepositorioPainel {
+  PainelFalso([Map<String, DadosDoMes>? dados]) : dados = dados ?? {};
+
+  final Map<String, DadosDoMes> dados;
+
+  @override
+  Future<Map<String, DadosDoMes>> dadosDoAno(int ano) async => {
+    for (final e in dados.entries)
+      if (e.key.startsWith('$ano-')) e.key: e.value,
+  };
+}
+
+/// Um banco em memória só, criado na primeira vez (final de topo é
+/// preguiçoso): um por chamada fazia o Drift avisar de instâncias múltiplas
+/// e deixava bancos abertos. Quem precisa de banco próprio passa o seu.
+final _importacaoPadrao = RepositorioImportacao(
+  BancoLocal(NativeDatabase.memory()),
+);
 
 /// Seletor de arquivo que entrega o que o teste mandar (ou desiste).
 class SeletorFalso implements SeletorDeArquivo {

@@ -12,6 +12,7 @@ export 'src/backup/payload_backup.dart';
 export 'src/carne_leao/apuracao.dart';
 export 'src/carne_leao/darf.dart';
 export 'src/carne_leao/lembrete_vencimento.dart';
+export 'src/carne_leao/painel_mensal.dart';
 export 'src/carne_leao/repasse.dart';
 export 'src/carne_leao/tabela_irpf.dart';
 export 'src/catalogo/catalogo.dart';

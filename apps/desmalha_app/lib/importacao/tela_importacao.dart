@@ -64,6 +64,7 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
         builder: (_) => TelaImportacao(servicos: widget.servicos),
       ),
     );
+    widget.servicos.dadosAlterados.value++;
     await _carregar();
   }
 
