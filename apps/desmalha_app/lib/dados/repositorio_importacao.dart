@@ -62,6 +62,30 @@ class RepositorioImportacao {
     return id;
   }
 
+  /// Contas ativas, na ordem de criação.
+  Future<List<ContaBancaria>> listarContas() =>
+      (_banco.select(_banco.contasBancarias)
+            ..where((c) => c.ativa.equals(1))
+            ..orderBy([(c) => OrderingTerm.asc(c.criadoEm)]))
+          .get();
+
+  /// A importação confirmada deste mesmo arquivo (mesmo SHA-256), se houver.
+  /// A tela avisa ANTES da prévia: confirmar de novo esbarraria em
+  /// `uq_importacao_hash`.
+  Future<Importacao?> importacaoConfirmadaDoArquivo(String hashArquivo) =>
+      (_banco.select(_banco.importacoes)
+            ..where((i) =>
+                i.hashArquivo.equals(hashArquivo) &
+                i.status.equals('confirmada')))
+          .getSingleOrNull();
+
+  /// Importações confirmadas, da mais recente para a mais antiga.
+  Future<List<Importacao>> importacoesConfirmadas() =>
+      (_banco.select(_banco.importacoes)
+            ..where((i) => i.status.equals('confirmada'))
+            ..orderBy([(i) => OrderingTerm.desc(i.criadoEm)]))
+          .get();
+
   /// Registra a importação em estado `previa` — persistida para não perder o
   /// trabalho se o app for a background com um OFX de meses aberto (decisão
   /// nº 4 da modelagem). Nada entra em `transacoes` neste passo.

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';
 import '../backup/tela_backup.dart';
+import '../importacao/tela_importacao.dart';
 import '../lembretes/controlador_lembretes.dart';
 import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
@@ -33,12 +34,7 @@ Widget conteudoDaAba(
       aoTocar: () => abrirTelaBackup(servicos),
     ),
   ),
-  AbaDoApp.lancamentos => const AbaProvisoria(
-    titulo: 'Lançamentos',
-    mensagem:
-        'Os recebimentos do seu extrato aparecem aqui para você '
-        'separar o que veio de cliente do que é pessoal.',
-  ),
+  AbaDoApp.lancamentos => AbaLancamentos(servicos: servicos),
   AbaDoApp.despesas => const AbaProvisoria(
     titulo: 'Despesas',
     mensagem:
