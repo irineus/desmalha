@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'configuracao_supabase.dart';
@@ -113,12 +114,11 @@ class PortaAuthSupabase implements PortaAuth {
   }
 
   @override
-  Stream<UsuarioAutenticado?> get mudancas => _auth.onAuthStateChange.map(
-    (evento) {
-      final usuario = evento.session?.user;
-      return usuario == null ? null : _converter(usuario);
-    },
-  );
+  Stream<UsuarioAutenticado?> get mudancas =>
+      _auth.onAuthStateChange.map((evento) {
+        final usuario = evento.session?.user;
+        return usuario == null ? null : _converter(usuario);
+      });
 
   static UsuarioAutenticado _converter(User usuario) => UsuarioAutenticado(
     id: usuario.id,
@@ -138,7 +138,7 @@ class PortaAuthSupabase implements PortaAuth {
     } on FalhaAuth {
       rethrow;
     } on AuthException catch (erro) {
-      throw _traduzir(erro);
+      throw traduzirErroAuth(erro);
     } on Object catch (erro) {
       throw FalhaAuth(
         MotivoFalhaAuth.redeIndisponivel,
@@ -148,8 +148,25 @@ class PortaAuthSupabase implements PortaAuth {
     }
   }
 
-  static FalhaAuth _traduzir(AuthException erro) {
+  /// Traduz uma [AuthException] do SDK para a tela.
+  ///
+  /// O SDK lança [AuthRetryableFetchException] em DOIS casos distintos: a
+  /// requisição não chegou (sem `statusCode`) ou o servidor respondeu 5xx.
+  /// Dizer "verifique sua conexão" no segundo manda o usuário atrás do
+  /// problema errado — foi o que aconteceu no S23 do owner (24/09/2026),
+  /// quando o provedor de e-mail recusou o envio do código com 500.
+  @visibleForTesting
+  static FalhaAuth traduzirErroAuth(AuthException erro) {
     if (erro is AuthRetryableFetchException) {
+      final status = int.tryParse(erro.statusCode ?? '');
+      if (status != null && status >= 500) {
+        return FalhaAuth(
+          MotivoFalhaAuth.servidorComErro,
+          'O servidor não conseguiu atender agora (erro $status). Tente de '
+          'novo em alguns minutos.',
+          causa: erro,
+        );
+      }
       return FalhaAuth(
         MotivoFalhaAuth.redeIndisponivel,
         'Não foi possível falar com o servidor. Verifique sua conexão.',
@@ -164,6 +181,17 @@ class PortaAuthSupabase implements PortaAuth {
       );
     }
     return switch (erro.code) {
+      // A exclusão pelo app bane o usuário até o expurgo, 30 dias depois
+      // (`_compartilhado/exclusao.ts`). O código chega por e-mail, mas a
+      // entrada é recusada com 403 — sem este caso, a tela dizia "código
+      // inválido" para um código correto.
+      'user_banned' => FalhaAuth(
+        MotivoFalhaAuth.contaExcluida,
+        'A conta deste e-mail foi excluída. Ela fica bloqueada por 30 dias '
+        '(o prazo da exclusão); depois disso, você pode criar uma conta nova '
+        'com o mesmo e-mail.',
+        causa: erro,
+      ),
       'otp_expired' => FalhaAuth(
         MotivoFalhaAuth.codigoExpirado,
         'O código expirou. Peça um novo.',
