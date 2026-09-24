@@ -20,6 +20,7 @@ import '../tema/componentes.dart';
 import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
 import 'controlador_painel.dart';
+import 'tela_darf.dart';
 
 /// Texto do contador para o mês sem imposto (M11) — literal.
 const String textoMesIsento = 'Você está isento de recolhimento neste mês.';
@@ -80,27 +81,33 @@ class _TelaMesState extends State<TelaMes> {
         final painel = _c.painel;
         return RefreshIndicator(
           onRefresh: _c.carregar,
-          child: ListView(
+          // Coluna rolável (e não ListView, que só constrói o que aparece):
+          // a evolução e os avisos do fim existem mesmo fora da tela.
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(EspacosDesmalha.s4),
-            children: [
-              Text('Seu mês', style: texto.headlineMedium),
-              const SizedBox(height: EspacosDesmalha.s2),
-              AvisoBackup(
-                controlador: widget.servicos.backup,
-                aoTocar: () => abrirTelaBackup(widget.servicos),
-              ),
-              if (_c.competencia != null) _navegacao(context),
-              const SizedBox(height: EspacosDesmalha.s3),
-              if (_c.erro != null)
-                Text(
-                  _c.erro!,
-                  style: const TextStyle(color: CoresDesmalha.falha),
-                )
-              else if (painel == null)
-                const Center(child: CircularProgressIndicator())
-              else
-                ..._conteudo(context, painel),
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Seu mês', style: texto.headlineMedium),
+                const SizedBox(height: EspacosDesmalha.s2),
+                AvisoBackup(
+                  controlador: widget.servicos.backup,
+                  aoTocar: () => abrirTelaBackup(widget.servicos),
+                ),
+                if (_c.competencia != null) _navegacao(context),
+                const SizedBox(height: EspacosDesmalha.s3),
+                if (_c.erro != null)
+                  Text(
+                    _c.erro!,
+                    style: const TextStyle(color: CoresDesmalha.falha),
+                  )
+                else if (painel == null)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  ..._conteudo(context, painel),
+              ],
+            ),
           ),
         );
       },
@@ -220,6 +227,20 @@ class _TelaMesState extends State<TelaMes> {
             key: const Key('vencimento'),
             style: texto.bodyMedium,
           ),
+        const SizedBox(height: EspacosDesmalha.s3),
+        FilledButton(
+          key: const Key('botao_ver_darf'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TelaDarf(
+                servicos: widget.servicos,
+                painel: p,
+                relogio: widget.relogio,
+              ),
+            ),
+          ),
+          child: const Text('Ver o DARF'),
+        ),
         if (a.impostoAcumuladoAnteriorCentavos > 0)
           Text(
             'Inclui ${centavosParaExibicao(a.impostoAcumuladoAnteriorCentavos)} '

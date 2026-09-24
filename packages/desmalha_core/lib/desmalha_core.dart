@@ -20,6 +20,7 @@ export 'src/catalogo/documento_legal.dart';
 export 'src/catalogo/feriados_bancarios.dart';
 export 'src/darf/codigo_barras_arrecadacao.dart';
 export 'src/darf/documento_darf.dart';
+export 'src/darf/guia_do_mes.dart';
 export 'src/darf/itf.dart';
 export 'src/darf/layout_darf.dart';
 export 'src/darf/pdf_darf.dart';
