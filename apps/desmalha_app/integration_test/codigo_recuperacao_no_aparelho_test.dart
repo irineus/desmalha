@@ -11,7 +11,6 @@ library;
 
 import 'dart:math';
 
-import 'package:desmalha_app/auth/estado_auth.dart';
 import 'package:desmalha_app/auth/porta_auth.dart';
 import 'package:desmalha_app/auth/portal_auth.dart';
 import 'package:desmalha_app/auth/servico_auth.dart';
