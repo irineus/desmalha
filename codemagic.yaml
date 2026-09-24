@@ -23,24 +23,25 @@ workflows:
       flutter: fvm
       java: 17
     triggering:
+      # Critério de disparo (24/09/2026, decisão do owner): por TAG, não por
+      # push no main. O M2 do plano gratuito é a cota única de 500 min/mês, e
+      # um build por merge gastava ~12 min por card — numa sequência de cards
+      # isso come a cota que o iOS também usa. Cada branch já passa, na
+      # própria sessão, por analyze + testes + `flutter build apk --debug`
+      # antes do merge; o Codemagic vira a verificação consolidada, disparada
+      # de propósito:
+      #
+      #     git tag verificar-<slug> origin/main
+      #     git push origin verificar-<slug>
+      #
+      # Sem `when: changeset`: tag é intenção explícita, e a comparação de
+      # changeset num evento de tag não é contra o merge anterior.
       events:
-        - push
-      # Critério de disparo (ago/2026, economia da cota única de 500 min/mês):
-      # só push no main — branch de trabalho já é verificada na própria sessão
-      # (analyze + testes antes do push), então o CI é o selo do merge, não um
-      # repetidor. Válvula manual: commit com [skip ci] não dispara build.
-      branch_patterns:
-        - pattern: main
+        - tag
+      tag_patterns:
+        - pattern: 'verificar-*'
           include: true
-          source: true
       cancel_previous_builds: true
-    # Pula o build quando o push só toca documentação/config de sessão — merge
-    # de ajuste em CLAUDE.md ou na skill não precisa compilar APK.
-    when:
-      changeset:
-        excludes:
-          - '**/*.md'
-          - '.claude/**'
     # Cache de dependências para poupar a cota única de 500 min/mês do M2:
     # evita re-baixar pacotes pub e artefatos do Gradle a cada build.
     cache:
