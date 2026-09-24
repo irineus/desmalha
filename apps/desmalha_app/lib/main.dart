@@ -28,6 +28,7 @@ import 'onboarding/controlador_onboarding.dart';
 import 'onboarding/porta_aceite_http.dart';
 import 'onboarding/repositorio_onboarding.dart';
 import 'navegacao/abas.dart';
+import 'painel/repositorio_painel.dart';
 import 'servicos_do_app.dart';
 import 'tema/tema.dart';
 import 'versao.dart';
@@ -102,6 +103,8 @@ Future<void> main() async {
           importacao: RepositorioImportacao(bancoDoApp()),
           seletorDeArquivo: const SeletorDeArquivoDoSistema(),
           catalogo: catalogo.carregar,
+          painel: RepositorioPainelDrift(bancoDoApp()),
+          dadosAlterados: ValueNotifier(0),
         ),
       ),
     );

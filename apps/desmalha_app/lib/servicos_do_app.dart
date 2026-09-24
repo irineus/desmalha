@@ -5,12 +5,14 @@
 library;
 
 import 'package:desmalha_core/desmalha_core.dart';
+import 'package:flutter/foundation.dart';
 
 import 'backup/chaves_backup.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
 import 'dados/repositorio_importacao.dart';
 import 'importacao/controlador_importacao.dart';
+import 'painel/repositorio_painel.dart';
 import 'lembretes/controlador_lembretes.dart';
 import 'onboarding/controlador_onboarding.dart';
 
@@ -24,6 +26,8 @@ class ServicosDoApp {
     required this.importacao,
     required this.seletorDeArquivo,
     required this.catalogo,
+    required this.painel,
+    required this.dadosAlterados,
   });
 
   /// Exclusão da conta pelo app (Ajustes > Sua conta).
@@ -49,4 +53,10 @@ class ServicosDoApp {
 
   /// O catálogo versionado local (cache ou seed), sem rede.
   final Future<Catalogo> Function() catalogo;
+
+  /// Agregados por competência para a aba Mês.
+  final RepositorioPainel painel;
+
+  /// Sobe a cada importação confirmada: a aba Mês recalcula.
+  final ValueNotifier<int> dadosAlterados;
 }

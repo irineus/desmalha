@@ -12,6 +12,7 @@ import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';
 import '../backup/tela_backup.dart';
 import '../importacao/tela_importacao.dart';
+import '../painel/tela_mes.dart';
 import '../lembretes/controlador_lembretes.dart';
 import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
@@ -24,16 +25,7 @@ Widget conteudoDaAba(
   ServicoAutenticacao servico,
   ServicosDoApp servicos,
 ) => switch (aba) {
-  AbaDoApp.mes => AbaProvisoria(
-    titulo: 'Seu mês',
-    mensagem:
-        'Aqui vai aparecer o imposto do mês, com o vencimento e o '
-        'que falta resolver — calculado só sobre o que você classificar.',
-    aviso: AvisoBackup(
-      controlador: servicos.backup,
-      aoTocar: () => abrirTelaBackup(servicos),
-    ),
-  ),
+  AbaDoApp.mes => TelaMes(servicos: servicos),
   AbaDoApp.lancamentos => AbaLancamentos(servicos: servicos),
   AbaDoApp.despesas => const AbaProvisoria(
     titulo: 'Despesas',
