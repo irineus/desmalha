@@ -20,6 +20,7 @@ perfis/<id>.json               # tipo perfil_csv (ver nota)
 | `feriados_bancarios`        | `FeriadosBancarios`         | 2026 (FEBRABAN + 31/12) |
 | `perfil_csv`                | `PerfilCsv`                 | Nubank, Inter, BB |
 | `layout_darf_codigo_barras` | `LayoutCodigoBarrasDarf`    | nenhum — só entra conferido contra DARF real |
+| `documento_legal`           | `DocumentoLegal`            | nenhum — só entra texto aprovado e servido numa URL pública |
 
 Os perfis CSV moram em `perfis/` (fora daqui) porque o CLI de validação e o
 roteiro do usuário no Windows já apontam para lá; o manifesto de publicação
@@ -39,5 +40,16 @@ roteiro do usuário no Windows já apontam para lá; o manifesto de publicação
 - Item novo de tipo desconhecido pelo app antigo é **ignorado** pelo
   `Catalogo` (compatibilidade para a frente); conteúdo malformado de tipo
   conhecido **falha alto**.
+- **`documento_legal` é a allowlist do aceite** (`public.documentos_legais`,
+  materializada no banco por gatilho quando o item é publicado).
+  `registrar_aceite` recusa versão que não esteja aqui. Três regras próprias:
+  - id derivado: `<documento com hífen>-<versao>`, ex.
+    `termos-uso-2026-09-v1.json`;
+  - `sha256_texto` = SHA-256, em hex minúsculo, dos **bytes exatos servidos em
+    `url`** — é o hash que cada aceite grava como prova do texto lido;
+  - **publicado é para sempre**: mudar o texto é publicar versão nova. Editar
+    ou apagar o arquivo de uma versão já publicada faz o workflow FALHAR (o
+    banco recusa), de propósito — o aceite antigo precisa continuar apontando
+    para o texto que a pessoa leu.
 - Valores fiscais seguem as convenções invioláveis: centavos em `int`,
   pontos-base em `int`, nunca ponto flutuante.
