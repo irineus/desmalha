@@ -31,6 +31,10 @@ const _permitidos = {
   // PostgREST do backup, com o token da sessão. Porta própria pelo mesmo
   // motivo da exclusão.
   'lib/backup/porta_armazenamento_backup_http.dart',
+  // +1 (24/09/2026, card "Telas de onboarding e login"): RPC
+  // registrar_aceite com o token da sessão. Porta própria pelo mesmo motivo
+  // da exclusão — o aceite não é método da PortaAuth.
+  'lib/onboarding/porta_aceite_http.dart',
 };
 
 /// O que conta como "falar Supabase" em CÓDIGO (comentários descartados;

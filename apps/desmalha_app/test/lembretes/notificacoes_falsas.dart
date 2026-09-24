@@ -54,18 +54,19 @@ Catalogo catalogoDoSeed() => Catalogo.fromJson(
       as Map<String, Object?>,
 );
 
+/// O seed pelo bundle: vale em testWidgets e no aparelho (integration_test),
+/// onde o disco do repositório não existe.
+Future<Catalogo> catalogoDoBundle() async => Catalogo.fromJson(
+  jsonDecode(await rootBundle.loadString(assetSeedCatalogo))
+      as Map<String, Object?>,
+);
+
 ControladorLembretes controladorLembretesFalso({
   NotificacoesFalsas? porta,
   Catalogo? catalogo,
   DateTime? agora,
 }) => ControladorLembretes(
   porta: porta ?? NotificacoesFalsas(),
-  // Pelo bundle: vale em testWidgets e no aparelho (integration_test).
-  carregarCatalogo: () async =>
-      catalogo ??
-      Catalogo.fromJson(
-        jsonDecode(await rootBundle.loadString(assetSeedCatalogo))
-            as Map<String, Object?>,
-      ),
+  carregarCatalogo: () async => catalogo ?? await catalogoDoBundle(),
   relogio: () => agora ?? DateTime(2026, 9, 24, 10),
 );

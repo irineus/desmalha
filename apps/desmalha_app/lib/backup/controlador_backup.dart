@@ -72,6 +72,13 @@ class ControladorBackup extends ChangeNotifier {
   /// faz mesmo sem mudança (a pessoa pediu).
   Future<void> fazerAgora() => _executar();
 
+  /// A conta já tem backup no servidor? O onboarding pergunta antes de
+  /// gerar um código: numa conta que já tem backup, uma chave-mestra nova
+  /// faria os próximos backups empurrarem os antigos para fora das 3
+  /// versões guardadas. Lança se não conseguir conferir.
+  Future<bool> existeBackupNaNuvem() async =>
+      (await servico().porta.listarMetadados()).isNotEmpty;
+
   Future<void> _executar({String? pularSeConteudoFor}) async {
     executando = true;
     ultimaFalha = null;

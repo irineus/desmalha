@@ -48,6 +48,7 @@ void main() {
         ),
         ),
       );
+      await tester.pumpAndSettle(); // porteiro do onboarding carrega
       await tester.tap(find.text('Ajustes'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sua conta'));

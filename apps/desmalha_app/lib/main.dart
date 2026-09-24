@@ -22,6 +22,9 @@ import 'dados/conexao_cifrada.dart';
 import 'lembretes/controlador_lembretes.dart';
 import 'lembretes/porta_notificacoes_locais.dart';
 import 'monitoring.dart';
+import 'onboarding/controlador_onboarding.dart';
+import 'onboarding/porta_aceite_http.dart';
+import 'onboarding/repositorio_onboarding.dart';
 import 'navegacao/abas.dart';
 import 'servicos_do_app.dart';
 import 'tema/tema.dart';
@@ -84,6 +87,16 @@ Future<void> main() async {
             comSessao: () => portaAuth.usuarioAtual != null,
           ),
           lembretes: lembretes,
+          onboarding: ControladorOnboarding(
+            repositorio: RepositorioOnboardingDrift(bancoDoApp()),
+            aceite: PortaAceiteHttp(
+              url: supabaseUrl,
+              chavePublicavel: supabasePublishableKey,
+              tokenDaSessao: () => portaAuth.tokenDeAcesso,
+            ),
+            carregarCatalogo: catalogo.carregar,
+            usuarioId: () => portaAuth.usuarioAtual?.id,
+          ),
         ),
       ),
     );

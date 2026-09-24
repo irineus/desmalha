@@ -8,6 +8,7 @@ import 'backup/chaves_backup.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
 import 'lembretes/controlador_lembretes.dart';
+import 'onboarding/controlador_onboarding.dart';
 
 class ServicosDoApp {
   const ServicosDoApp({
@@ -15,6 +16,7 @@ class ServicosDoApp {
     required this.chavesBackup,
     required this.backup,
     required this.lembretes,
+    required this.onboarding,
   });
 
   /// Exclusão da conta pelo app (Ajustes > Sua conta).
@@ -28,4 +30,7 @@ class ServicosDoApp {
 
   /// Lembrete local de vencimento do DARF (Ajustes > Lembrete do DARF).
   final ControladorLembretes lembretes;
+
+  /// Aceite dos documentos legais, perfil e conclusão do onboarding.
+  final ControladorOnboarding onboarding;
 }
