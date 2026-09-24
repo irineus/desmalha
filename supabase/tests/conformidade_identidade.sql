@@ -40,6 +40,8 @@ declare
   u7 constant uuid := '77777777-7777-4777-8777-777777777777';
   u8 constant uuid := '88888888-8888-4888-8888-888888888888';
   u9 constant uuid := '99999999-9999-4999-8999-999999999999';
+  ua constant uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  ub constant uuid := 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   v_uuid     uuid;
   v_ts       timestamptz;
   v_id       bigint;
@@ -706,6 +708,89 @@ begin
     perform pg_temp.reg('59 o prazo de um envio não pode ser esticado',
                         sqlerrm like '%imutável%', sqlerrm);
   end;
+  ----------------------------------------------------------------------------
+  -- 15. Metadados do backup — seq monotônica, caminho canônico, sem
+  --     sobrescrever (card "Backup cifrado ponta a ponta", PR 3/4)
+  ----------------------------------------------------------------------------
+  insert into auth.users (id, email) values (ua, 'titular.a@exemplo.com');
+  insert into auth.users (id, email) values (ub, 'titular.b@exemplo.com');
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', ua, 'role', 'authenticated')::text, true);
+
+  execute 'set local role authenticated';
+  execute format(
+    'insert into public.backups_metadados
+       (seq, path, tamanho_bytes, sha256, formato_versao, app_versao, plataforma)
+     values (1, %L, 1000, %L, 1, %L, %L)',
+    ua || '/000001.dsmb', repeat('a', 64), '1.0.0', 'android');
+  execute 'reset role';
+  select count(*) into v_n from public.backups_metadados where usuario_id = ua;
+  perform pg_temp.reg('60 dono registra o próprio backup', v_n = 1, v_n::text);
+
+  begin
+    execute 'set local role authenticated';
+    execute format(
+      'insert into public.backups_metadados
+         (seq, path, tamanho_bytes, sha256, formato_versao, app_versao, plataforma)
+       values (1, %L, 1000, %L, 1, %L, %L)',
+      ua || '/000001.dsmb', repeat('b', 64), '1.0.0', 'ios');
+    execute 'reset role';
+    perform pg_temp.reg('61 a mesma seq duas vezes é recusada (outro aparelho)',
+                        false, 'o insert passou — sobrescrita silenciosa');
+  exception when unique_violation then
+    execute 'reset role';
+    perform pg_temp.reg('61 a mesma seq duas vezes é recusada (outro aparelho)', true);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    execute format(
+      'insert into public.backups_metadados
+         (seq, path, tamanho_bytes, sha256, formato_versao, app_versao, plataforma)
+       values (2, %L, 1000, %L, 1, %L, %L)',
+      ua || '/qualquer-nome.dsmb', repeat('c', 64), '1.0.0', 'android');
+    execute 'reset role';
+    perform pg_temp.reg('62 caminho fora do canônico <uid>/<seq>.dsmb é recusado',
+                        false, 'o insert passou');
+  exception when check_violation then
+    execute 'reset role';
+    perform pg_temp.reg('62 caminho fora do canônico <uid>/<seq>.dsmb é recusado', true);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    execute format(
+      'insert into public.backups_metadados
+         (seq, path, tamanho_bytes, sha256, formato_versao, app_versao, plataforma)
+       values (3, %L, 1000, %L, 1, %L, %L)',
+      ub || '/000003.dsmb', repeat('d', 64), '1.0.0', 'android');
+    execute 'reset role';
+    perform pg_temp.reg('63 cliente não registra backup em nome de outro', false,
+                        'o insert passou');
+  exception when others then
+    execute 'reset role';
+    perform pg_temp.reg('63 cliente não registra backup em nome de outro', true, sqlerrm);
+  end;
+
+  begin
+    update public.backups_metadados set sha256 = repeat('e', 64) where usuario_id = ua;
+    perform pg_temp.reg('64 metadado de backup é imutável', false, 'o update passou');
+  exception when others then
+    perform pg_temp.reg('64 metadado de backup é imutável',
+                        sqlerrm like '%imutável%', sqlerrm);
+  end;
+
+  execute 'set local role authenticated';
+  execute 'delete from public.backups_metadados where seq = 1';
+  get diagnostics v_n = row_count;
+  execute 'reset role';
+  perform pg_temp.reg('65 dono apaga o próprio metadado (prune)', v_n = 1, v_n::text);
+
+  perform pg_temp.reg(
+    '66 o bucket backups não tem mais policy de UPDATE (nunca sobrescrever)',
+    not exists (select 1 from pg_policies
+                 where schemaname = 'storage' and tablename = 'objects'
+                   and policyname = 'backup_atualizacao_propria'));
 end;
 $bloco$;
 
@@ -733,8 +818,8 @@ declare
 begin
   select count(*) filter (where not ok), count(*) into v_falhou, v_total from _res;
 
-  if v_total < 69 then
-    raise exception 'a suíte registrou só % asserções; esperado ao menos 69', v_total;
+  if v_total < 76 then
+    raise exception 'a suíte registrou só % asserções; esperado ao menos 76', v_total;
   end if;
   if v_falhou > 0 then
     raise exception '% de % asserções falharam (ver a coluna detalhe acima)',
