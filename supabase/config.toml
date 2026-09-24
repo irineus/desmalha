@@ -29,6 +29,14 @@ project_id = "desmalha"
 # do app. Ver supabase/functions/excluir-conta/index.ts.
 verify_jwt = false
 
+[functions.expurgar-suporte]
+# Chamada diária pelo pg_cron via pg_net, que não tem sessão. A função não lê
+# nada de quem chama e só executa o que venceu pelo relógio do banco: chamá-la
+# antes da hora só antecipa uma limpeza já devida. Guardar uma chave no banco
+# só para autenticar esta chamada seria segredo novo sem garantia nova. Ver
+# supabase/functions/expurgar-suporte/index.ts.
+verify_jwt = false
+
 # ─── Autenticação ────────────────────────────────────────────────────────────
 
 [auth]

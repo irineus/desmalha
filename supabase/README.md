@@ -23,24 +23,26 @@ Fonte do schema: **"Resultado: Revisar modelagem de dados para local-first
 | `20260817050000_trava_sem_senha_neutraliza` | correção 2: a trava NEUTRALIZA a senha em vez de recusar — o marcador do GoTrue é indistinguível de senha real |
 | `20260817200000_catalogo` | `catalogo_itens` — catálogo versionado só-leitura (tabela IRPF, feriados, perfis de parser, layout de DARF) |
 | `20260924120000_documentos_legais` | allowlist `documentos_legais` (materializada do catálogo, imutável); `registrar_aceite` recusa versão não publicada e grava o `sha256_texto` do texto aceito |
+| `20260924130000_envios_suporte` | `public.envios_suporte` (registro do envio voluntário ao suporte, prazo de 30 dias carimbado pelo servidor) + as portas do expurgo, só `service_role`: `envios_suporte_vencidos()` e `confirmar_expurgo_envios_suporte()` — esta só carimba `excluido_em` quando o objeto sumiu de `storage.objects` |
 
 | Edge function | Conteúdo |
 |---|---|
 | `excluir-conta` | fluxo de exclusão + página pública exigida pelo Google Play |
+| `expurgar-suporte` | expurgo diário dos 30 dias de `envios_suporte`: apaga pela Storage API, confirma pelo banco e FALHA (HTTP 500) se sobrar arquivo vencido |
 
 | Pós-deploy | Conteúdo |
 |---|---|
 | `10_chave_hmac_aceites` | sorteia a chave de pseudonimização no Vault, se ainda não houver |
-| `20_agendamento_expurgo` | habilita `pg_cron` e agenda as duas rotinas de expurgo |
+| `20_agendamento_expurgo` | habilita `pg_cron`/`pg_net` e agenda as três rotinas de expurgo (contas, aceites e — pela edge function — envios ao suporte); exige `-v projeto_url=...` |
 
 O pós-deploy roda **automaticamente** a cada publicação, depois das migrations.
 Não é migration porque depende da plataforma (Vault, `pg_cron`), e as migrations
 precisam continuar aplicáveis num Postgres pelado — é isso que
 `tool/testar_supabase.sh` verifica.
 
-Ainda **não** existem: `assinaturas`, `eventos_pagamento`, `backups_metadados`
-e `envios_suporte`. São escopo de outros cards (assinaturas na Fase 6;
-metadados de backup no card de backup E2E).
+Ainda **não** existem: `assinaturas`, `eventos_pagamento` e `backups_metadados`.
+São escopo de outros cards (assinaturas na Fase 6; metadados de backup no card
+de backup E2E).
 
 **Catálogo versionado (ago/2026, card "Conteúdo versionado por API"):** a
 modelagem original previa sete tabelas tipadas + `catalogo_versoes`; virou

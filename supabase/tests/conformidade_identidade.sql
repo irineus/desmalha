@@ -39,6 +39,9 @@ declare
   u6 constant uuid := '66666666-6666-4666-8666-666666666666';
   u7 constant uuid := '77777777-7777-4777-8777-777777777777';
   u8 constant uuid := '88888888-8888-4888-8888-888888888888';
+  u9 constant uuid := '99999999-9999-4999-8999-999999999999';
+  v_uuid     uuid;
+  v_ts       timestamptz;
   v_id       bigint;
   v_id2      bigint;
   v_n        integer;
@@ -563,6 +566,146 @@ begin
     perform pg_temp.reg('45 conteúdo com id divergente da linha é recusado',
                         true);
   end;
+  ----------------------------------------------------------------------------
+  -- 14. Envio ao suporte — retenção de 30 dias executada, não só escrita
+  --
+  -- O cliente registra o envio e não dita o prazo; o banco só carimba a
+  -- exclusão quando o objeto sumiu de storage.objects (a mesma prova de
+  -- encerrar_conta). Quem apaga o arquivo é a Storage API, pela edge function
+  -- expurgar-suporte — aqui se prova a metade que é do banco.
+  ----------------------------------------------------------------------------
+  insert into auth.users (id, email) values (u8, 'titular.oito@exemplo.com');
+  insert into auth.users (id, email) values (u9, 'titular.nove@exemplo.com');
+
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', u8, 'role', 'authenticated')::text, true);
+
+  execute 'set local role authenticated';
+  execute format(
+    'insert into public.envios_suporte (path, banco_informado, motivo)
+     values (%L, %L, %L)', u8 || '/extrato-itau.ofx', 'Itaú', 'parser falhou');
+  execute 'reset role';
+
+  select usuario_id, expira_em - consentimento_em, consentimento_em
+    into v_uuid, v_txt, v_ts
+    from public.envios_suporte where path = u8 || '/extrato-itau.ofx';
+  perform pg_temp.reg('46 cliente registra o próprio envio, com 30 dias de prazo',
+                      v_uuid = u8 and v_txt = '30 days'
+                      and v_ts between now() - interval '1 minute' and now(),
+                      format('usuario=%s prazo=%s', v_uuid, v_txt));
+
+  begin
+    execute 'set local role authenticated';
+    execute format(
+      'insert into public.envios_suporte (path, motivo, expira_em, consentimento_em)
+       values (%L, %L, now() + interval %L, now() + interval %L)',
+      u8 || '/outro.csv', 'x', '10 years', '10 years');
+    execute 'reset role';
+    perform pg_temp.reg('47 cliente NÃO dita o próprio prazo de retenção', false,
+                        'o insert passou com expira_em do cliente');
+  exception when others then
+    execute 'reset role';
+    perform pg_temp.reg('47 cliente NÃO dita o próprio prazo de retenção', true,
+                        sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    execute format(
+      'insert into public.envios_suporte (path, motivo) values (%L, %L)',
+      u9 || '/alheio.ofx', 'x');
+    execute 'reset role';
+    perform pg_temp.reg('48 arquivo fora da própria pasta é recusado', false,
+                        'o insert passou');
+  exception when others then
+    execute 'reset role';
+    perform pg_temp.reg('48 arquivo fora da própria pasta é recusado', true, sqlerrm);
+  end;
+
+  -- Envios de outro titular, montados como o suporte/CI faria (service_role
+  -- informa o instante). Um vencido sem objeto, um vencido com objeto no
+  -- bucket, um no prazo sem objeto.
+  insert into public.envios_suporte (usuario_id, path, motivo, consentimento_em)
+  values (u9, u9 || '/vencido-sem-objeto.ofx', 'x', now() - interval '31 days'),
+         (u9, u9 || '/vencido-com-objeto.ofx', 'x', now() - interval '31 days'),
+         (u9, u9 || '/no-prazo.ofx',           'x', now() - interval '29 days');
+  insert into storage.objects (bucket_id, name)
+  values ('suporte-extratos', u9 || '/vencido-com-objeto.ofx');
+
+  execute 'set local role authenticated';
+  select count(*) into v_n from public.envios_suporte;
+  execute 'reset role';
+  perform pg_temp.reg('49 cliente só enxerga os próprios envios', v_n = 1, v_n::text);
+
+  begin
+    execute 'set local role authenticated';
+    execute format(
+      'update public.envios_suporte set excluido_em = now() where usuario_id = %L', u8);
+    execute 'reset role';
+    perform pg_temp.reg('50 cliente NÃO carimba a exclusão do próprio arquivo',
+                        false, 'o update passou — o registro diria que apagou');
+  exception when others then
+    execute 'reset role';
+    perform pg_temp.reg('50 cliente NÃO carimba a exclusão do próprio arquivo',
+                        true, sqlerrm);
+  end;
+
+  perform pg_temp.reg(
+    '51 anon e authenticated NÃO executam as portas do expurgo',
+    not has_function_privilege('anon', 'public.confirmar_expurgo_envios_suporte()', 'execute')
+    and not has_function_privilege('authenticated', 'public.confirmar_expurgo_envios_suporte()', 'execute')
+    and not has_function_privilege('anon', 'public.envios_suporte_vencidos()', 'execute')
+    and not has_function_privilege('authenticated', 'public.envios_suporte_vencidos()', 'execute'));
+
+  perform pg_temp.reg(
+    '52 service_role executa as portas do expurgo',
+    has_function_privilege('service_role', 'public.confirmar_expurgo_envios_suporte()', 'execute')
+    and has_function_privilege('service_role', 'public.envios_suporte_vencidos()', 'execute'));
+
+  select string_agg(split_part(path, '/', 2), ',' order by path) into v_txt
+    from public.envios_suporte_vencidos() where path like u9 || '/%';
+  perform pg_temp.reg('53 vencidos lista só o que passou dos 30 dias',
+                      v_txt = 'vencido-com-objeto.ofx,vencido-sem-objeto.ofx',
+                      coalesce(v_txt, '(nada)'));
+
+  v_n := public.confirmar_expurgo_envios_suporte();
+  perform pg_temp.reg('54 confirmar carimba só o vencido cujo objeto sumiu',
+                      v_n = 1, v_n::text);
+
+  select excluido_em is null into v_bool
+    from public.envios_suporte where path = u9 || '/vencido-com-objeto.ofx';
+  perform pg_temp.reg(
+    '55 objeto ainda no bucket NÃO ganha carimbo de excluído', v_bool,
+    'o banco registrou como apagado um arquivo que segue no bucket');
+
+  select excluido_em is null into v_bool
+    from public.envios_suporte where path = u9 || '/no-prazo.ofx';
+  perform pg_temp.reg('56 envio no prazo não é tocado', v_bool);
+
+  select count(*) into v_n from public.envios_suporte_vencidos()
+   where path like u9 || '/%';
+  perform pg_temp.reg('57 o pendente segue na lista até sumir de fato',
+                      v_n = 1, v_n::text);
+
+  begin
+    update public.envios_suporte set excluido_em = null
+     where path = u9 || '/vencido-sem-objeto.ofx';
+    perform pg_temp.reg('58 a exclusão registrada não pode ser desfeita', false,
+                        'o update passou');
+  exception when others then
+    perform pg_temp.reg('58 a exclusão registrada não pode ser desfeita',
+                        sqlerrm like '%não pode ser alterada%', sqlerrm);
+  end;
+
+  begin
+    update public.envios_suporte set expira_em = expira_em + interval '1 year'
+     where path = u9 || '/no-prazo.ofx';
+    perform pg_temp.reg('59 o prazo de um envio não pode ser esticado', false,
+                        'o update passou');
+  exception when others then
+    perform pg_temp.reg('59 o prazo de um envio não pode ser esticado',
+                        sqlerrm like '%imutável%', sqlerrm);
+  end;
 end;
 $bloco$;
 
@@ -590,8 +733,8 @@ declare
 begin
   select count(*) filter (where not ok), count(*) into v_falhou, v_total from _res;
 
-  if v_total < 55 then
-    raise exception 'a suíte registrou só % asserções; esperado ao menos 55', v_total;
+  if v_total < 69 then
+    raise exception 'a suíte registrou só % asserções; esperado ao menos 69', v_total;
   end if;
   if v_falhou > 0 then
     raise exception '% de % asserções falharam (ver a coluna detalhe acima)',
