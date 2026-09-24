@@ -26,11 +26,16 @@ void main() {
     await porta.fechar();
   });
 
-  Future<void> montar(WidgetTester tester) => tester.pumpWidget(
-    MaterialApp(
-      home: PortalAuth(servico: servico, servicos: servicosFalsos()),
-    ),
-  );
+  /// Abre o app deslogado e passa pelas boas-vindas até a tela de entrada.
+  Future<void> montar(WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PortalAuth(servico: servico, servicos: servicosFalsos()),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('botao_entrar_boas_vindas')));
+    await tester.pumpAndSettle();
+  }
 
   /// Entra na conta pelo caminho do usuário: e-mail, código, e então
   /// Ajustes > Sua conta — é lá que a conta mora desde que o app tem abas.

@@ -7,6 +7,9 @@ import 'package:desmalha_app/backup/servico_backup.dart';
 import 'package:desmalha_app/conta/porta_exclusao_conta.dart';
 import 'package:desmalha_app/dados/chave_banco.dart';
 import 'package:desmalha_app/lembretes/controlador_lembretes.dart';
+import 'package:desmalha_app/onboarding/controlador_onboarding.dart';
+import 'package:desmalha_app/onboarding/porta_aceite.dart';
+import 'package:desmalha_app/onboarding/repositorio_onboarding.dart';
 import 'package:desmalha_app/servicos_do_app.dart';
 import 'package:desmalha_core/desmalha_core.dart';
 
@@ -81,6 +84,7 @@ ServicosDoApp servicosFalsos({
   ChavesBackup? chavesBackup,
   ControladorBackup? backup,
   ControladorLembretes? lembretes,
+  ControladorOnboarding? onboarding,
 }) {
   final chaves =
       chavesBackup ??
@@ -90,5 +94,54 @@ ServicosDoApp servicosFalsos({
     chavesBackup: chaves,
     backup: backup ?? controladorBackupFalso(chaves: chaves),
     lembretes: lembretes ?? controladorLembretesFalso(),
+    onboarding: onboarding ?? controladorOnboardingFalso(concluido: true),
+  );
+}
+
+/// Aceite em memória: registra o que o servidor teria gravado.
+class AceiteFalso implements PortaAceite {
+  AceiteFalso({this.falha});
+
+  /// Se não nula, toda chamada lança esta falha.
+  FalhaAceite? falha;
+  final List<(String, String)> registrados = [];
+
+  @override
+  Future<void> registrar({
+    required String documento,
+    required String versao,
+  }) async {
+    if (falha != null) throw falha!;
+    registrados.add((documento, versao));
+  }
+}
+
+/// Onboarding com banco em memória. [concluido]: perfil já salvo e
+/// onboarding feito — o padrão dos testes que só querem chegar ao app.
+ControladorOnboarding controladorOnboardingFalso({
+  bool concluido = false,
+  RepositorioOnboardingMemoria? repositorio,
+  AceiteFalso? aceite,
+  Catalogo? catalogo,
+  bool permiteSeguirSemTermos = true,
+}) {
+  final repo = repositorio ?? RepositorioOnboardingMemoria();
+  if (concluido && repo.perfil == null) {
+    repo.perfil = const PerfilDoApp(
+      nome: 'Pessoa de Teste',
+      cpf: '52998224725',
+      onboardingCompleto: true,
+    );
+  }
+  return ControladorOnboarding(
+    repositorio: repo,
+    aceite: aceite ?? AceiteFalso(),
+    // Sem asset: o catálogo vazio (nenhum documento legal publicado — o
+    // estado real de hoje) resolve sem IO, e o porteiro não prende o
+    // pumpAndSettle.
+    carregarCatalogo: () async => catalogo ?? Catalogo.fromItens(const []),
+    usuarioId: () => '00000000-0000-4000-8000-00000000000a',
+    permiteSeguirSemTermos: permiteSeguirSemTermos,
+    relogio: () => DateTime.utc(2026, 9, 24, 13),
   );
 }

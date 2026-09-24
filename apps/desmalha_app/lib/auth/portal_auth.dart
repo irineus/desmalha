@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../navegacao/abas.dart';
 import '../navegacao/casca.dart';
+import '../onboarding/telas_onboarding.dart';
 import '../servicos_do_app.dart';
 import 'configuracao_supabase.dart';
 import 'estado_auth.dart';
@@ -27,9 +28,15 @@ class PortalAuth extends StatefulWidget {
 class _PortalAuthState extends State<PortalAuth> {
   StreamSubscription<EstadoAuth>? _assinatura;
 
+  /// Boas-vindas (O1) antes do login, até o toque em "Entrar". Quem já
+  /// esteve na conta nesta execução (saiu, excluiu a conta) volta direto à
+  /// tela de entrada — é lá que o aviso de conta excluída aparece.
+  bool _querEntrar = false;
+
   @override
   void initState() {
     super.initState();
+    _querEntrar = widget.servico.estado is! Deslogado;
     _assinatura = widget.servico.mudancas.listen((estado) {
       if (!mounted) return;
       // Saiu da conta com uma tela empilhada por cima (ex.: Ajustes > Sua
@@ -38,6 +45,7 @@ class _PortalAuthState extends State<PortalAuth> {
       if (estado is! Autenticado) {
         Navigator.of(context).popUntil((rota) => rota.isFirst);
       }
+      if (estado is! Deslogado) _querEntrar = true;
       setState(() {});
     });
   }
@@ -50,11 +58,21 @@ class _PortalAuthState extends State<PortalAuth> {
 
   @override
   Widget build(BuildContext context) => switch (widget.servico.estado) {
-    Autenticado() => GatilhosDeAbertura(
+    // Onboarding (e aceite de documento legal novo) antes do app; as rotinas
+    // de abertura só depois dele — backup sem código confirmado não roda.
+    Autenticado() => PorteiroOnboarding(
       servicos: widget.servicos,
-      child: CascaDoApp(
-        construir: (aba) => conteudoDaAba(aba, widget.servico, widget.servicos),
+      child: GatilhosDeAbertura(
+        servicos: widget.servicos,
+        child: CascaDoApp(
+          construir: (aba) =>
+              conteudoDaAba(aba, widget.servico, widget.servicos),
+        ),
       ),
+    ),
+    AguardandoCodigo() => TelaLogin(servico: widget.servico),
+    _ when !_querEntrar => TelaBoasVindas(
+      aoEntrar: () => setState(() => _querEntrar = true),
     ),
     _ => TelaLogin(servico: widget.servico),
   };
