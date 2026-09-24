@@ -21,6 +21,7 @@ import 'package:integration_test/integration_test.dart';
 
 import '../test/auth/porta_auth_falsa.dart';
 import '../test/conta/porta_exclusao_falsa.dart';
+import '../test/servicos_falsos.dart';
 
 const _captura = bool.fromEnvironment('CAPTURA');
 
@@ -54,7 +55,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: temaDesmalha(),
-        home: PortalAuth(servico: servico, exclusao: exclusao),
+        home: PortalAuth(
+          servico: servico,
+          servicos: servicosFalsos(exclusao: exclusao),
+        ),
       ),
     );
     await tester.tap(find.text('Ajustes'));

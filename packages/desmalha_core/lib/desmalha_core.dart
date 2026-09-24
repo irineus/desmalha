@@ -5,6 +5,7 @@
 /// dinheiro em `int` de centavos, percentuais em pontos-base, nunca `double`.
 library;
 
+export 'src/backup/codigo_recuperacao.dart';
 export 'src/backup/envelope_dsmb.dart';
 export 'src/backup/excecoes_backup.dart';
 export 'src/backup/payload_backup.dart';

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../conta/porta_exclusao_conta.dart';
 import '../navegacao/abas.dart';
 import '../navegacao/casca.dart';
+import '../servicos_do_app.dart';
 import 'configuracao_supabase.dart';
 import 'estado_auth.dart';
 import 'servico_auth.dart';
@@ -13,12 +13,12 @@ import 'tela_login.dart';
 /// Porteiro do app: mostra o login enquanto não há sessão e, depois, a casca
 /// com as cinco abas (a conta mora em Ajustes).
 class PortalAuth extends StatefulWidget {
-  const PortalAuth({super.key, required this.servico, required this.exclusao});
+  const PortalAuth({super.key, required this.servico, required this.servicos});
 
   final ServicoAutenticacao servico;
 
-  /// Exclusão da conta pelo app (Ajustes > Sua conta).
-  final PortaExclusaoConta exclusao;
+  /// O que as telas atrás do login usam (exclusão, chaves do backup...).
+  final ServicosDoApp servicos;
 
   @override
   State<PortalAuth> createState() => _PortalAuthState();
@@ -51,7 +51,7 @@ class _PortalAuthState extends State<PortalAuth> {
   @override
   Widget build(BuildContext context) => switch (widget.servico.estado) {
     Autenticado() => CascaDoApp(
-      construir: (aba) => conteudoDaAba(aba, widget.servico, widget.exclusao),
+      construir: (aba) => conteudoDaAba(aba, widget.servico, widget.servicos),
     ),
     _ => TelaLogin(servico: widget.servico),
   };

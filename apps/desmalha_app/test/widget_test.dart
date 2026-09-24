@@ -8,7 +8,7 @@ void main() {
   ) async {
     // Testes e CI rodam sem as variáveis do Supabase de propósito. O que o app
     // NÃO pode fazer é abrir um login que só falharia na rede.
-    await tester.pumpWidget(const DesmalhaApp(servico: null, exclusao: null));
+    await tester.pumpWidget(const DesmalhaApp(servico: null, servicos: null));
 
     expect(find.text('Build sem configuração de servidor'), findsOneWidget);
     expect(find.byType(TextField), findsNothing);

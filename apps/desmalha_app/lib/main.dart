@@ -8,12 +8,13 @@ import 'auth/configuracao_supabase.dart';
 import 'auth/porta_auth_supabase.dart';
 import 'auth/portal_auth.dart';
 import 'auth/servico_auth.dart';
+import 'backup/chaves_backup.dart';
 import 'catalogo/porta_catalogo_rest.dart';
-import 'conta/porta_exclusao_conta.dart';
 import 'conta/porta_exclusao_conta_http.dart';
 import 'catalogo/repositorio_catalogo.dart';
 import 'dados/conexao_cifrada.dart';
 import 'monitoring.dart';
+import 'servicos_do_app.dart';
 import 'tema/tema.dart';
 
 Future<void> main() async {
@@ -28,17 +29,20 @@ Future<void> main() async {
     // já serve qualquer cálculo; isto só o mantém fresco quando há rede.
     unawaited(_atualizarCatalogo());
     if (!supabaseConfigurado) {
-      runApp(const DesmalhaApp(servico: null, exclusao: null));
+      runApp(const DesmalhaApp(servico: null, servicos: null));
       return;
     }
     final portaAuth = PortaAuthSupabase.doClienteGlobal();
     runApp(
       DesmalhaApp(
         servico: ServicoAutenticacao(portaAuth),
-        exclusao: PortaExclusaoContaHttp(
-          url: supabaseUrl,
-          chavePublicavel: supabasePublishableKey,
-          tokenDaSessao: () => portaAuth.tokenDeAcesso,
+        servicos: ServicosDoApp(
+          exclusao: PortaExclusaoContaHttp(
+            url: supabaseUrl,
+            chavePublicavel: supabasePublishableKey,
+            tokenDaSessao: () => portaAuth.tokenDeAcesso,
+          ),
+          chavesBackup: ChavesBackup(),
         ),
       ),
     );
@@ -69,22 +73,22 @@ Future<void> _atualizarCatalogo() async {
 }
 
 class DesmalhaApp extends StatelessWidget {
-  const DesmalhaApp({super.key, required this.servico, required this.exclusao});
+  const DesmalhaApp({super.key, required this.servico, required this.servicos});
 
   /// `null` num build sem configuração de servidor — ver [TelaSemConfiguracao].
   final ServicoAutenticacao? servico;
-  final PortaExclusaoConta? exclusao;
+  final ServicosDoApp? servicos;
 
   @override
   Widget build(BuildContext context) {
     final servico = this.servico;
-    final exclusao = this.exclusao;
+    final servicos = this.servicos;
     return MaterialApp(
       title: 'Desmalha',
       theme: temaDesmalha(),
-      home: servico == null || exclusao == null
+      home: servico == null || servicos == null
           ? const TelaSemConfiguracao()
-          : PortalAuth(servico: servico, exclusao: exclusao),
+          : PortalAuth(servico: servico, servicos: servicos),
     );
   }
 }
