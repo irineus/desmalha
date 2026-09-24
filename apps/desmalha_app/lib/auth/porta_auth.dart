@@ -64,8 +64,16 @@ enum MotivoFalhaAuth {
   /// Provedor recusou por excesso de tentativas ou reenvios.
   limiteExcedido,
 
-  /// Rede indisponível ou provedor fora do ar.
+  /// A requisição não chegou ao servidor (sem rede, DNS, tempo esgotado).
   redeIndisponivel,
+
+  /// O servidor respondeu com erro (5xx) — a rede está boa; o problema é
+  /// do outro lado (ex.: o provedor de e-mail recusou o envio do código).
+  servidorComErro,
+
+  /// A conta deste e-mail foi excluída e está na carência de 30 dias da
+  /// Política de Privacidade: o acesso fica bloqueado até o expurgo.
+  contaExcluida,
 
   /// O e-mail novo da troca já pertence a outra conta.
   emailJaEmUso,
