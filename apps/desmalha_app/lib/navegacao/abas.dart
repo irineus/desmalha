@@ -12,6 +12,7 @@ import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';
 import '../backup/tela_backup.dart';
 import '../classificacao/aba_lancamentos.dart';
+import '../despesas/aba_despesas.dart';
 import '../painel/tela_mes.dart';
 import '../lembretes/controlador_lembretes.dart';
 import '../servicos_do_app.dart';
@@ -27,12 +28,7 @@ Widget conteudoDaAba(
 ) => switch (aba) {
   AbaDoApp.mes => TelaMes(servicos: servicos),
   AbaDoApp.lancamentos => AbaLancamentos(servicos: servicos),
-  AbaDoApp.despesas => const AbaProvisoria(
-    titulo: 'Despesas',
-    mensagem:
-        'Aluguel da sala, conselho, material — tudo isso reduz o '
-        'imposto. O livro-caixa chega numa próxima versão.',
-  ),
+  AbaDoApp.despesas => AbaDespesas(servicos: servicos),
   AbaDoApp.ano => const AbaProvisoria(
     titulo: 'Seu ano',
     mensagem:

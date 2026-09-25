@@ -22,6 +22,7 @@ import 'classificacao/repositorio_classificacao.dart';
 import 'dados/conexao_cifrada.dart';
 import 'dados/limpeza_local.dart';
 import 'dados/repositorio_importacao.dart';
+import 'despesas/repositorio_despesas.dart';
 import 'importacao/arquivo_recebido.dart';
 import 'importacao/seletor_arquivo_sistema.dart';
 import 'lembretes/controlador_lembretes.dart';
@@ -114,6 +115,10 @@ Future<void> main() async {
           catalogo: catalogo.carregar,
           painel: RepositorioPainelDrift(bancoDoApp()),
           classificacao: RepositorioClassificacao(
+            bancoDoApp(),
+            catalogo: catalogo.carregar,
+          ),
+          despesas: RepositorioDespesas(
             bancoDoApp(),
             catalogo: catalogo.carregar,
           ),
