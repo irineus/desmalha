@@ -74,4 +74,12 @@ void main() {
     final normalizado = normalizarCodigoRecuperacao(digitadoNaVolta)!;
     expect(await cabecalho.chaveMestraPeloCodigo(normalizado), mestra);
   });
+
+  test('grupo solto: mesma tolerância do código, e só 5 símbolos', () {
+    expect(normalizarGrupoRecuperacao('k7m2q'), 'K7M2Q');
+    expect(normalizarGrupoRecuperacao(' o1li9 '), '01119');
+    expect(normalizarGrupoRecuperacao('K7M2'), isNull);
+    expect(normalizarGrupoRecuperacao('K7M2QX'), isNull);
+    expect(normalizarGrupoRecuperacao('K7M2U'), isNull, reason: 'U fora');
+  });
 }

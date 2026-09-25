@@ -54,3 +54,20 @@ bool backupDesatualizado({
 }) =>
     ultimoSucessoEm == null ||
     agora.difference(ultimoSucessoEm) > prazoAvisoDesatualizado;
+
+/// Intervalo do lembrete do código de recuperação (decisão 10 do owner:
+/// a cada 90 dias, redigitar 2 grupos; dispensável, volta 90 dias depois).
+const Duration intervaloLembreteCodigo = Duration(days: 90);
+
+/// `true` quando o lembrete do código tem de aparecer: há código
+/// confirmado e passaram 90 dias desde a última conferência (ou dispensa).
+/// Sem data registrada não lembra — quem confirmou antes desta regra ganha
+/// a data na primeira abertura.
+bool lembreteDoCodigoDevido({
+  required DateTime agora,
+  required bool codigoConfirmado,
+  required DateTime? conferidoEm,
+}) =>
+    codigoConfirmado &&
+    conferidoEm != null &&
+    agora.difference(conferidoEm) >= intervaloLembreteCodigo;
