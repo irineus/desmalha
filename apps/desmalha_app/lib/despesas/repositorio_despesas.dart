@@ -337,6 +337,22 @@ class RepositorioDespesas {
     ];
   }
 
+  /// O principal da guia paga mais recente ANTES de [competencia] — a
+  /// referência que o dashboard mostra na pergunta do INSS (M1).
+  Future<int?> referenciaInss(String competencia) async {
+    final l = await (_banco.select(_banco.pagamentosInss)
+          ..where((p) =>
+              p.competencia.isSmallerThanValue(competencia) &
+              p.situacao.equals(SituacaoInss.pago.name))
+          ..orderBy([
+            (p) => OrderingTerm.desc(p.competencia),
+            (p) => OrderingTerm.desc(p.criadoEm),
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+    return l?.valorCentavos;
+  }
+
   /// Registra uma guia paga no mês. Um "não paguei" anterior do mesmo mês
   /// sai — a pessoa mudou a resposta.
   Future<String> registrarInssPago({

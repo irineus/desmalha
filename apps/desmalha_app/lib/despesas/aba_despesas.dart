@@ -158,7 +158,7 @@ class _AbaDespesasState extends State<AbaDespesas> {
   Future<void> _informarInss() async {
     final r = await showDialog<({int principal, int acrescimos})>(
       context: context,
-      builder: (_) => const _DialogoInss(),
+      builder: (_) => const DialogoInss(),
     );
     if (r == null) return;
     await _alterou(() => _repo.registrarInssPago(
@@ -534,15 +534,26 @@ class _SecaoInss extends StatelessWidget {
   }
 }
 
-class _DialogoInss extends StatefulWidget {
-  const _DialogoInss();
+/// "INSS pago": principal e acréscimos separados (P6). Devolve
+/// `(principal:, acrescimos:)` em centavos, ou `null` se cancelado. Usado
+/// pela aba Despesas e pela pergunta do INSS no dashboard (M1).
+class DialogoInss extends StatefulWidget {
+  const DialogoInss({super.key, this.principalSugeridoCentavos});
+
+  /// Preenche o principal (a guia do mês anterior, como referência).
+  final int? principalSugeridoCentavos;
 
   @override
-  State<_DialogoInss> createState() => _DialogoInssState();
+  State<DialogoInss> createState() => _DialogoInssState();
 }
 
-class _DialogoInssState extends State<_DialogoInss> {
-  final _principal = TextEditingController();
+class _DialogoInssState extends State<DialogoInss> {
+  late final _principal = TextEditingController(
+    text: switch (widget.principalSugeridoCentavos) {
+      null => '',
+      final c => centavosParaExibicao(c).replaceFirst(r'R$ ', ''),
+    },
+  );
   final _acrescimos = TextEditingController();
   String? _erro;
 
