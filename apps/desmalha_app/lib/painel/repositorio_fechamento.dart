@@ -259,10 +259,7 @@ class RepositorioFechamento {
           for (final f in (await fechadas(ano)).values) {
             final m = meses[f.competencia];
             if (m == null || assinaturaDe(m) == f.assinatura) continue;
-            final novo = await _gravarFechada(m);
-            await (_banco.update(_banco.darfCompetencias)
-                  ..where((d) => d.apuracaoId.equals(f.id)))
-                .write(DarfCompetenciasCompanion(apuracaoId: Value(novo)));
+            await _gravarFechada(m);
             regravadas.add(f.competencia);
           }
         }
@@ -276,8 +273,10 @@ class RepositorioFechamento {
           ..where((a) => a.competencia.equals(c)))
         .get();
     var versao = 1;
+    String? vigente;
     for (final a in anteriores) {
       if (a.versao >= versao) versao = a.versao + 1;
+      if (a.status != StatusApuracao.substituida.name) vigente = a.id;
     }
     await (_banco.update(_banco.apuracoesMensais)
           ..where((a) =>
@@ -332,6 +331,13 @@ class RepositorioFechamento {
             fechadaEm: Value(agora),
           ),
         );
+    // As guias que apontavam para a versão anterior passam a apontar para
+    // esta (a guia de vários meses continua abrangendo o mês).
+    if (vigente != null) {
+      await (_banco.update(_banco.darfCompetencias)
+            ..where((d) => d.apuracaoId.equals(vigente!)))
+          .write(DarfCompetenciasCompanion(apuracaoId: Value(id)));
+    }
     await _banco.into(_banco.auditoria).insert(
           AuditoriaCompanion.insert(
             entidade: 'apuracoes_mensais',

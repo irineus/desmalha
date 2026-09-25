@@ -46,15 +46,15 @@ void main() {
     });
   });
 
-  group('acertoTocaDeclaracaoEntregue (P15, rodada 5)', () {
+  group('acertoPedeRetificadora (P15, rodada 5)', () {
     final guia = GuiaPaga(
       competencias: const ['2026-12'],
       principalPagoCentavos: 39454,
     );
 
-    test('acerto de ano anterior fica pendente para a declaração', () {
+    test('acerto de ano anterior pede a retificadora', () {
       expect(
-        acertoTocaDeclaracaoEntregue(
+        acertoPedeRetificadora(
           AcertoComplementar(guia,
               competencia: '2026-12', diferencaCentavos: 40814),
           '2027-05-10',
@@ -65,13 +65,13 @@ void main() {
 
     test('no mesmo ano, ou sem diferença, não', () {
       expect(
-        acertoTocaDeclaracaoEntregue(
+        acertoPedeRetificadora(
           AcertoPagoAMaior(guia, diferencaCentavos: 100),
           '2026-12-20',
         ),
         isFalse,
       );
-      expect(acertoTocaDeclaracaoEntregue(AcertoEmDia(guia), '2027-05-10'),
+      expect(acertoPedeRetificadora(AcertoEmDia(guia), '2027-05-10'),
           isFalse);
     });
   });

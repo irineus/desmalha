@@ -227,7 +227,7 @@ class _TelaMesState extends State<TelaMes> {
       ),
       if (f.acerto != null) ...[
         const SizedBox(height: EspacosDesmalha.s2),
-        AcertoDaGuiaNaTela(acerto: f.acerto!, tocaDeclaracao: f.tocaDeclaracao),
+        AcertoDaGuiaNaTela(acerto: f.acerto!, pedeRetificadora: f.pedeRetificadora),
       ],
     ];
   }

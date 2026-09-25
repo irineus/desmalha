@@ -324,7 +324,7 @@ class _TelaDarfState extends State<TelaDarf> {
           const SizedBox(height: EspacosDesmalha.s2),
           AcertoDaGuiaNaTela(
             acerto: acerto,
-            tocaDeclaracao: estado.tocaDeclaracao,
+            pedeRetificadora: estado.pedeRetificadora,
           ),
         ],
         if (acerto is AcertoComplementar) ...[
