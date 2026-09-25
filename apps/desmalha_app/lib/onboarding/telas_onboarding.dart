@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../backup/tela_codigo_recuperacao.dart';
+import '../backup/tela_restaurar.dart';
 import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
 import '../tema/tokens.dart';
@@ -621,6 +622,51 @@ class _PassoCodigoState extends State<_PassoCodigo> {
     }
   }
 
+  Future<void> _restaurar() async {
+    final restaurou = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) =>
+            TelaRestaurar(restaurar: widget.servicos.backup.restaurarComCodigo),
+      ),
+    );
+    if (restaurou != true) return;
+    widget.servicos.dadosAlterados.value++;
+    await widget.servicos.onboarding.registrarCodigoConfirmado();
+    if (mounted) widget.aoConcluir();
+  }
+
+  /// Mensagem honesta sobre a irreversibilidade (decisão 10 do owner): sem
+  /// o código, os backups antigos não abrem nunca mais.
+  Future<void> _comecarDoZero() async {
+    final seguir = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Começar do zero?'),
+        content: const Text(
+          'Sem o código de recuperação, ninguém — nem nós — consegue abrir '
+          'os seus backups antigos. Isso não tem volta.\n\n'
+          'Você começa com o app vazio e cria um código novo. O backup só '
+          'volta a funcionar quando você confirmar, em Ajustes > Backup, '
+          'que descarta os antigos. Se achar o código antes disso, dá para '
+          'restaurar.',
+          key: Key('aviso_comecar_do_zero'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Voltar'),
+          ),
+          FilledButton(
+            key: const Key('confirmar_comecar_do_zero'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Começar do zero'),
+          ),
+        ],
+      ),
+    );
+    if (seguir == true && mounted) await _gerar();
+  }
+
   Future<void> _gerar() async {
     await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -659,19 +705,22 @@ class _PassoCodigoState extends State<_PassoCodigo> {
       ],
       _EstadoCodigo.backupExistente => [
         _titulo(context, 'Você já tem backup na nuvem'),
-        const BannerObrigacao(
-          key: Key('aviso_backup_existente'),
-          titulo: 'Não vamos gerar um código novo agora.',
-          texto:
-              'Seus backups abrem com o código que você anotou. A '
-              'restauração neste aparelho ainda não está disponível; até lá '
-              'o backup automático fica desligado, para não misturar chaves.',
+        _paragrafo(
+          context,
+          'Digite o código de recuperação que você anotou e seus dados '
+          'voltam para este celular — vindo de Android ou de iPhone.',
         ),
-        const SizedBox(height: EspacosDesmalha.s4),
+        const SizedBox(height: EspacosDesmalha.s2),
         FilledButton(
-          key: const Key('botao_codigo_continuar'),
-          onPressed: widget.aoConcluir,
-          child: const Text('Continuar'),
+          key: const Key('botao_restaurar_com_codigo'),
+          onPressed: _restaurar,
+          child: const Text('Restaurar com o código de recuperação'),
+        ),
+        const SizedBox(height: EspacosDesmalha.s2),
+        TextButton(
+          key: const Key('botao_comecar_do_zero'),
+          onPressed: _comecarDoZero,
+          child: const Text('Não tenho o código: começar do zero'),
         ),
       ],
       _EstadoCodigo.erro => [

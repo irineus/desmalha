@@ -10,6 +10,12 @@
 ///   código. Sem ele o backup não liga — falha visível, não backup que
 ///   ninguém conseguiria abrir em outro aparelho.
 ///
+/// - **Vínculo**: a impressão da mestra cujos backups estão no servidor.
+///   Aparelho novo que começou do zero tem mestra própria, e os backups
+///   antigos não abrem com ela: o backup automático fica desligado até a
+///   pessoa restaurar com o código antigo ou confirmar que descarta os
+///   antigos (decisão 10 do owner).
+///
 /// O código em si NUNCA é guardado: é mostrado uma vez e esquecido. Guardá-lo
 /// no aparelho não protegeria contra a perda do aparelho, que é exatamente o
 /// caso para o qual ele existe.
@@ -46,6 +52,7 @@ class ChavesBackup {
   static const campoMestra = 'desmalha_backup_chave_mestra_v1';
   static const campoCabecalho = 'desmalha_backup_cabecalho_chave_v1';
   static const campoImpressao = 'desmalha_backup_impressao_mestra_v1';
+  static const campoVinculo = 'desmalha_backup_vinculo_v1';
 
   static final _hex64 = RegExp(r'^[0-9a-f]{64}$');
 
@@ -58,7 +65,12 @@ class ChavesBackup {
   /// à conta que os criou"). Confere que sumiram: uma mestra que sobrevive
   /// selaria os backups da conta nova com a chave da conta antiga.
   Future<void> esquecer() async {
-    for (final campo in [campoMestra, campoCabecalho, campoImpressao]) {
+    for (final campo in [
+      campoMestra,
+      campoCabecalho,
+      campoImpressao,
+      campoVinculo,
+    ]) {
       await _cofre.apagar(campo);
       if (await _cofre.ler(campo) != null) {
         throw ChavesBackupException('o cofre do sistema não apagou "$campo"');
@@ -122,6 +134,63 @@ class ChavesBackup {
       throw const ChavesBackupException(
         'o cofre do sistema não confirmou a gravação do código de '
         'recuperação. Confirme o código de novo.',
+      );
+    }
+  }
+
+  /// Os backups do servidor foram feitos com a mestra deste aparelho (ou a
+  /// pessoa confirmou descartar os que não foram).
+  Future<bool> vinculadoAosBackups() async {
+    final vinculo = await _cofre.ler(campoVinculo);
+    return vinculo != null && vinculo == await _cofre.ler(campoImpressao);
+  }
+
+  /// Marca a mestra atual como a dos backups do servidor — depois de
+  /// conferir que o último abre com ela, de restaurar com o código, ou da
+  /// confirmação de descarte.
+  Future<void> vincularAosBackups() async {
+    final impressao = await _cofre.ler(campoImpressao);
+    if (impressao == null) {
+      throw const ChavesBackupException(
+        'código de recuperação ainda não confirmado — nada a vincular',
+      );
+    }
+    await _cofre.gravar(campoVinculo, impressao);
+    if (await _cofre.ler(campoVinculo) != impressao) {
+      throw const ChavesBackupException(
+        'o cofre do sistema não confirmou a gravação do vínculo do backup',
+      );
+    }
+  }
+
+  /// Aparelho novo restaurando com o código: guarda a [chaveMestra] aberta
+  /// pelo código e o [cabecalho] do backup (que já a embrulha com aquele
+  /// código), no lugar da mestra local — que não selou nada, porque o
+  /// backup não liga sem vínculo.
+  ///
+  /// Recusa trocar uma mestra já vinculada aos backups por outra: isso
+  /// deixaria os backups do servidor sem chave neste aparelho.
+  Future<void> adotarChaveMestra(
+    Uint8List chaveMestra,
+    CabecalhoChave cabecalho,
+  ) async {
+    final nova = await impressaoDaChaveMestra(chaveMestra);
+    if (await vinculadoAosBackups() &&
+        await _cofre.ler(campoImpressao) != nova) {
+      throw const ChavesBackupException(
+        'este aparelho já está vinculado a outros backups; nada foi trocado',
+      );
+    }
+    final hex = _paraHex(chaveMestra);
+    final cabecalhoB64 = base64.encode(cabecalho.bytes);
+    await _cofre.gravar(campoMestra, hex);
+    await _cofre.gravar(campoCabecalho, cabecalhoB64);
+    await _cofre.gravar(campoImpressao, nova);
+    if (await _cofre.ler(campoMestra) != hex ||
+        await _cofre.ler(campoCabecalho) != cabecalhoB64 ||
+        await _cofre.ler(campoImpressao) != nova) {
+      throw const ChavesBackupException(
+        'o cofre do sistema não confirmou a gravação da chave restaurada',
       );
     }
   }

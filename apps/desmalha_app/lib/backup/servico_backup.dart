@@ -15,6 +15,7 @@
 library;
 
 import 'dart:io' show Platform;
+import 'dart:typed_data';
 
 import 'package:desmalha_core/desmalha_core.dart';
 
@@ -54,6 +55,18 @@ class FalhaBackup implements Exception {
   final String mensagem;
   @override
   String toString() => 'FalhaBackup: $mensagem';
+}
+
+/// Os backups do servidor foram feitos com outra chave (aparelho novo que
+/// começou do zero): o backup não liga até a pessoa restaurar com o código
+/// antigo ou confirmar o descarte (decisão 10 do owner).
+class FalhaBackupsAntigos extends FalhaBackup {
+  const FalhaBackupsAntigos()
+      : super(
+          'Seus backups na nuvem foram feitos com outro código de '
+          'recuperação. O backup fica desligado até você restaurar com '
+          'aquele código ou confirmar que quer descartá-los.',
+        );
 }
 
 class ServicoBackup {
@@ -103,6 +116,7 @@ class ServicoBackup {
     } on ChavesBackupException catch (e) {
       throw FalhaBackup(e.mensagem);
     }
+    await _conferirVinculo(paraSelar.chaveMestra);
 
     // A próxima seq olha registros E objetos: um upload cujo registro falhou
     // deixa um blob órfão, e calcular só pelos registros reapontaria para o
@@ -208,10 +222,76 @@ class ServicoBackup {
     return aApagar;
   }
 
-  /// Baixa e valida o backup mais recente. Não toca no banco: devolve o
-  /// conteúdo para quem decide restaurar.
-  Future<ConteudoBackup> baixarMaisRecente() async {
+  /// Antes do primeiro backup de uma mestra: se o servidor tem backups, o
+  /// mais recente precisa abrir com ela — senão são de outro código, e
+  /// sobrescrevê-los em silêncio (o prune guarda só 3) apagaria o que só o
+  /// código antigo abre.
+  Future<void> _conferirVinculo(List<int> chaveMestra) async {
+    if (await chaves.vinculadoAosBackups()) return;
     final metas = await porta.listarMetadados();
+    if (metas.isNotEmpty) {
+      final bytes = await _baixarUltimo(metas);
+      try {
+        await abrirDsmbComChaveMestra(bytes, chaveMestra);
+      } on ChaveDeBackupIncorretaException {
+        throw const FalhaBackupsAntigos();
+      }
+    }
+    await chaves.vincularAosBackups();
+  }
+
+  /// "Descartar os backups antigos, que ninguém mais consegue abrir":
+  /// liga o backup com a chave deste aparelho. Os antigos saem pelo prune.
+  Future<void> descartarBackupsAntigos() async {
+    try {
+      await chaves.vincularAosBackups();
+    } on ChavesBackupException catch (e) {
+      throw FalhaBackup(e.mensagem);
+    }
+  }
+
+  /// Aparelho novo: abre o backup mais recente com o [codigo] de
+  /// recuperação, valida, SUBSTITUI o banco local e passa a usar a chave
+  /// daquele backup — os próximos seguem abrindo com o mesmo código, em
+  /// Android ou iOS. Código errado não toca em nada.
+  Future<ConteudoBackup> restaurarComCodigo(String codigo) async {
+    final canonico = normalizarCodigoRecuperacao(codigo);
+    if (canonico == null) {
+      throw const FalhaBackup(
+        'Esse código não tem o formato de um código de recuperação. '
+        'Confira os grupos.',
+      );
+    }
+    final bytes = await _baixarUltimo(await porta.listarMetadados());
+    final ({Uint8List conteudo, Uint8List chaveMestra}) aberto;
+    final ConteudoBackup conteudo;
+    try {
+      aberto = await abrirDsmbComCodigo(bytes, canonico);
+      conteudo = await lerPayload(aberto.conteudo);
+    } on ChaveDeBackupIncorretaException {
+      throw const FalhaBackup(
+        'Esse código não abre o seu backup. Confira os grupos e tente de '
+        'novo. Nada foi alterado.',
+      );
+    } on BackupDeVersaoFuturaException catch (e) {
+      throw FalhaBackup(e.mensagem);
+    } on BackupInvalidoException catch (e) {
+      throw FalhaBackup('Backup inválido: ${e.mensagem}');
+    }
+    await fonte.importar(conteudo.documentos);
+    try {
+      await chaves.adotarChaveMestra(
+        aberto.chaveMestra,
+        CabecalhoChave.deBytes(bytes),
+      );
+      await chaves.vincularAosBackups();
+    } on ChavesBackupException catch (e) {
+      throw FalhaBackup(e.mensagem);
+    }
+    return conteudo;
+  }
+
+  Future<Uint8List> _baixarUltimo(List<MetadadoBackup> metas) async {
     if (metas.isEmpty) throw const FalhaBackup('Nenhum backup no servidor.');
     final ultimo = metas.reduce((a, b) => a.seq > b.seq ? a : b);
     final bytes = await porta.baixar(ultimo.path);
@@ -221,6 +301,13 @@ class ServicoBackup {
         'caminho. Nada foi restaurado.',
       );
     }
+    return bytes;
+  }
+
+  /// Baixa e valida o backup mais recente. Não toca no banco: devolve o
+  /// conteúdo para quem decide restaurar.
+  Future<ConteudoBackup> baixarMaisRecente() async {
+    final bytes = await _baixarUltimo(await porta.listarMetadados());
     final paraSelar = await chaves.chavesParaSelar();
     try {
       return await lerPayload(

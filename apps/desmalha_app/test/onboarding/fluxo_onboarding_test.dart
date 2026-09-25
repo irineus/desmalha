@@ -229,11 +229,20 @@ void main() {
     await _tocar(tester, 'botao_aceite_continuar');
     await _preencherDados(tester);
     await _tocar(tester, 'botao_como_funciona_continuar');
-    expect(find.byKey(const Key('aviso_backup_existente')), findsOneWidget);
+    // Decisão 10 do owner: restaurar com o código ou começar do zero —
+    // nunca uma chave nova em silêncio.
+    expect(find.byKey(const Key('botao_restaurar_com_codigo')), findsOneWidget);
     expect(find.byKey(const Key('botao_codigo_gerar')), findsNothing);
-    await _tocar(tester, 'botao_codigo_continuar');
+    await _tocar(tester, 'botao_comecar_do_zero');
+    expect(
+      find.textContaining('Isso não tem volta'),
+      findsOneWidget,
+      reason: 'mensagem honesta sobre a irreversibilidade',
+    );
+    await tester.tap(find.text('Voltar'));
+    await tester.pumpAndSettle();
     expect(c.chaves.confirmados, isEmpty);
-    expect(_passo(tester), 'Passo 5 de 6');
+    expect(find.byKey(const Key('botao_restaurar_com_codigo')), findsOneWidget);
   });
 
   testWidgets('código já confirmado neste aparelho: segue direto', (
