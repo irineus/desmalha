@@ -20,7 +20,9 @@ import '../tema/componentes.dart';
 import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
 import 'controlador_painel.dart';
+import 'pergunta_inss.dart';
 import 'tela_darf.dart';
+import 'tela_memoria.dart';
 import 'widgets_fechamento.dart';
 
 /// Texto do contador para o mês sem imposto (M11) — literal.
@@ -408,6 +410,10 @@ class _TelaMesState extends State<TelaMes> {
             style: texto.bodySmall,
           ),
       ],
+      if (!(f?.fechado ?? false)) ...[
+        const SizedBox(height: EspacosDesmalha.s3),
+        PerguntaInss(servicos: widget.servicos, competencia: p.competencia),
+      ],
       if (p.recebimentosAClassificar > 0) ...[
         const SizedBox(height: EspacosDesmalha.s3),
         BannerObrigacao(
@@ -434,13 +440,27 @@ class _TelaMesState extends State<TelaMes> {
         a.impostoDevidoCentavos,
         key: const Key('imposto_devido'),
       ),
-      if (a.reducaoRedutorCentavos > 0)
+      // O mesmo redutor que a memória de cálculo mostra (M10).
+      if (redutorExibidoCentavos(a) > 0)
         Text(
           'Já com a redução de '
-          '${centavosParaExibicao(a.reducaoRedutorCentavos)} da Lei '
+          '${centavosParaExibicao(redutorExibidoCentavos(a))} da Lei '
           '15.270/2025.',
           key: const Key('nota_redutor'),
           style: texto.bodySmall,
+        ),
+      if (_c.memoria != null)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton(
+            key: const Key('botao_memoria'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => TelaMemoria(memoria: _c.memoria!),
+              ),
+            ),
+            child: const Text('Ver memória de cálculo'),
+          ),
         ),
       const SizedBox(height: EspacosDesmalha.s2),
       Text(

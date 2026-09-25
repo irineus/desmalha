@@ -82,6 +82,19 @@ void main() {
         }
       }
 
+      // Memória de cálculo (M10): a conta fecha com o dedo em todo mês de
+      // todo cenário, e termina no imposto do motor.
+      for (var i = 0; i < apuracoes.length; i++) {
+        _conferirMemoria(
+          memoriaDeCalculo(
+            apuracao: apuracoes[i],
+            entrada: entradas[i],
+            tabela: tabelaVigente(tabelas, apuracoes[i].competencia),
+          ),
+          apuracoes[i],
+        );
+      }
+
       final porCompetencia = {for (final a in apuracoes) a.competencia: a};
       for (final esperado in ((cenario['acertos'] as List<Object?>?) ?? [])
           .cast<Map<String, Object?>>()) {
@@ -179,6 +192,51 @@ EntradaApuracao _entrada(
     },
     irrfRetidoPjCentavos: (mes['irrfPjCentavos'] as int?) ?? 0,
   );
+}
+
+void _conferirMemoria(MemoriaDeCalculo m, ApuracaoMensal a) {
+  final c = a.competencia;
+  var liquido = 0;
+  for (final l in m.linhas) {
+    if (l.termo == TermoDaMemoria.base) break;
+    liquido += l.termo == TermoDaMemoria.receita
+        ? l.valorCentavos
+        : -l.valorCentavos;
+  }
+  final base = m.valorDe(TermoDaMemoria.base);
+  expect(base, liquido < 0 ? 0 : liquido, reason: '$c: linhas até a base');
+  expect(m.baseLimitadaAZero, liquido < 0, reason: '$c: base limitada');
+  expect(base, a.baseCalculoCentavos, reason: '$c: base do motor');
+
+  final apurado = m.valorDe(TermoDaMemoria.impostoApurado);
+  if (m.aliquotaPontosBase > 0) {
+    expect(
+      m.valorDe(TermoDaMemoria.impostoPelaAliquota) -
+          m.valorDe(TermoDaMemoria.parcelaDeduzir),
+      apurado,
+      reason: '$c: alíquota − parcela = apurado',
+    );
+  } else {
+    expect(apurado, 0, reason: '$c: faixa isenta');
+  }
+  final devido = m.valorDe(TermoDaMemoria.impostoDevido);
+  expect(apurado - m.redutorCentavos, devido,
+      reason: '$c: apurado − redutor = devido');
+  expect(devido, a.impostoDevidoCentavos, reason: '$c: devido do motor');
+  expect(
+    m.cenario == CenarioVencedor.descontoSimplificado
+        ? m.impostoSimplificadoCentavos
+        : m.impostoDeducoesReaisCentavos,
+    apurado,
+    reason: '$c: o cenário vencedor é o apurado',
+  );
+  if (a.impostoAcumuladoAnteriorCentavos > 0) {
+    expect(
+      devido + m.valorDe(TermoDaMemoria.acumuladoAnterior),
+      m.valorDe(TermoDaMemoria.totalParaDarf),
+      reason: '$c: devido + acumulado = total',
+    );
+  }
 }
 
 Map<String, Object?> _acerto(AcertoDaGuia acerto) => switch (acerto) {

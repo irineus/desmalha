@@ -99,6 +99,18 @@ class PainelApurado extends PainelMensal {
   final List<MesDaEvolucao> evolucao;
 }
 
+/// A entrada do motor para a [competencia], a partir do que a camada local
+/// sabe dela — a mesma que o painel, o fechamento e a memória de cálculo
+/// usam.
+EntradaApuracao entradaDoPainel(String competencia, DadosDoMes? dados) =>
+    EntradaApuracao(
+      competencia: competencia,
+      receitaBrutaCentavos: dados?.receitaTributavelCentavos ?? 0,
+      despesasDedutiveisCentavos: dados?.despesasDedutiveisCentavos ?? 0,
+      inssPagoCentavos: dados?.inssDedutivelCentavos ?? 0,
+      numeroDependentes: dados?.dependentes ?? 0,
+    );
+
 /// O ano encadeado de janeiro até [ate] (`'YYYY-MM'`), por competência —
 /// o mesmo cálculo que o painel mostra, para quem precisa do ano inteiro
 /// (fechamento, acerto de guia paga).
@@ -123,18 +135,7 @@ Map<String, ApuracaoMensal> apurarAno({
   ];
   return {
     for (final a in apurarSequencia(
-      entradas: [
-        for (final c in comDados)
-          EntradaApuracao(
-            competencia: c,
-            receitaBrutaCentavos:
-                dadosDoAno[c]?.receitaTributavelCentavos ?? 0,
-            despesasDedutiveisCentavos:
-                dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0,
-            inssPagoCentavos: dadosDoAno[c]?.inssDedutivelCentavos ?? 0,
-            numeroDependentes: dadosDoAno[c]?.dependentes ?? 0,
-          ),
-      ],
+      entradas: [for (final c in comDados) entradaDoPainel(c, dadosDoAno[c])],
       tabelaPara: catalogo.tabelaVigentePara,
       periodosQuitados: periodosQuitados,
     ))

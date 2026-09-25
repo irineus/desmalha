@@ -103,11 +103,16 @@ class ControladorPainel extends ChangeNotifier {
   String? _competencia;
   PainelMensal? _painel;
   EstadoFechamento? _estado;
+  MemoriaDeCalculo? _memoria;
   String? _erro;
 
   String? get competencia => _competencia;
   PainelMensal? get painel => _painel;
   EstadoFechamento? get estado => _estado;
+
+  /// A memória de cálculo (M10) do mês na tela — os mesmos valores do
+  /// painel, montados pelo core. `null` sem apuração.
+  MemoriaDeCalculo? get memoria => _memoria;
   String? get erro => _erro;
 
   /// Hoje, como data civil `'YYYY-MM-DD'`.
@@ -140,6 +145,14 @@ class ControladorPainel extends ChangeNotifier {
         catalogo: catalogo,
         periodosQuitados: quitados,
       );
+      _memoria = switch (_painel) {
+        PainelApurado(:final apuracao) => memoriaDeCalculo(
+            apuracao: apuracao,
+            entrada: entradaDoPainel(c, dados[c]),
+            tabela: catalogo.tabelaVigentePara(c),
+          ),
+        _ => null,
+      };
       _estado = await _estadoDoFechamento(
         c,
         dados: dados,
