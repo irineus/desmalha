@@ -7,6 +7,7 @@ import 'package:desmalha_core/desmalha_core.dart';
 import 'package:flutter/material.dart';
 
 import '../servicos_do_app.dart';
+import '../suporte/tela_envio_suporte.dart';
 import '../tema/componentes.dart';
 import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
@@ -176,6 +177,22 @@ class _TelaImportacaoState extends State<TelaImportacao> {
       onPressed: _c.recomecar,
       child: const Text('Escolher outro arquivo'),
     ),
+    // O parse falhou: o único caso em que o extrato pode ir ao suporte
+    // (decisão 11 do owner), com consentimento na tela seguinte.
+    if (_c.arquivo case final arquivo?)
+      TextButton(
+        key: const Key('botao_enviar_suporte'),
+        onPressed: () => Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => TelaEnvioSuporte(
+              servico: widget.servicos.suporte,
+              arquivo: arquivo,
+              motivo: _c.mensagem ?? 'arquivo não reconhecido',
+            ),
+          ),
+        ),
+        child: const Text('Enviar este arquivo ao suporte'),
+      ),
   ];
 
   List<Widget> _concluida(BuildContext context) {
