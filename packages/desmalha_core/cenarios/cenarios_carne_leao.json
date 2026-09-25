@@ -610,6 +610,148 @@
           }
         }
       ]
+    },
+    {
+      "numero": 22,
+      "descricao": "Rodada 4, P7: dependente conta o MÊS INTEIRO em que existiu em qualquer dia — saída em 10/01 conta janeiro, entrada em 20/03 conta março (cenário 2 com o segundo filho em 20/03 → março R$ 319,19; fevereiro, com um só, R$ 361,85)",
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 800000,
+          "despesas": [
+            {
+              "valorCentavos": 300000
+            }
+          ],
+          "inssPagoCentavos": 20000,
+          "dependentesVigencia": [
+            {
+              "inicio": "2020-01-01"
+            },
+            {
+              "inicio": "2026-03-20"
+            },
+            {
+              "inicio": "2019-06-01",
+              "fim": "2026-01-10"
+            }
+          ],
+          "esperado": {
+            "baseCenarioACentavos": 442082,
+            "impostoDevidoCentavos": 31919
+          }
+        },
+        {
+          "competencia": "2026-02",
+          "receitaCentavos": 800000,
+          "despesas": [
+            {
+              "valorCentavos": 300000
+            }
+          ],
+          "inssPagoCentavos": 20000,
+          "dependentesVigencia": [
+            {
+              "inicio": "2020-01-01"
+            },
+            {
+              "inicio": "2026-03-20"
+            },
+            {
+              "inicio": "2019-06-01",
+              "fim": "2026-01-10"
+            }
+          ],
+          "esperado": {
+            "baseCenarioACentavos": 461041,
+            "impostoDevidoCentavos": 36185
+          }
+        },
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 800000,
+          "despesas": [
+            {
+              "valorCentavos": 300000
+            }
+          ],
+          "inssPagoCentavos": 20000,
+          "dependentesVigencia": [
+            {
+              "inicio": "2020-01-01"
+            },
+            {
+              "inicio": "2026-03-20"
+            },
+            {
+              "inicio": "2019-06-01",
+              "fim": "2026-01-10"
+            }
+          ],
+          "esperado": {
+            "baseCenarioACentavos": 442082,
+            "impostoDevidoCentavos": 31919
+          }
+        }
+      ]
+    },
+    {
+      "numero": 23,
+      "descricao": "Rodada 4, P6: INSS pago com atraso deduz SÓ o principal — GPS R$ 320,00 + R$ 12,00 de acréscimos → deduz R$ 320,00 (imposto R$ 292,19; deduzindo os acréscimos daria R$ 289,49)",
+      "meses": [
+        {
+          "competencia": "2026-04",
+          "receitaCentavos": 800000,
+          "despesas": [
+            {
+              "valorCentavos": 300000
+            }
+          ],
+          "inss": [
+            {
+              "principalCentavos": 32000,
+              "acrescimosCentavos": 1200
+            }
+          ],
+          "dependentes": 2,
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 430082,
+            "impostoDevidoCentavos": 29219
+          }
+        }
+      ]
+    },
+    {
+      "numero": 24,
+      "descricao": "Rodada 4b, P5: despesa no cartão de crédito entra na DATA DA COMPRA, inclusive na virada do ano — compra em 20/12/2026, fatura paga em 10/01/2027 → dezembro de 2026 (dez R$ 466,27, jan R$ 1.124,29; pela fatura seria o inverso)",
+      "despesasPorData": [
+        {
+          "valorCentavos": 300000,
+          "formaPagamento": "cartaoCredito",
+          "dataPagamento": "2026-12-20",
+          "dataFatura": "2027-01-10"
+        }
+      ],
+      "meses": [
+        {
+          "competencia": "2026-12",
+          "receitaCentavos": 800000,
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 500000,
+            "impostoDevidoCentavos": 46627
+          }
+        },
+        {
+          "competencia": "2027-01",
+          "receitaCentavos": 800000,
+          "esperado": {
+            "cenarioVencedor": "descontoSimplificado",
+            "impostoDevidoCentavos": 112429
+          }
+        }
+      ]
     }
   ]
 }
