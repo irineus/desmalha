@@ -124,7 +124,7 @@ void main() {
           "'PAGTO ALUGUEL IMOB CENTRO', 0)");
     }
     await montar(tester);
-    expect(find.text('Débitos do extrato'), findsOneWidget);
+    expect(find.text('Débitos do extrato', skipOffstage: false), findsOneWidget);
 
     await tocar(tester, chave('debito_d8'));
     await tocar(tester, chave('rubrica_aluguel-espaco-profissional'));
@@ -134,12 +134,54 @@ void main() {
         '(R\$ 1.500,00)'), findsOneWidget);
     await tocar(tester, chave('botao_aceitar_proposta_despesa'));
     expect(find.text('1 despesa lançada.'), findsOneWidget);
-    expect(find.text('Débitos do extrato'), findsNothing);
+    expect(find.text('Débitos do extrato', skipOffstage: false), findsNothing);
 
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.widgetWithText(SnackBarAction, 'Desfazer').last);
     await assentar(tester);
     final julho = await tester.runAsync(() => despesas.despesasDoMes('2026-07'));
     expect(julho, isEmpty, reason: 'desfazer tira o que a proposta lançou');
+  });
+
+  testWidgets('INSS: guia com atraso mostra que os acréscimos não deduzem; '
+      '"não paguei" fica gravado e pode mudar', (tester) async {
+    await montar(tester);
+    await tocar(tester, chave('botao_inss_pago'));
+    await tester.enterText(chave('inss_principal'), '320,00');
+    await tester.enterText(chave('inss_acrescimos'), '12,00');
+    await tocar(tester, chave('confirmar_inss'));
+
+    expect(find.text('acréscimos de R\$ 12,00 não deduzem', skipOffstage: false),
+        findsOneWidget);
+    expect(chave('botao_inss_nao_pago'), findsNothing,
+        reason: 'com guia paga, "não paguei" some');
+    final guia =
+        (await tester.runAsync(() => despesas.inssDoMes('2026-08')))!.single;
+    expect((guia.principalCentavos, guia.acrescimosCentavos), (32000, 1200));
+
+    await tocar(tester, chave('inss_${guia.id}'));
+    await tocar(tester, chave('confirmar_excluir_inss'));
+    await tocar(tester, chave('botao_inss_nao_pago'));
+    expect(chave('inss_nao_pago'), findsOneWidget);
+    await tocar(tester, chave('inss_mudar_resposta'));
+    expect(chave('botao_inss_nao_pago'), findsOneWidget);
+  });
+
+  testWidgets('dependente: entra desde o mês aberto e conta nele', (tester) async {
+    await montar(tester);
+    expect(find.text('Nenhum dependente em agosto/2026.', skipOffstage: false),
+        findsOneWidget);
+    await tocar(tester, chave('botao_novo_dependente'));
+    expect(find.text('Dependente desde 01/08/2026'), findsOneWidget);
+    await tester.enterText(chave('dependente_nome'), 'Bia');
+    await tester.pump();
+    await tocar(tester, chave('confirmar_dependente'));
+
+    expect(find.text('1 dependente em agosto/2026.', skipOffstage: false),
+        findsOneWidget);
+    expect(find.text('desde 01/08/2026', skipOffstage: false), findsOneWidget);
+    await tocar(tester, chave('despesas_mes_anterior'));
+    expect(find.text('Nenhum dependente em julho/2026.', skipOffstage: false),
+        findsOneWidget);
   });
 }

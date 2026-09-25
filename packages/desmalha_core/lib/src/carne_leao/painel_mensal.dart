@@ -21,10 +21,22 @@ class DadosDoMes {
     this.receitaTributavelCentavos = 0,
     this.lancamentosClassificados = 0,
     this.recebimentosAClassificar = 0,
+    this.despesasDedutiveisCentavos = 0,
+    this.inssDedutivelCentavos = 0,
+    this.dependentes = 0,
   });
 
   /// Σ lançamentos classificados como tributáveis (regime de caixa).
   final int receitaTributavelCentavos;
+
+  /// Livro-caixa do mês, com a trava de 20% e as vedações aplicadas.
+  final int despesasDedutiveisCentavos;
+
+  /// INSS do mês — só o principal ([inssDedutivelDoMes], rodada 4 P6).
+  final int inssDedutivelCentavos;
+
+  /// Dependentes que contam no mês ([dependentesNoMes], rodada 4 P7).
+  final int dependentes;
 
   /// Quantos lançamentos do mês têm classificação — qualquer uma.
   final int lancamentosClassificados;
@@ -93,8 +105,10 @@ class PainelApurado extends PainelMensal {
 /// são ignoradas): o motor encadeia saldo negativo e imposto acumulado de
 /// janeiro em diante e zera na virada do ano.
 ///
-/// Mês sem lançamento classificado fica fora do encadeamento — com receita
-/// zero e sem despesas, apurá-lo não mudaria nem o saldo nem o acumulado.
+/// Mês sem lançamento classificado e sem despesa fica fora do encadeamento —
+/// apurá-lo não mudaria nem o saldo nem o acumulado. Mês SÓ com despesa
+/// entra: o excesso do livro-caixa vira saldo negativo para os seguintes.
+/// (INSS e dependentes sozinhos não transportam nada.)
 PainelMensal montarPainelMensal({
   required String competencia,
   required Map<String, DadosDoMes> dadosDoAno,
@@ -114,7 +128,9 @@ PainelMensal montarPainelMensal({
   ];
   final comDados = [
     for (final c in meses)
-      if ((dadosDoAno[c]?.lancamentosClassificados ?? 0) > 0) c,
+      if ((dadosDoAno[c]?.lancamentosClassificados ?? 0) > 0 ||
+          (dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0) > 0)
+        c,
   ];
 
   final List<ApuracaoMensal> apuracoes;
@@ -125,6 +141,10 @@ PainelMensal montarPainelMensal({
           EntradaApuracao(
             competencia: c,
             receitaBrutaCentavos: dadosDoAno[c]!.receitaTributavelCentavos,
+            despesasDedutiveisCentavos:
+                dadosDoAno[c]!.despesasDedutiveisCentavos,
+            inssPagoCentavos: dadosDoAno[c]!.inssDedutivelCentavos,
+            numeroDependentes: dadosDoAno[c]!.dependentes,
           ),
       ],
       tabelaPara: catalogo.tabelaVigentePara,

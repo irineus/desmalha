@@ -136,6 +136,51 @@ void main() {
       );
     });
 
+    test('mês SÓ com despesa entra na cadeia: o saldo negativo passa ao '
+        'seguinte', () {
+      final p = montarPainelMensal(
+        competencia: '2026-05',
+        dadosDoAno: {
+          '2026-04': const DadosDoMes(despesasDedutiveisCentavos: 300000),
+          '2026-05': const DadosDoMes(
+            receitaTributavelCentavos: 1000000,
+            lancamentosClassificados: 1,
+          ),
+        },
+        catalogo: catalogo,
+      ) as PainelApurado;
+      final ref = apurarSequencia(
+        entradas: [
+          EntradaApuracao(
+              competencia: '2026-04',
+              receitaBrutaCentavos: 0,
+              despesasDedutiveisCentavos: 300000),
+          EntradaApuracao(competencia: '2026-05', receitaBrutaCentavos: 1000000),
+        ],
+        tabelaPara: catalogo.tabelaVigentePara,
+      ).last;
+      expect(p.apuracao.saldoNegativoAnteriorCentavos, 300000);
+      expect(p.apuracao.impostoDevidoCentavos, ref.impostoDevidoCentavos);
+    });
+
+    test('INSS e dependentes do mês entram no cálculo (cenário 2)', () {
+      final p = montarPainelMensal(
+        competencia: '2026-01',
+        dadosDoAno: {
+          '2026-01': const DadosDoMes(
+            receitaTributavelCentavos: 800000,
+            lancamentosClassificados: 1,
+            despesasDedutiveisCentavos: 300000,
+            inssDedutivelCentavos: 20000,
+            dependentes: 2,
+          ),
+        },
+        catalogo: catalogo,
+      ) as PainelApurado;
+      // Cenário 2 oficial: R$ 319,19.
+      expect(p.apuracao.impostoDevidoCentavos, 31919);
+    });
+
     test('meses de outro ano não entram (e não precisariam de tabela)', () {
       final p = montarPainelMensal(
         competencia: '2026-08',

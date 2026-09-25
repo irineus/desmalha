@@ -97,6 +97,55 @@ void main() {
     expect((d.lancamentosClassificados, d.recebimentosAClassificar), (0, 1));
   });
 
+  test('deduções do mês: livro-caixa pelo dedutível, INSS só o principal '
+      '(P6), dependente o mês inteiro (P7)', () async {
+    await lancamento('2026-03', 600000, 'rendimentoPf');
+    await banco.customStatement(
+      'INSERT INTO despesas_livro_caixa (id, rubrica_codigo, competencia, '
+      'data_pagamento, valor_centavos, valor_dedutivel_centavos, criado_em) '
+      "VALUES ('d1', 'iptu-residencia', '2026-03', '2026-03-10', 240000, "
+      "48000, 0), ('d2', 'material-consumo', '2026-03', '2026-03-11', 5000, "
+      "5000, 0)",
+    );
+    await banco.customStatement(
+      'INSERT INTO pagamentos_inss (id, competencia, valor_centavos, '
+      "acrescimos_centavos, criado_em) VALUES ('i1', '2026-03', 32000, 1200, 0)",
+    );
+    await banco.customStatement(
+      'INSERT INTO pagamentos_inss (id, competencia, situacao, valor_centavos, '
+      "criado_em) VALUES ('i2', '2026-04', 'naoPago', 0, 0)",
+    );
+    await banco.customStatement(
+      'INSERT INTO dependentes (id, nome, vigencia_inicio, criado_em) VALUES '
+      "('f1', 'A', '2020-01-01', 0), ('f2', 'B', '2026-03-20', 0)",
+    );
+    await lancamento('2026-02', 100000, 'rendimentoPf');
+    await lancamento('2026-04', 100000, 'rendimentoPf');
+
+    final ano = await repo.dadosDoAno(2026);
+    final marco = ano['2026-03']!;
+    expect(
+      (
+        marco.despesasDedutiveisCentavos,
+        marco.inssDedutivelCentavos,
+        marco.dependentes,
+      ),
+      (53000, 32000, 2),
+    );
+    expect(ano['2026-02']!.dependentes, 1, reason: 'o segundo entrou em março');
+    expect(ano['2026-04']!.inssDedutivelCentavos, 0, reason: '"não paguei"');
+  });
+
+  test('mês só com despesa entra (carrega o saldo negativo)', () async {
+    await banco.customStatement(
+      'INSERT INTO despesas_livro_caixa (id, rubrica_codigo, competencia, '
+      'data_pagamento, valor_centavos, valor_dedutivel_centavos, criado_em) '
+      "VALUES ('d1', 'material-consumo', '2026-05', '2026-05-10', 5000, 5000, 0)",
+    );
+    expect((await repo.dadosDoAno(2026))['2026-05']!.despesasDedutiveisCentavos,
+        5000);
+  });
+
   test('outro ano fica de fora', () async {
     await lancamento('2025-12', 45000, 'rendimentoPf');
     await transacao('2027-01-02', 10000);
