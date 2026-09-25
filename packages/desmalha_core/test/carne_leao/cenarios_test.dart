@@ -82,9 +82,28 @@ EntradaApuracao _entrada(Map<String, Object?> mes, Catalogo catalogo) {
       ).dedutivelCentavos;
     }
   }
+  // Lançamentos classificados: a receita sai da regra da classificação do
+  // core (totaisDoMes), não de um número pronto na fixture.
+  var receita = (mes['receitaCentavos'] as int?) ?? 0;
+  final classificados = mes['lancamentos'] as List<Object?>?;
+  if (classificados != null) {
+    receita += totaisDoMes(lancamentos: [
+      for (final l in classificados.cast<Map<String, Object?>>())
+        LancamentoClassificado(
+          valorCentavos: l['valorCentavos']! as int,
+          classificacao: ClassificacaoLancamento.values
+              .byName(l['classificacao']! as String),
+          titular: switch (l['titular'] as String?) {
+            null => null,
+            final t => TitularComprovante.values.byName(t),
+          },
+          custoEssencial: l['essencial'] as bool?,
+        ),
+    ]).receitaTributavelCentavos;
+  }
   return EntradaApuracao(
     competencia: mes['competencia']! as String,
-    receitaBrutaCentavos: mes['receitaCentavos']! as int,
+    receitaBrutaCentavos: receita,
     despesasDedutiveisCentavos: despesas,
     inssPagoCentavos: (mes['inssPagoCentavos'] as int?) ?? 0,
     numeroDependentes: (mes['dependentes'] as int?) ?? 0,
@@ -94,6 +113,7 @@ EntradaApuracao _entrada(Map<String, Object?> mes, Catalogo catalogo) {
 
 Object? _campo(ApuracaoMensal apuracao, String nome) => switch (nome) {
       'versaoTabelaId' => apuracao.versaoTabelaId,
+      'receitaBrutaCentavos' => apuracao.receitaBrutaCentavos,
       'cenarioVencedor' => apuracao.cenarioVencedor.name,
       'baseCenarioACentavos' => apuracao.baseCenarioACentavos,
       'impostoCenarioACentavos' => apuracao.impostoCenarioACentavos,
