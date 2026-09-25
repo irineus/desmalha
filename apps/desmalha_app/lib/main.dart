@@ -18,6 +18,7 @@ import 'backup/servico_backup.dart';
 import 'catalogo/porta_catalogo_rest.dart';
 import 'conta/porta_exclusao_conta_http.dart';
 import 'catalogo/repositorio_catalogo.dart';
+import 'classificacao/repositorio_classificacao.dart';
 import 'dados/conexao_cifrada.dart';
 import 'dados/limpeza_local.dart';
 import 'dados/repositorio_importacao.dart';
@@ -112,6 +113,10 @@ Future<void> main() async {
           seletorDeArquivo: const SeletorDeArquivoDoSistema(),
           catalogo: catalogo.carregar,
           painel: RepositorioPainelDrift(bancoDoApp()),
+          classificacao: RepositorioClassificacao(
+            bancoDoApp(),
+            catalogo: catalogo.carregar,
+          ),
           dadosAlterados: ValueNotifier(0),
           arquivoRecebido: arquivoRecebido,
         ),

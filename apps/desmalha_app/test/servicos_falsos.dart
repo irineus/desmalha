@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:desmalha_app/classificacao/repositorio_classificacao.dart';
 import 'package:desmalha_app/backup/chaves_backup.dart';
 import 'package:desmalha_app/backup/controlador_backup.dart';
 import 'package:desmalha_app/backup/estado_backup.dart';
@@ -100,6 +101,7 @@ ServicosDoApp servicosFalsos({
   SeletorDeArquivo? seletorDeArquivo,
   Future<Catalogo> Function()? catalogo,
   RepositorioPainel? painel,
+  RepositorioClassificacao? classificacao,
   ValueNotifier<RecebimentoDeArquivo?>? arquivoRecebido,
 }) {
   final chaves =
@@ -115,6 +117,11 @@ ServicosDoApp servicosFalsos({
     seletorDeArquivo: seletorDeArquivo ?? SeletorFalso(),
     catalogo: catalogo ?? () async => Catalogo.fromItens(const []),
     painel: painel ?? PainelFalso(),
+    classificacao: classificacao ??
+        RepositorioClassificacao(
+          _importacaoPadraoBanco,
+          catalogo: () async => Catalogo.fromItens(const []),
+        ),
     dadosAlterados: ValueNotifier(0),
     arquivoRecebido: arquivoRecebido ?? ValueNotifier(null),
   );
@@ -136,8 +143,9 @@ class PainelFalso implements RepositorioPainel {
 /// Um banco em memória só, criado na primeira vez (final de topo é
 /// preguiçoso): um por chamada fazia o Drift avisar de instâncias múltiplas
 /// e deixava bancos abertos. Quem precisa de banco próprio passa o seu.
+final _importacaoPadraoBanco = BancoLocal(NativeDatabase.memory());
 final _importacaoPadrao = RepositorioImportacao(
-  BancoLocal(NativeDatabase.memory()),
+  _importacaoPadraoBanco,
 );
 
 /// Seletor de arquivo que entrega o que o teste mandar (ou desiste).

@@ -151,6 +151,7 @@ class _TelaImportacaoState extends State<TelaImportacao> {
     repositorio: widget.servicos.importacao,
     seletor: widget.servicos.seletorDeArquivo,
     carregarCatalogo: widget.servicos.catalogo,
+    aplicarRegras: widget.servicos.classificacao.aplicarRegrasAosNovos,
   );
 
   @override

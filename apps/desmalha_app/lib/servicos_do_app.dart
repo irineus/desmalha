@@ -8,6 +8,7 @@ import 'package:desmalha_core/desmalha_core.dart';
 import 'package:flutter/foundation.dart';
 
 import 'backup/chaves_backup.dart';
+import 'classificacao/repositorio_classificacao.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
 import 'dados/repositorio_importacao.dart';
@@ -28,6 +29,7 @@ class ServicosDoApp {
     required this.seletorDeArquivo,
     required this.catalogo,
     required this.painel,
+    required this.classificacao,
     required this.dadosAlterados,
     required this.arquivoRecebido,
   });
@@ -58,6 +60,9 @@ class ServicosDoApp {
 
   /// Agregados por competência para a aba Mês.
   final RepositorioPainel painel;
+
+  /// Classificar recebimentos, propostas por remetente e regras.
+  final RepositorioClassificacao classificacao;
 
   /// Sobe a cada importação confirmada: a aba Mês recalcula.
   final ValueNotifier<int> dadosAlterados;
