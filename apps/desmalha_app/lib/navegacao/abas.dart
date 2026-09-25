@@ -14,6 +14,7 @@ import '../backup/tela_backup.dart';
 import '../classificacao/aba_lancamentos.dart';
 import '../despesas/aba_despesas.dart';
 import '../painel/tela_mes.dart';
+import '../relatorio/aba_ano.dart';
 import '../lembretes/controlador_lembretes.dart';
 import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
@@ -29,12 +30,7 @@ Widget conteudoDaAba(
   AbaDoApp.mes => TelaMes(servicos: servicos),
   AbaDoApp.lancamentos => AbaLancamentos(servicos: servicos),
   AbaDoApp.despesas => AbaDespesas(servicos: servicos),
-  AbaDoApp.ano => const AbaProvisoria(
-    titulo: 'Seu ano',
-    mensagem:
-        'O fechamento do ano, mês a mês, para a declaração — chega '
-        'numa próxima versão.',
-  ),
+  AbaDoApp.ano => AbaAno(servicos: servicos),
   AbaDoApp.ajustes => TelaAjustes(servico: servico, servicos: servicos),
 };
 
