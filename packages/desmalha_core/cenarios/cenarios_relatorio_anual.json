@@ -1,0 +1,108 @@
+{
+  "descricao": "Relatório anual (ficha de rendimentos de PF mês a mês + seção de PJ). Regras das rodadas 4 e 5 do contador; valores em centavos. Os campos esperados omitidos não são conferidos.",
+  "casos": [
+    {
+      "descricao": "P10: janeiro, fevereiro e março com imposto abaixo do mínimo, uma guia de R$ 11,25 com período março → março R$ 11,25, janeiro e fevereiro R$ 0,00",
+      "ano": 2026,
+      "meses": {
+        "2026-01": {"receitaCentavos": 501050},
+        "2026-02": {"receitaCentavos": 501050},
+        "2026-03": {"receitaCentavos": 501050}
+      },
+      "guiasPagas": [{"periodo": "2026-03", "principalCentavos": 1125}],
+      "esperado": {
+        "meses": {
+          "2026-01": {"impostoPagoCentavos": 0},
+          "2026-02": {"impostoPagoCentavos": 0},
+          "2026-03": {"impostoPagoCentavos": 1125}
+        },
+        "totais": {"impostoPagoCentavos": 1125, "receitasCentavos": 1503150}
+      }
+    },
+    {
+      "descricao": "P11: DARF de R$ 394,54 pago com R$ 7,56 de multa e juros → a coluna registra só o principal",
+      "ano": 2026,
+      "meses": {"2026-05": {"receitaCentavos": 600000}},
+      "guiasPagas": [{"periodo": "2026-05", "principalCentavos": 39454}],
+      "esperado": {
+        "meses": {"2026-05": {"impostoPagoCentavos": 39454}}
+      }
+    },
+    {
+      "descricao": "P12: receita R$ 7.000,00, livro-caixa R$ 300,00 e INSS R$ 200,00 num mês em que o simplificado venceu → as colunas mostram o valor real escriturado",
+      "ano": 2026,
+      "meses": {
+        "2026-06": {"receitaCentavos": 700000, "despesasCentavos": 30000, "inssCentavos": 20000}
+      },
+      "esperado": {
+        "meses": {
+          "2026-06": {"receitasCentavos": 700000, "livroCaixaCentavos": 30000, "inssCentavos": 20000}
+        }
+      }
+    },
+    {
+      "descricao": "Rodada 5, P15: guia original de R$ 394,54 e complementar de R$ 408,14 da competência março → a coluna soma R$ 802,68",
+      "ano": 2026,
+      "meses": {"2026-03": {"receitaCentavos": 700000}},
+      "guiasPagas": [
+        {"periodo": "2026-03", "principalCentavos": 39454},
+        {"periodo": "2026-03", "principalCentavos": 40814}
+      ],
+      "esperado": {
+        "meses": {"2026-03": {"impostoPagoCentavos": 80268}},
+        "totais": {"impostoPagoCentavos": 80268}
+      }
+    },
+    {
+      "descricao": "Rodada 5, P13: janeiro saiu da guia de fevereiro e pagou DARF próprio de R$ 196,58 → janeiro R$ 196,58, fevereiro os R$ 17,89 da guia original",
+      "ano": 2026,
+      "meses": {
+        "2026-01": {"receitaCentavos": 551500},
+        "2026-02": {"receitaCentavos": 503500}
+      },
+      "guiasPagas": [
+        {"periodo": "2026-02", "principalCentavos": 1789},
+        {"periodo": "2026-01", "principalCentavos": 19658}
+      ],
+      "esperado": {
+        "meses": {
+          "2026-01": {"impostoPagoCentavos": 19658},
+          "2026-02": {"impostoPagoCentavos": 1789}
+        }
+      }
+    },
+    {
+      "descricao": "Dependentes: dois no mês → R$ 379,18 na coluna (R$ 189,59 cada, tabela 2026)",
+      "ano": 2026,
+      "meses": {"2026-04": {"receitaCentavos": 800000, "dependentes": 2}},
+      "esperado": {
+        "meses": {"2026-04": {"dependentes": 2, "deducaoDependentesCentavos": 37918}},
+        "totais": {"dependentesCentavos": 37918}
+      }
+    },
+    {
+      "descricao": "P1: R$ 6.000,00 de PF e R$ 3.000,00 da mesma clínica (PJ, sem IRRF) em duas vezes, mais R$ 500,00 de uma escola sem CNPJ informado → a receita do mês fica em R$ 6.000,00 e a seção de PJ agrupa por CNPJ, do maior para o menor",
+      "ano": 2026,
+      "meses": {"2026-07": {"receitaCentavos": 600000}},
+      "recebimentosPj": [
+        {"cnpj": "11222333000181", "nome": "Clínica Bem Estar Ltda", "valorCentavos": 200000},
+        {"cnpj": "11222333000181", "nome": "Clínica Bem Estar Ltda", "valorCentavos": 100000},
+        {"nome": "Escola Aprender", "valorCentavos": 50000}
+      ],
+      "esperado": {
+        "meses": {"2026-07": {"receitasCentavos": 600000}},
+        "totais": {"receitasCentavos": 600000, "pjCentavos": 350000},
+        "fontesPj": [
+          {"cnpj": "11222333000181", "nome": "Clínica Bem Estar Ltda", "totalCentavos": 300000},
+          {"cnpj": null, "nome": "Escola Aprender", "totalCentavos": 50000}
+        ]
+      }
+    },
+    {
+      "descricao": "Ano sem nada registrado → doze meses zerados e relatório vazio",
+      "ano": 2026,
+      "meses": {},
+      "esperado": {"vazio": true, "totais": {"receitasCentavos": 0, "impostoPagoCentavos": 0}}
+    }
+  ]
+}
