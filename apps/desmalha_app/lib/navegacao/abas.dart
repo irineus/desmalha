@@ -13,6 +13,7 @@ import '../auth/tela_conta.dart';
 import '../backup/tela_backup.dart';
 import '../classificacao/aba_lancamentos.dart';
 import '../despesas/aba_despesas.dart';
+import '../diagnostico/tela_diagnostico.dart';
 import '../painel/tela_mes.dart';
 import '../relatorio/aba_ano.dart';
 import '../lembretes/controlador_lembretes.dart';
@@ -94,6 +95,20 @@ class TelaAjustes extends StatelessWidget {
         ),
         _ItemBackup(servicos: servicos),
         _ItemLembreteDarf(controlador: servicos.lembretes),
+        Card(
+          child: ListTile(
+            key: const Key('item_diagnostico'),
+            leading: const Icon(Icons.support_agent_outlined),
+            title: const Text('Diagnóstico para o suporte'),
+            subtitle: const Text('Só números e versões — você vê antes de mandar'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => TelaDiagnostico(servicos: servicos),
+              ),
+            ),
+          ),
+        ),
       ],
     ),
   );

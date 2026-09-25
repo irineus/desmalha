@@ -23,6 +23,7 @@ import 'dados/conexao_cifrada.dart';
 import 'dados/limpeza_local.dart';
 import 'dados/repositorio_importacao.dart';
 import 'despesas/repositorio_despesas.dart';
+import 'diagnostico/repositorio_diagnostico.dart';
 import 'painel/repositorio_fechamento.dart';
 import 'relatorio/repositorio_relatorio.dart';
 import 'importacao/arquivo_recebido.dart';
@@ -126,6 +127,11 @@ Future<void> main() async {
           ),
           fechamento: RepositorioFechamento(bancoDoApp()),
           relatorio: RepositorioRelatorio(
+            bancoDoApp(),
+            painel: RepositorioPainelDrift(bancoDoApp()),
+            fechamento: RepositorioFechamento(bancoDoApp()),
+          ),
+          diagnostico: RepositorioDiagnostico(
             bancoDoApp(),
             painel: RepositorioPainelDrift(bancoDoApp()),
             fechamento: RepositorioFechamento(bancoDoApp()),
