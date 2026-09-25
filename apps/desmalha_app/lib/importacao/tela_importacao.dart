@@ -1,4 +1,4 @@
-/// Tela de importação de extrato (wireframe M2) e a aba Lançamentos.
+/// Tela de importação de extrato (wireframe M2).
 library;
 
 import 'dart:async';
@@ -6,7 +6,6 @@ import 'dart:async';
 import 'package:desmalha_core/desmalha_core.dart';
 import 'package:flutter/material.dart';
 
-import '../dados/banco.dart';
 import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
 import '../tema/tipografia.dart';
@@ -33,103 +32,6 @@ const Map<MotivoDeduplicacao, String> textoDoMotivo = {
   MotivoDeduplicacao.identificadorRepetidoNoArquivo:
       'O mesmo identificador do banco aparece duas vezes neste arquivo.',
 };
-
-// ─── Aba Lançamentos ────────────────────────────────────────────────
-
-class AbaLancamentos extends StatefulWidget {
-  const AbaLancamentos({super.key, required this.servicos});
-
-  final ServicosDoApp servicos;
-
-  @override
-  State<AbaLancamentos> createState() => _AbaLancamentosState();
-}
-
-class _AbaLancamentosState extends State<AbaLancamentos> {
-  List<Importacao>? _importacoes;
-
-  @override
-  void initState() {
-    super.initState();
-    // Importação que entrou por outro caminho ("Compartilhar → Desmalha")
-    // também atualiza a lista.
-    widget.servicos.dadosAlterados.addListener(_recarregar);
-    unawaited(_carregar());
-  }
-
-  @override
-  void dispose() {
-    widget.servicos.dadosAlterados.removeListener(_recarregar);
-    super.dispose();
-  }
-
-  void _recarregar() => unawaited(_carregar());
-
-  Future<void> _carregar() async {
-    final lista = await widget.servicos.importacao.importacoesConfirmadas();
-    if (mounted) setState(() => _importacoes = lista);
-  }
-
-  Future<void> _importar() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => TelaImportacao(servicos: widget.servicos),
-      ),
-    );
-    widget.servicos.dadosAlterados.value++;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final texto = Theme.of(context).textTheme;
-    final lista = _importacoes;
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(EspacosDesmalha.s4),
-        children: [
-          Text('Lançamentos', style: texto.headlineMedium),
-          const SizedBox(height: EspacosDesmalha.s4),
-          if (lista == null)
-            const Center(child: CircularProgressIndicator())
-          else if (lista.isEmpty)
-            EstadoVazio(
-              key: const Key('lancamentos_vazio'),
-              mensagem:
-                  'Importe o extrato OFX ou CSV do seu banco. O arquivo é '
-                  'lido neste celular e nunca sai dele.',
-              rotuloAcao: 'Importar extrato',
-              aoAgir: _importar,
-            )
-          else ...[
-            for (final i in lista)
-              Card(
-                child: ListTile(
-                  title: Text(i.nomeArquivo),
-                  subtitle: Text(
-                    '${i.periodoInicio == null ? 'Sem lançamentos' : '${dataBr(i.periodoInicio!)} a ${dataBr(i.periodoFim!)}'}'
-                    ' · ${i.totalImportadas ?? 0} gravados'
-                    '${(i.totalDuplicadas ?? 0) > 0 ? ' · ${i.totalDuplicadas} já existiam' : ''}',
-                  ),
-                ),
-              ),
-            const SizedBox(height: EspacosDesmalha.s3),
-            OutlinedButton(
-              key: const Key('botao_importar_outro'),
-              onPressed: _importar,
-              child: const Text('Importar outro extrato'),
-            ),
-            const SizedBox(height: EspacosDesmalha.s4),
-            Text(
-              'Separar o que é receita do seu trabalho (a classificação) '
-              'ainda não está disponível nesta versão.',
-              style: texto.bodySmall,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
 
 // ─── Tela de importação ─────────────────────────────────────────────
 

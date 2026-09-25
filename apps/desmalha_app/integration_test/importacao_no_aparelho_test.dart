@@ -17,7 +17,7 @@ import 'package:desmalha_app/dados/banco.dart';
 import 'package:desmalha_app/dados/repositorio_importacao.dart';
 import 'package:desmalha_app/importacao/controlador_importacao.dart';
 import 'package:desmalha_app/importacao/seletor_arquivo_sistema.dart';
-import 'package:desmalha_app/importacao/tela_importacao.dart';
+import 'package:desmalha_app/classificacao/aba_lancamentos.dart';
 import 'package:desmalha_app/tema/tema.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
