@@ -12,6 +12,7 @@ export 'src/backup/payload_backup.dart';
 export 'src/carne_leao/apuracao.dart';
 export 'src/carne_leao/estados_persistidos.dart';
 export 'src/carne_leao/darf.dart';
+export 'src/carne_leao/deducoes.dart';
 export 'src/carne_leao/lembrete_vencimento.dart';
 export 'src/carne_leao/painel_mensal.dart';
 export 'src/carne_leao/repasse.dart';

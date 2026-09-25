@@ -33,9 +33,23 @@ void main() {
 
     test('cenário $numero: $descricao', () {
       final meses = cenario['meses']! as List<Object?>;
+      // Despesas com data, roteadas ao mês pela regra do core (P5: cartão
+      // entra na data da compra; a fatura não conta).
+      final porData = <String, List<DespesaLivroCaixa>>{};
+      for (final d in ((cenario['despesasPorData'] as List<Object?>?) ?? [])
+          .cast<Map<String, Object?>>()) {
+        final comp = competenciaDaDespesa(
+          forma: FormaPagamentoDespesa.values
+              .byName(d['formaPagamento']! as String),
+          dataPagamento: d['dataPagamento']! as String,
+        );
+        (porData[comp] ??= []).add(
+          DespesaLivroCaixa(valorCentavos: d['valorCentavos']! as int),
+        );
+      }
       final entradas = [
         for (final m in meses)
-          _entrada(m! as Map<String, Object?>, catalogo),
+          _entrada(m! as Map<String, Object?>, catalogo, porData),
       ];
 
       final apuracoes = apurarSequencia(
@@ -59,8 +73,15 @@ void main() {
   }
 }
 
-EntradaApuracao _entrada(Map<String, Object?> mes, Catalogo catalogo) {
+EntradaApuracao _entrada(
+  Map<String, Object?> mes,
+  Catalogo catalogo, [
+  Map<String, List<DespesaLivroCaixa>> porData = const {},
+]) {
   var despesas = 0;
+  for (final d in porData[mes['competencia']] ?? const <DespesaLivroCaixa>[]) {
+    despesas += d.dedutivelCentavos;
+  }
   final lancamentos = mes['despesas'];
   if (lancamentos != null) {
     for (final d in lancamentos as List<Object?>) {
@@ -105,8 +126,31 @@ EntradaApuracao _entrada(Map<String, Object?> mes, Catalogo catalogo) {
     competencia: mes['competencia']! as String,
     receitaBrutaCentavos: receita,
     despesasDedutiveisCentavos: despesas,
-    inssPagoCentavos: (mes['inssPagoCentavos'] as int?) ?? 0,
-    numeroDependentes: (mes['dependentes'] as int?) ?? 0,
+    inssPagoCentavos: switch (mes['inss']) {
+      // P6: lista de guias — só o principal deduz; "naoPago" deduz zero.
+      final List<Object?> guias => inssDedutivelDoMes([
+          for (final g in guias.cast<Map<String, Object?>>())
+            if (g['naoPago'] == true)
+              const PagamentoInssDoMes.naoPago()
+            else
+              PagamentoInssDoMes.pago(
+                principalCentavos: g['principalCentavos']! as int,
+                acrescimosCentavos: (g['acrescimosCentavos'] as int?) ?? 0,
+              ),
+        ]),
+      _ => (mes['inssPagoCentavos'] as int?) ?? 0,
+    },
+    numeroDependentes: switch (mes['dependentesVigencia']) {
+      // P7: vigências — conta o mês inteiro de quem existiu em algum dia.
+      final List<Object?> vigencias => dependentesNoMes([
+          for (final v in vigencias.cast<Map<String, Object?>>())
+            VigenciaDependente(
+              inicio: v['inicio']! as String,
+              fim: v['fim'] as String?,
+            ),
+        ], mes['competencia']! as String),
+      _ => (mes['dependentes'] as int?) ?? 0,
+    },
     irrfRetidoPjCentavos: (mes['irrfPjCentavos'] as int?) ?? 0,
   );
 }
