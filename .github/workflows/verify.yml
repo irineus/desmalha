@@ -1,0 +1,82 @@
+# verify — o portão de todo PR que toca `apps/` ou `packages/` (cadeia 2,
+# item 1, 25/09/2026). Espelho do `verify` do Entrelares: analyze + testes do
+# core (Dart puro) e do app (Flutter), num runner Linux do Actions.
+#
+# O que NÃO está aqui, de propósito:
+#   - APK e emulador. O APK debug é o gate local de cada sessão
+#     (`fvm flutter build apk --debug`) e a verificação consolidada é o
+#     `android-verify` do Codemagic, disparado só por tag `verificar-*`
+#     (codemagic.yaml). O PR não gasta minuto de build Android.
+#   - Supabase. Migrations e edge functions têm o workflow `Supabase`
+#     (supabase.yml), com as suítes do backend.
+#
+# A versão do Flutter NÃO é escrita aqui: sai do `.fvmrc`, a mesma fonte do
+# FVM local e do `flutter: fvm` do Codemagic. Trocar o Flutter continua sendo
+# uma decisão explícita do owner (regra 4 do CLAUDE.md) num lugar só.
+name: verify
+
+# Mudança só em markdown não roda nada: nenhuma suíte lê `.md`.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md']
+  pull_request:
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Um run por ref. Em PR, o push novo cancela o anterior (só o último
+    # commit importa para o merge); no main, cada merge termina o seu — é o
+    # selo do HEAD que a cadeia lê antes do próximo merge.
+    concurrency:
+      group: verify-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Flutter do .fvmrc
+        id: fvm
+        run: echo "version=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Flutter pinado (sanidade)
+        run: |
+          flutter --version
+          flutter --version | grep -q "Flutter ${{ steps.fvm.outputs.version }} " \
+            || { echo "ERRO: o Flutter do runner difere do .fvmrc"; exit 1; }
+
+      - name: Core — analyze + dart test
+        working-directory: packages/desmalha_core
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
+
+      - name: App — analyze
+        working-directory: apps/desmalha_app
+        run: |
+          flutter pub get
+          flutter analyze
+
+      # A âncora da persistência: a seção `hooks:` do pubspec troca o SQLite
+      # pelo SQLCipher também no host dos testes. Passo próprio para que a
+      # prova apareça pelo nome no log do check — se o hook sumir, é AQUI que
+      # fica vermelho, com `cipher_version` vazio.
+      - name: App — prova do SQLCipher (PRAGMA cipher_version)
+        working-directory: apps/desmalha_app
+        run: flutter test test/dados/cifra_test.dart
+
+      - name: App — flutter test
+        working-directory: apps/desmalha_app
+        run: flutter test
