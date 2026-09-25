@@ -328,9 +328,8 @@ class _TelaMesState extends State<TelaMes> {
         ),
       const SizedBox(height: EspacosDesmalha.s2),
       Text(
-        'Livro-caixa, INSS e dependentes ainda não podem ser registrados '
-        'nesta versão. Se você tem essas deduções, o imposto real pode ser '
-        'menor que o mostrado.',
+        'Livro-caixa, INSS e dependentes entram pela aba Despesas — o '
+        'cálculo acima já conta o que está lá.',
         key: const Key('aviso_deducoes'),
         style: texto.bodySmall,
       ),

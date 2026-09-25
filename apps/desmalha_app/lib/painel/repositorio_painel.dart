@@ -1,6 +1,7 @@
 /// O que o dashboard lê do banco local: por competência, a receita dos
-/// lançamentos CLASSIFICADOS como tributáveis, quantos lançamentos têm
-/// classificação e quantos créditos importados ainda não têm.
+/// lançamentos CLASSIFICADOS, quantos lançamentos têm classificação, quantos
+/// créditos importados ainda não têm, e as deduções do mês — livro-caixa,
+/// INSS e dependentes.
 ///
 /// A decisão do que mostrar é do `desmalha_core` (`montarPainelMensal`);
 /// aqui só se agrega.
@@ -77,12 +78,56 @@ class RepositorioPainelDrift implements RepositorioPainel {
     for (final l in pendentes) {
       nPendentes[l.read<String>('competencia')] = l.read<int>('n');
     }
+
+    // Livro-caixa: o dedutível já gravado pela rubrica (trava de 20% e
+    // vedação decididas pelo core no registro).
+    final despesas = <String, int>{
+      for (final l in await banco.customSelect(
+        'SELECT competencia, SUM(valor_dedutivel_centavos) AS total '
+        'FROM despesas_livro_caixa WHERE competencia BETWEEN ? AND ? '
+        'GROUP BY competencia',
+        variables: [Variable.withString(de), Variable.withString(ate)],
+      ).get())
+        l.read<String>('competencia'): l.read<int>('total'),
+    };
+
+    // INSS: as respostas do mês; o que deduz (só o principal, "não paguei"
+    // = zero) é do core — rodada 4, P6.
+    final guias = <String, List<PagamentoInssDoMes>>{};
+    for (final l in await banco.customSelect(
+      'SELECT competencia, situacao, valor_centavos, acrescimos_centavos '
+      'FROM pagamentos_inss WHERE competencia BETWEEN ? AND ?',
+      variables: [Variable.withString(de), Variable.withString(ate)],
+    ).get()) {
+      (guias[l.read<String>('competencia')] ??= []).add(
+        l.read<String>('situacao') == SituacaoInss.naoPago.name
+            ? const PagamentoInssDoMes.naoPago()
+            : PagamentoInssDoMes.pago(
+                principalCentavos: l.read<int>('valor_centavos'),
+                acrescimosCentavos: l.read<int>('acrescimos_centavos'),
+              ),
+      );
+    }
+
+    // Dependentes: o mês inteiro de quem existiu em algum dia — P7.
+    final vigencias = [
+      for (final d in await banco.select(banco.dependentes).get())
+        VigenciaDependente(inicio: d.vigenciaInicio, fim: d.vigenciaFim),
+    ];
+
     return {
-      for (final c in {...nClassificados.keys, ...nPendentes.keys})
+      for (final c in {
+        ...nClassificados.keys,
+        ...nPendentes.keys,
+        ...despesas.keys,
+      })
         c: DadosDoMes(
           receitaTributavelCentavos: receita[c] ?? 0,
           lancamentosClassificados: nClassificados[c] ?? 0,
           recebimentosAClassificar: nPendentes[c] ?? 0,
+          despesasDedutiveisCentavos: despesas[c] ?? 0,
+          inssDedutivelCentavos: inssDedutivelDoMes(guias[c] ?? const []),
+          dependentes: dependentesNoMes(vigencias, c),
         ),
     };
   }

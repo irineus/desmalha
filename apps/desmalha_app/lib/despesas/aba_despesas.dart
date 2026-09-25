@@ -5,6 +5,10 @@
 /// débitos do extrato do mês, que viram despesa com um toque (decisão 5 do
 /// owner) — e, se o mesmo favorecido se repete, com a proposta em lote que
 /// declara quantidade e valor antes de aplicar.
+///
+/// Mais as outras deduções: o INSS pago no mês (principal e acréscimos
+/// separados — só o principal deduz, rodada 4, P6) ou o "não paguei", e os
+/// dependentes com a vigência (o mês inteiro conta, P7).
 library;
 
 import 'dart:async';
@@ -38,6 +42,8 @@ class _AbaDespesasState extends State<AbaDespesas> {
   late String _competencia;
   List<DespesaDoMes>? _despesas;
   List<DebitoDoExtrato> _debitos = const [];
+  List<InssDoMes> _inss = const [];
+  List<DependenteCadastrado> _dependentes = const [];
 
   RepositorioDespesas get _repo => widget.servicos.despesas;
 
@@ -60,10 +66,14 @@ class _AbaDespesasState extends State<AbaDespesas> {
   Future<void> _carregar() async {
     final despesas = await _repo.despesasDoMes(_competencia);
     final debitos = await _repo.debitosDoMes(_competencia);
+    final inss = await _repo.inssDoMes(_competencia);
+    final dependentes = await _repo.dependentes();
     if (!mounted) return;
     setState(() {
       _despesas = despesas;
       _debitos = debitos;
+      _inss = inss;
+      _dependentes = dependentes;
     });
   }
 
@@ -138,6 +148,100 @@ class _AbaDespesasState extends State<AbaDespesas> {
   Future<void> _excluir(DespesaDoMes d) async {
     await _repo.excluir(d.id);
     widget.servicos.dadosAlterados.value++;
+  }
+
+  Future<void> _alterou(Future<void> Function() acao) async {
+    await acao();
+    widget.servicos.dadosAlterados.value++;
+  }
+
+  Future<void> _informarInss() async {
+    final r = await showDialog<({int principal, int acrescimos})>(
+      context: context,
+      builder: (_) => const _DialogoInss(),
+    );
+    if (r == null) return;
+    await _alterou(() => _repo.registrarInssPago(
+          competencia: _competencia,
+          principalCentavos: r.principal,
+          acrescimosCentavos: r.acrescimos,
+        ));
+  }
+
+  Future<void> _adicionarDependente() async {
+    final r = await showDialog<({String nome, String inicio})>(
+      context: context,
+      builder: (_) => _DialogoDependente(inicioSugerido: '$_competencia-01'),
+    );
+    if (r == null) return;
+    await _alterou(
+        () => _repo.adicionarDependente(nome: r.nome, inicio: r.inicio));
+  }
+
+  Future<void> _gerirDependente(DependenteCadastrado d) async {
+    final acao = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(d.nome),
+        content: const Text(
+          'Se deixou de ser dependente, registre o último dia: o mês dele '
+          'ainda conta inteiro.',
+        ),
+        actions: [
+          TextButton(
+            key: const Key('excluir_dependente'),
+            onPressed: () => Navigator.of(context).pop('excluir'),
+            child: const Text('Excluir'),
+          ),
+          if (d.fim != null)
+            TextButton(
+              onPressed: () => Navigator.of(context).pop('reabrir'),
+              child: const Text('Continua dependente'),
+            )
+          else
+            FilledButton(
+              key: const Key('encerrar_dependente'),
+              onPressed: () => Navigator.of(context).pop('encerrar'),
+              child: const Text('Deixou de ser'),
+            ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    switch (acao) {
+      case 'excluir':
+        await _alterou(() => _repo.excluirDependente(d.id));
+      case 'reabrir':
+        await _alterou(() => _repo.encerrarDependente(d.id, null));
+      case 'encerrar':
+        final inicio = DateTime.parse(d.inicio);
+        final hoje = (widget.hoje ?? DateTime.now)();
+        final fim = await _escolherData(
+          context,
+          titulo: 'Último dia como dependente',
+          inicial: inicio.isAfter(hoje) ? inicio : hoje,
+          primeira: inicio,
+        );
+        if (fim != null) {
+          await _alterou(() => _repo.encerrarDependente(d.id, fim));
+        }
+    }
+  }
+
+  String _contagemDeDependentes() {
+    final n = dependentesNoMes(
+      [
+        for (final d in _dependentes)
+          VigenciaDependente(inicio: d.inicio, fim: d.fim),
+      ],
+      _competencia,
+    );
+    final mes = competenciaPorExtenso(_competencia);
+    return switch (n) {
+      0 => 'Nenhum dependente em $mes.',
+      1 => '1 dependente em $mes.',
+      _ => '$n dependentes em $mes.',
+    };
   }
 
   @override
@@ -220,6 +324,50 @@ class _AbaDespesasState extends State<AbaDespesas> {
                 child: const Text('Adicionar despesa'),
               ),
             ],
+            const SizedBox(height: EspacosDesmalha.s6),
+            _SecaoInss(
+              competencia: _competencia,
+              inss: _inss,
+              aoInformar: () => unawaited(_informarInss()),
+              aoNaoPagar: () => unawaited(
+                  _alterou(() => _repo.registrarInssNaoPago(_competencia))),
+              aoExcluir: (id) =>
+                  unawaited(_alterou(() => _repo.excluirInss(id))),
+            ),
+            const SizedBox(height: EspacosDesmalha.s6),
+            Text('Dependentes', style: texto.titleMedium),
+            Text(
+              'Cada um conta o mês inteiro em que foi dependente, mesmo que '
+              'por um dia só.',
+              style: texto.bodySmall,
+            ),
+            const SizedBox(height: EspacosDesmalha.s2),
+            Text(
+              _contagemDeDependentes(),
+              key: const Key('dependentes_no_mes'),
+              style: fiscal.dado,
+            ),
+            for (final d in _dependentes)
+              Card(
+                child: ListTile(
+                  key: Key('dependente_${d.id}'),
+                  title: Text(d.nome),
+                  subtitle: Text(
+                    'desde ${dataBr(d.inicio)}'
+                    '${d.fim == null ? '' : ' até ${dataBr(d.fim!)}'}',
+                    style: fiscal.dado,
+                  ),
+                  onTap: () => unawaited(_gerirDependente(d)),
+                ),
+              ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                key: const Key('botao_novo_dependente'),
+                onPressed: () => unawaited(_adicionarDependente()),
+                child: const Text('Adicionar dependente'),
+              ),
+            ),
             if (_debitos.isNotEmpty) ...[
               const SizedBox(height: EspacosDesmalha.s6),
               Text('Débitos do extrato', style: texto.titleMedium),
@@ -243,6 +391,298 @@ class _AbaDespesasState extends State<AbaDespesas> {
           ],
         ],
       ),
+    );
+  }
+}
+
+Future<String?> _escolherData(
+  BuildContext context, {
+  required String titulo,
+  required DateTime inicial,
+  DateTime? primeira,
+}) async {
+  final d = await showDatePicker(
+    context: context,
+    helpText: titulo,
+    initialDate: inicial,
+    firstDate: primeira ?? DateTime(1900),
+    lastDate: DateTime(inicial.year + 1, 12, 31),
+  );
+  if (d == null) return null;
+  final mm = d.month.toString().padLeft(2, '0');
+  final dd = d.day.toString().padLeft(2, '0');
+  return '${d.year}-$mm-$dd';
+}
+
+class _SecaoInss extends StatelessWidget {
+  const _SecaoInss({
+    required this.competencia,
+    required this.inss,
+    required this.aoInformar,
+    required this.aoNaoPagar,
+    required this.aoExcluir,
+  });
+
+  final String competencia;
+  final List<InssDoMes> inss;
+  final VoidCallback aoInformar;
+  final VoidCallback aoNaoPagar;
+  final void Function(String id) aoExcluir;
+
+  @override
+  Widget build(BuildContext context) {
+    final texto = Theme.of(context).textTheme;
+    final fiscal = TipografiaFiscal.de(context);
+    final naoPago = [
+      for (final i in inss)
+        if (i.situacao == SituacaoInss.naoPago) i,
+    ];
+    final pagas = [
+      for (final i in inss)
+        if (i.situacao == SituacaoInss.pago) i,
+    ];
+    return Column(
+      key: const Key('secao_inss'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'INSS pago em ${competenciaPorExtenso(competencia)}',
+          style: texto.titleMedium,
+        ),
+        Text(
+          'Vale o mês em que a guia foi paga. Só o principal deduz — multa e '
+          'juros de atraso não.',
+          style: texto.bodySmall,
+        ),
+        const SizedBox(height: EspacosDesmalha.s2),
+        if (naoPago.isNotEmpty)
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Você informou que não pagou INSS neste mês.',
+                  key: const Key('inss_nao_pago'),
+                  style: texto.bodyMedium,
+                ),
+              ),
+              TextButton(
+                key: const Key('inss_mudar_resposta'),
+                onPressed: () => aoExcluir(naoPago.first.id),
+                child: const Text('Mudar resposta'),
+              ),
+            ],
+          )
+        else ...[
+          for (final g in pagas)
+            Card(
+              child: ListTile(
+                key: Key('inss_${g.id}'),
+                title: const Text('Guia paga'),
+                subtitle: g.acrescimosCentavos > 0
+                    ? Text(
+                        'acréscimos de '
+                        '${centavosParaExibicao(g.acrescimosCentavos)} '
+                        'não deduzem',
+                        style: fiscal.dado,
+                      )
+                    : null,
+                trailing: ValorEmReais(g.principalCentavos),
+                onTap: () => unawaited(() async {
+                  final excluir = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Excluir esta guia?'),
+                      content: const Text(
+                        'Ela sai das deduções e o cálculo do mês refaz.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancelar'),
+                        ),
+                        FilledButton(
+                          key: const Key('confirmar_excluir_inss'),
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Excluir'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (excluir == true) aoExcluir(g.id);
+                }()),
+              ),
+            ),
+          Wrap(
+            spacing: EspacosDesmalha.s2,
+            children: [
+              OutlinedButton(
+                key: const Key('botao_inss_pago'),
+                onPressed: aoInformar,
+                child: Text(pagas.isEmpty ? 'Informar INSS pago' : 'Outra guia'),
+              ),
+              if (pagas.isEmpty)
+                TextButton(
+                  key: const Key('botao_inss_nao_pago'),
+                  onPressed: aoNaoPagar,
+                  child: const Text('Não paguei'),
+                ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _DialogoInss extends StatefulWidget {
+  const _DialogoInss();
+
+  @override
+  State<_DialogoInss> createState() => _DialogoInssState();
+}
+
+class _DialogoInssState extends State<_DialogoInss> {
+  final _principal = TextEditingController();
+  final _acrescimos = TextEditingController();
+  String? _erro;
+
+  @override
+  void dispose() {
+    _principal.dispose();
+    _acrescimos.dispose();
+    super.dispose();
+  }
+
+  void _confirmar() {
+    final principal =
+        parseValorMonetario(_principal.text, FormatoValor.virgulaDecimal);
+    final acrescimos = _acrescimos.text.trim().isEmpty
+        ? 0
+        : parseValorMonetario(_acrescimos.text, FormatoValor.virgulaDecimal);
+    if (principal == null || principal <= 0) {
+      setState(() => _erro = 'Informe o valor principal da guia.');
+      return;
+    }
+    if (acrescimos == null || acrescimos < 0) {
+      setState(() => _erro = 'Os acréscimos não estão num formato válido.');
+      return;
+    }
+    Navigator.of(context).pop((principal: principal, acrescimos: acrescimos));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('INSS pago'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              key: const Key('inss_principal'),
+              controller: _principal,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: r'Valor principal da guia (R$)',
+              ),
+            ),
+            TextField(
+              key: const Key('inss_acrescimos'),
+              controller: _acrescimos,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: r'Multa e juros, se pagou com atraso (R$)',
+                helperText: 'Ficam registrados, mas não deduzem.',
+              ),
+            ),
+            if (_erro != null)
+              Padding(
+                padding: const EdgeInsets.only(top: EspacosDesmalha.s2),
+                child: Text(_erro!, key: const Key('inss_erro')),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          key: const Key('confirmar_inss'),
+          onPressed: _confirmar,
+          child: const Text('Salvar'),
+        ),
+      ],
+    );
+  }
+}
+
+class _DialogoDependente extends StatefulWidget {
+  const _DialogoDependente({required this.inicioSugerido});
+
+  final String inicioSugerido;
+
+  @override
+  State<_DialogoDependente> createState() => _DialogoDependenteState();
+}
+
+class _DialogoDependenteState extends State<_DialogoDependente> {
+  final _nome = TextEditingController();
+  late String _inicio = widget.inicioSugerido;
+
+  @override
+  void dispose() {
+    _nome.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Novo dependente'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            key: const Key('dependente_nome'),
+            controller: _nome,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(labelText: 'Nome'),
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: EspacosDesmalha.s2),
+          TextButton(
+            key: const Key('dependente_inicio'),
+            onPressed: () => unawaited(() async {
+              final d = await _escolherData(
+                context,
+                titulo: 'Dependente desde',
+                inicial: DateTime.parse(_inicio),
+              );
+              if (d != null && mounted) setState(() => _inicio = d);
+            }()),
+            child: Text('Dependente desde ${dataBr(_inicio)}'),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          key: const Key('confirmar_dependente'),
+          onPressed: _nome.text.trim().isEmpty
+              ? null
+              : () => Navigator.of(context)
+                  .pop((nome: _nome.text.trim(), inicio: _inicio)),
+          child: const Text('Salvar'),
+        ),
+      ],
     );
   }
 }

@@ -164,4 +164,46 @@ void main() {
     final lista = await repo.despesasDoMes('2026-08');
     expect(lista.single.deRepasse, isTrue);
   });
+
+  test('INSS: guia paga guarda principal e acréscimos separados (P6); '
+      '"não paguei" é resposta e cede à guia', () async {
+    await repo.registrarInssNaoPago('2026-08');
+    expect((await repo.inssDoMes('2026-08')).single.situacao,
+        SituacaoInss.naoPago);
+
+    await repo.registrarInssPago(
+        competencia: '2026-08', principalCentavos: 32000, acrescimosCentavos: 1200);
+    final agosto = await repo.inssDoMes('2026-08');
+    expect(
+      agosto.map((i) => (i.situacao, i.principalCentavos, i.acrescimosCentavos)),
+      [(SituacaoInss.pago, 32000, 1200)],
+      reason: 'a guia substitui o "não paguei"',
+    );
+    await expectLater(
+        repo.registrarInssNaoPago('2026-08'), throwsStateError);
+    await expectLater(
+      repo.registrarInssPago(competencia: '2026-08', principalCentavos: 0),
+      throwsArgumentError,
+    );
+
+    await repo.excluirInss(agosto.single.id);
+    expect(await repo.inssDoMes('2026-08'), isEmpty);
+  });
+
+  test('dependente: cadastra, encerra e valida a vigência', () async {
+    final id = await repo.adicionarDependente(nome: ' Bia ', inicio: '2026-03-20');
+    await repo.encerrarDependente(id, '2026-11-02');
+    final d = (await repo.dependentes()).single;
+    expect((d.nome, d.inicio, d.fim), ('Bia', '2026-03-20', '2026-11-02'));
+
+    await expectLater(repo.encerrarDependente(id, '2026-03-01'),
+        throwsArgumentError);
+    await expectLater(repo.adicionarDependente(nome: ' ', inicio: '2026-03-20'),
+        throwsArgumentError);
+    await expectLater(repo.adicionarDependente(nome: 'X', inicio: '20/03/2026'),
+        throwsArgumentError);
+
+    await repo.excluirDependente(id);
+    expect(await repo.dependentes(), isEmpty);
+  });
 }
