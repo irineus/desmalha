@@ -4,7 +4,8 @@
 /// linha das tabelas do backup vira um `DocumentoBackup`, e a restauração
 /// reinsere linha a linha, numa transação, com as FKs conferidas no commit.
 ///
-/// Tabelas e o que fica de fora: `tabelasDoBackupV1` no `desmalha_core`.
+/// Tabelas e o que fica de fora: `tabelasDoBackupPorFormato` no
+/// `desmalha_core`.
 /// A `previa_json` das importações é estado de trabalho e sai do export.
 library;
 
@@ -29,6 +30,7 @@ const List<String> ordemDasTabelasDoBackup = [
   'pagamentos_inss',
   'dependentes',
   'darfs',
+  'darf_competencias',
   'aceites_termos_local',
 ];
 

@@ -4,8 +4,8 @@
 ///
 /// Decisão do owner (24/09/2026, card "Dados locais pertencem à conta que os
 /// criou"): outra conta só entra no aparelho depois de apagar os dados da
-/// anterior. Fica o que é do APARELHO: a chave do banco cifrado e as tabelas
-/// `cat_*` (espelho do catálogo público).
+/// anterior. Fica o que é do APARELHO: a chave do banco cifrado (e o cache
+/// do catálogo público, que é um arquivo JSON fora do banco).
 ///
 /// Não toca em nada do servidor: os backups da outra conta, se ela ainda
 /// existir, continuam lá.
@@ -15,13 +15,14 @@ import '../backup/chaves_backup.dart';
 import 'banco.dart';
 
 /// As tabelas da conta, na ordem de apagar (filhas antes das mães). Um
-/// teste confere que TODA tabela do esquema fora `cat_*` está aqui: tabela
-/// nova que escapasse da lista sobreviveria à troca de conta.
+/// teste confere que TODA tabela do esquema está aqui: tabela nova que
+/// escapasse da lista sobreviveria à troca de conta.
 const List<String> tabelasDaConta = [
   'historico_classificacao',
-  'lancamentos',
-  'darfs',
   'despesas_livro_caixa',
+  'lancamentos',
+  'darf_competencias',
+  'darfs',
   'apuracoes_mensais',
   'pagamentos_inss',
   'dependentes',

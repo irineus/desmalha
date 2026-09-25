@@ -27,12 +27,29 @@ void main() {
     expect(versoes, isNotEmpty);
   });
 
+  test('formato anterior ao atual tem o que o app ATUAL deve ler dele', () {
+    // O golden.dsmb e o esperado.json de um formato velho são históricos:
+    // não mudam. O que muda a cada formato novo é o resultado da cadeia de
+    // migrações — escrito à mão em esperado_atual.json, para que a migração
+    // seja provada contra valores, não contra ela mesma.
+    for (var v = 1; v < formatoBackupAtual; v++) {
+      expect(
+        File('test/fixtures/backup/formato_v$v/esperado_atual.json')
+            .existsSync(),
+        isTrue,
+        reason: 'formato $v sem esperado_atual.json',
+      );
+    }
+  });
+
   for (final dir in versoes) {
     final nome = dir.uri.pathSegments.where((s) => s.isNotEmpty).last;
     group(nome, () {
       final blob = File('${dir.path}/golden.dsmb').readAsBytesSync();
+      final atual = File('${dir.path}/esperado_atual.json');
       final esperado = jsonDecode(
-        File('${dir.path}/esperado.json').readAsStringSync(),
+        (atual.existsSync() ? atual : File('${dir.path}/esperado.json'))
+            .readAsStringSync(),
       ) as List<Object?>;
 
       test('restaura pela chave-mestra (mesma plataforma)', () async {
@@ -53,7 +70,7 @@ void main() {
   test('round-trip completo: exportar → selar → abrir → ler', () async {
     final documentos = [
       for (final d in (jsonDecode(File(
-        'test/fixtures/backup/formato_v1/esperado.json',
+        'test/fixtures/backup/formato_v$formatoBackupAtual/esperado.json',
       ).readAsStringSync()) as List<Object?>).cast<Map<String, Object?>>())
         DocumentoBackup(d['t']! as String, d['d']! as Map<String, Object?>),
     ];
@@ -67,7 +84,7 @@ void main() {
       conteudo: await serializarPayload(
         documentos: documentos,
         appVersao: '1.0.0',
-        schemaLocalVersao: 1,
+        schemaLocalVersao: formatoBackupAtual,
         geradoEm: DateTime.utc(2026, 9, 24),
         seq: 2,
         plataforma: 'ios',

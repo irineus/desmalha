@@ -64,7 +64,8 @@ void main() {
   group('recusa integral, nunca restauração parcial', () {
     test('formato de versão futura: "atualize o app"', () async {
       final gz = _reescrever(await _serializar(amostraBackup),
-          (t) => t.replaceFirst('"formato_versao":1', '"formato_versao":2'));
+          (t) => t.replaceFirst('"formato_versao":$formatoBackupAtual',
+              '"formato_versao":${formatoBackupAtual + 1}'));
       await expectLater(
         lerPayload(gz),
         throwsA(isA<BackupDeVersaoFuturaException>()
@@ -130,26 +131,26 @@ void main() {
 
   test('migração: cadeia de funções puras aplicada antes de devolver',
       () async {
-    // Um app hipotético que já lê o formato 2: o blob v1 passa pela migração
-    // 1→2 antes de chegar ao banco.
+    // Um app hipotético que já lê o formato seguinte ao atual: o blob de
+    // hoje passa pela migração antes de chegar ao banco.
+    const proximo = formatoBackupAtual + 1;
     final lido = await lerPayload(
       await _serializar(amostraBackup),
-      formatoSuportado: 2,
+      formatoSuportado: proximo,
       migracoes: {
-        1: (docs) => [
+        formatoBackupAtual: (docs) => [
           for (final d in docs)
-            DocumentoBackup(d.tabela, {...d.dados, 'migrado_para_v2': true}),
+            DocumentoBackup(d.tabela, {...d.dados, 'migrado': true}),
         ],
       },
     );
-    expect(lido.documentos.every((d) => d.dados['migrado_para_v2'] == true),
-        isTrue);
+    expect(lido.documentos.every((d) => d.dados['migrado'] == true), isTrue);
   });
 
   test('migração faltando na cadeia é recusa, não pulo', () async {
     await expectLater(
-      lerPayload(await _serializar(amostraBackup), formatoSuportado: 2,
-          migracoes: const {}),
+      lerPayload(await _serializar(amostraBackup),
+          formatoSuportado: formatoBackupAtual + 1, migracoes: const {}),
       throwsA(isA<BackupInvalidoException>()),
     );
   });

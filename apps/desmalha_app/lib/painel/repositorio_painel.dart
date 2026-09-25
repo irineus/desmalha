@@ -26,12 +26,16 @@ class RepositorioPainelDrift implements RepositorioPainel {
     final ate = '$ano-12';
     final classificados = await banco
         .customSelect(
-          "SELECT competencia, "
-          "SUM(CASE WHEN classificacao = 'tributavel' THEN valor_centavos "
-          "ELSE 0 END) AS receita, COUNT(*) AS n "
+          'SELECT competencia, '
+          'SUM(CASE WHEN classificacao = ? THEN valor_centavos '
+          'ELSE 0 END) AS receita, COUNT(*) AS n '
           'FROM lancamentos WHERE competencia BETWEEN ? AND ? '
           'GROUP BY competencia',
-          variables: [Variable.withString(de), Variable.withString(ate)],
+          variables: [
+            Variable.withString(ClassificacaoLancamento.rendimentoPf.name),
+            Variable.withString(de),
+            Variable.withString(ate),
+          ],
         )
         .get();
     // Crédito importado sem lançamento = recebimento a classificar. O mês

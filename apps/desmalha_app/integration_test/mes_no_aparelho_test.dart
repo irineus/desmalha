@@ -65,7 +65,7 @@ void main() {
       await sql(
         'INSERT INTO lancamentos (id, transacao_id, competencia, '
         'data_recebimento, valor_centavos, classificacao, criado_em, '
-        "atualizado_em) VALUES (?, ?, ?, ?, ?, ?, 0, 0)",
+        "atualizado_em, confirmada_em) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)",
         ['l${n++}', t, data.substring(0, 7), data, centavos, cls],
       );
     }
@@ -73,8 +73,8 @@ void main() {
     // jun: só pessoal. jul: R$ 10.000 tributável + 2 a classificar.
     // ago: 3 recebimentos importados, nenhum classificado. set: nada.
     await lancamento('2026-06-10', 50000, 'pessoal');
-    await lancamento('2026-07-05', 600000, 'tributavel');
-    await lancamento('2026-07-20', 400000, 'tributavel');
+    await lancamento('2026-07-05', 600000, 'rendimentoPf');
+    await lancamento('2026-07-20', 400000, 'rendimentoPf');
     await transacao('2026-07-25', 15000);
     await transacao('2026-07-26', 25000);
     for (final d in ['2026-08-03', '2026-08-10', '2026-08-17']) {
