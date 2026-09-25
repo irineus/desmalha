@@ -53,6 +53,19 @@ class ChavesBackup {
   final Random _aleatorio;
 
   /// A chave-mestra: lida do cofre ou criada (uma vez) e conferida.
+  /// Apaga mestra, cabeçalho e impressão deste aparelho — só quando os
+  /// dados locais de OUTRA conta são apagados (card "Dados locais pertencem
+  /// à conta que os criou"). Confere que sumiram: uma mestra que sobrevive
+  /// selaria os backups da conta nova com a chave da conta antiga.
+  Future<void> esquecer() async {
+    for (final campo in [campoMestra, campoCabecalho, campoImpressao]) {
+      await _cofre.apagar(campo);
+      if (await _cofre.ler(campo) != null) {
+        throw ChavesBackupException('o cofre do sistema não apagou "$campo"');
+      }
+    }
+  }
+
   Future<Uint8List> obterOuCriarChaveMestra() async {
     final existente = await _cofre.ler(campoMestra);
     if (existente != null) {

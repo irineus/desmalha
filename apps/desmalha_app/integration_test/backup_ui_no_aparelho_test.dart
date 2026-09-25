@@ -129,4 +129,6 @@ class _CofrePrefixado implements CofreSeguro {
   @override
   Future<void> gravar(String campo, String valor) =>
       _real.gravar('$_prefixo$campo', valor);
+  @override
+  Future<void> apagar(String campo) => _real.apagar('$_prefixo$campo');
 }

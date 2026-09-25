@@ -7,6 +7,7 @@ import 'package:desmalha_app/backup/servico_backup.dart';
 import 'package:desmalha_app/conta/porta_exclusao_conta.dart';
 import 'package:desmalha_app/dados/banco.dart';
 import 'package:desmalha_app/dados/chave_banco.dart';
+import 'package:desmalha_app/dados/limpeza_local.dart';
 import 'package:desmalha_app/dados/repositorio_importacao.dart';
 import 'package:desmalha_app/importacao/arquivo_recebido.dart';
 import 'package:desmalha_app/importacao/controlador_importacao.dart';
@@ -37,6 +38,9 @@ class CofreEmMemoria implements CofreSeguro {
     gravacoes++;
     valores[campo] = valor;
   }
+
+  @override
+  Future<void> apagar(String campo) async => valores.remove(campo);
 }
 
 /// Banco local de mentira para o backup: uma lista de documentos.
@@ -146,6 +150,24 @@ class SeletorFalso implements SeletorDeArquivo {
   Future<ArquivoSelecionado?> escolher() async => proximo;
 }
 
+/// Limpeza em memória: esvazia o repositório do onboarding (o perfil e os
+/// aceites locais) e conta as chamadas.
+class LimpezaFalsa implements LimpezaLocal {
+  LimpezaFalsa(this.repositorio);
+
+  final RepositorioOnboardingMemoria repositorio;
+  int chamadas = 0;
+
+  @override
+  Future<void> apagarDadosDaConta() async {
+    chamadas++;
+    repositorio
+      ..perfil = null
+      ..codigoConfirmadoEm = null
+      ..aceites.clear();
+  }
+}
+
 /// Aceite em memória: registra o que o servidor teria gravado.
 class AceiteFalso implements PortaAceite {
   AceiteFalso({this.falha});
@@ -168,27 +190,34 @@ class AceiteFalso implements PortaAceite {
 /// onboarding feito — o padrão dos testes que só querem chegar ao app.
 ControladorOnboarding controladorOnboardingFalso({
   bool concluido = false,
-  RepositorioOnboardingMemoria? repositorio,
+  RepositorioOnboarding? repositorio,
   AceiteFalso? aceite,
   Catalogo? catalogo,
   bool permiteSeguirSemTermos = true,
+  LimpezaLocal? limpeza,
+  String? Function()? usuarioId,
 }) {
   final repo = repositorio ?? RepositorioOnboardingMemoria();
-  if (concluido && repo.perfil == null) {
+  if (concluido &&
+      repo is RepositorioOnboardingMemoria &&
+      repo.perfil == null) {
     repo.perfil = const PerfilDoApp(
       nome: 'Pessoa de Teste',
       cpf: '52998224725',
       onboardingCompleto: true,
+      usuarioRemotoId: '00000000-0000-4000-8000-00000000000a',
     );
   }
   return ControladorOnboarding(
+    // Repositório real (Drift) exige a limpeza real, passada pelo teste.
+    limpeza: limpeza ?? LimpezaFalsa(repo as RepositorioOnboardingMemoria),
     repositorio: repo,
     aceite: aceite ?? AceiteFalso(),
     // Sem asset: o catálogo vazio (nenhum documento legal publicado — o
     // estado real de hoje) resolve sem IO, e o porteiro não prende o
     // pumpAndSettle.
     carregarCatalogo: () async => catalogo ?? Catalogo.fromItens(const []),
-    usuarioId: () => '00000000-0000-4000-8000-00000000000a',
+    usuarioId: usuarioId ?? () => '00000000-0000-4000-8000-00000000000a',
     permiteSeguirSemTermos: permiteSeguirSemTermos,
     relogio: () => DateTime.utc(2026, 9, 24, 13),
   );

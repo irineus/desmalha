@@ -17,6 +17,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 abstract interface class CofreSeguro {
   Future<String?> ler(String campo);
   Future<void> gravar(String campo, String valor);
+
+  /// Remove o campo. Usado só ao apagar os dados de outra conta do
+  /// aparelho — nunca para "regenerar" uma chave.
+  Future<void> apagar(String campo);
 }
 
 /// Adaptador do `flutter_secure_storage`: Keystore no Android, Keychain no
@@ -33,6 +37,9 @@ class CofreSeguroDoSistema implements CofreSeguro {
   @override
   Future<void> gravar(String campo, String valor) =>
       _plugin.write(key: campo, value: valor);
+
+  @override
+  Future<void> apagar(String campo) => _plugin.delete(key: campo);
 }
 
 /// O cofre devolveu um valor que não é uma chave válida, ou não confirmou
@@ -52,8 +59,8 @@ class ChaveBancoException implements Exception {
 /// Gera (uma vez) e devolve a chave do banco em hexadecimal (32 bytes).
 class ChaveBanco {
   ChaveBanco({CofreSeguro? cofre, Random? aleatorio})
-      : _cofre = cofre ?? const CofreSeguroDoSistema(),
-        _aleatorio = aleatorio ?? Random.secure();
+    : _cofre = cofre ?? const CofreSeguroDoSistema(),
+      _aleatorio = aleatorio ?? Random.secure();
 
   /// Versão no nome do campo: se um dia o formato da chave mudar, a leitura
   /// do formato antigo continua encontrável em vez de "sumir".
