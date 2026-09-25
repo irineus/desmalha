@@ -17,6 +17,8 @@ export 'src/carne_leao/painel_mensal.dart';
 export 'src/carne_leao/repasse.dart';
 export 'src/carne_leao/tabela_irpf.dart';
 export 'src/catalogo/catalogo.dart';
+export 'src/classificacao/classificacao.dart';
+export 'src/classificacao/remetente.dart';
 export 'src/catalogo/documento_legal.dart';
 export 'src/catalogo/feriados_bancarios.dart';
 export 'src/catalogo/profissao.dart';

@@ -473,6 +473,143 @@
           }
         }
       ]
+    },
+    {
+      "numero": 19,
+      "descricao": "Rodada 4, P1: Pix de PJ sem IRRF fica FORA da base mensal — R$ 6.000,00 de PF + R$ 2.000,00 de PJ → imposto R$ 394,54 (o mesmo de só os R$ 6.000,00)",
+      "meses": [
+        {
+          "competencia": "2026-04",
+          "lancamentos": [
+            {
+              "valorCentavos": 600000,
+              "classificacao": "rendimentoPf"
+            },
+            {
+              "valorCentavos": 200000,
+              "classificacao": "recebidoPj"
+            }
+          ],
+          "esperado": {
+            "receitaBrutaCentavos": 600000,
+            "cenarioVencedor": "descontoSimplificado",
+            "reducaoRedutorCentavos": 17975,
+            "impostoDevidoCentavos": 39454,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 39454
+          }
+        }
+      ]
+    },
+    {
+      "numero": 20,
+      "descricao": "Rodada 4, P2: reembolso com NF no CPF do profissional é receita; a despesa só entra se o custo for essencial (R$ 5.000 + reembolso R$ 1.000 essencial → R$ 286,52; não essencial → R$ 394,54). Com NF no CPF do cliente, neutro.",
+      "meses": [
+        {
+          "competencia": "2026-05",
+          "lancamentos": [
+            {
+              "valorCentavos": 500000,
+              "classificacao": "rendimentoPf"
+            },
+            {
+              "valorCentavos": 100000,
+              "classificacao": "reembolso",
+              "titular": "profissional",
+              "essencial": true
+            },
+            {
+              "valorCentavos": 50000,
+              "classificacao": "reembolso",
+              "titular": "cliente"
+            }
+          ],
+          "despesas": [
+            {
+              "valorCentavos": 100000,
+              "rubrica": "custo-repassado-essencial"
+            }
+          ],
+          "esperado": {
+            "receitaBrutaCentavos": 600000,
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 500000,
+            "impostoCenarioACentavos": 46627,
+            "impostoCenarioBCentavos": 57429,
+            "reducaoRedutorCentavos": 17975,
+            "impostoDevidoCentavos": 28652
+          }
+        },
+        {
+          "competencia": "2026-06",
+          "lancamentos": [
+            {
+              "valorCentavos": 500000,
+              "classificacao": "rendimentoPf"
+            },
+            {
+              "valorCentavos": 100000,
+              "classificacao": "reembolso",
+              "titular": "profissional",
+              "essencial": false
+            }
+          ],
+          "esperado": {
+            "receitaBrutaCentavos": 600000,
+            "cenarioVencedor": "descontoSimplificado",
+            "reducaoRedutorCentavos": 17975,
+            "impostoDevidoCentavos": 39454
+          }
+        }
+      ]
+    },
+    {
+      "numero": 21,
+      "descricao": "Rodada 4, P3: a despesa do repasse entra no mês do PAGAMENTO do custo (fevereiro), não no do recebimento (março) — fev R$ 1.291,27, mar R$ 1.674,29. No mês da receita daria fev R$ 1.399,29 e mar R$ 1.566,27.",
+      "meses": [
+        {
+          "competencia": "2026-02",
+          "lancamentos": [
+            {
+              "valorCentavos": 900000,
+              "classificacao": "rendimentoPf"
+            }
+          ],
+          "despesas": [
+            {
+              "valorCentavos": 100000,
+              "rubrica": "custo-repassado-essencial"
+            }
+          ],
+          "esperado": {
+            "receitaBrutaCentavos": 900000,
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 800000,
+            "impostoDevidoCentavos": 129127
+          }
+        },
+        {
+          "competencia": "2026-03",
+          "lancamentos": [
+            {
+              "valorCentavos": 900000,
+              "classificacao": "rendimentoPf"
+            },
+            {
+              "valorCentavos": 100000,
+              "classificacao": "repasse",
+              "titular": "profissional",
+              "essencial": true
+            }
+          ],
+          "esperado": {
+            "receitaBrutaCentavos": 1000000,
+            "cenarioVencedor": "descontoSimplificado",
+            "baseCenarioBCentavos": 939280,
+            "impostoDevidoCentavos": 167429
+          }
+        }
+      ]
     }
   ]
 }
