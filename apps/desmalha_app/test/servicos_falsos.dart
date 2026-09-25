@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:desmalha_app/classificacao/repositorio_classificacao.dart';
 import 'package:desmalha_app/despesas/repositorio_despesas.dart';
+import 'package:desmalha_app/painel/repositorio_fechamento.dart';
 import 'package:desmalha_app/backup/chaves_backup.dart';
 import 'package:desmalha_app/backup/controlador_backup.dart';
 import 'package:desmalha_app/backup/estado_backup.dart';
@@ -104,6 +105,7 @@ ServicosDoApp servicosFalsos({
   RepositorioPainel? painel,
   RepositorioClassificacao? classificacao,
   RepositorioDespesas? despesas,
+  RepositorioFechamento? fechamento,
   ValueNotifier<RecebimentoDeArquivo?>? arquivoRecebido,
 }) {
   final chaves =
@@ -129,6 +131,7 @@ ServicosDoApp servicosFalsos({
           _importacaoPadraoBanco,
           catalogo: () async => Catalogo.fromItens(const []),
         ),
+    fechamento: fechamento ?? RepositorioFechamento(_importacaoPadraoBanco),
     dadosAlterados: ValueNotifier(0),
     arquivoRecebido: arquivoRecebido ?? ValueNotifier(null),
   );

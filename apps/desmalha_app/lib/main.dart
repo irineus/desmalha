@@ -23,6 +23,7 @@ import 'dados/conexao_cifrada.dart';
 import 'dados/limpeza_local.dart';
 import 'dados/repositorio_importacao.dart';
 import 'despesas/repositorio_despesas.dart';
+import 'painel/repositorio_fechamento.dart';
 import 'importacao/arquivo_recebido.dart';
 import 'importacao/seletor_arquivo_sistema.dart';
 import 'lembretes/controlador_lembretes.dart';
@@ -122,6 +123,7 @@ Future<void> main() async {
             bancoDoApp(),
             catalogo: catalogo.carregar,
           ),
+          fechamento: RepositorioFechamento(bancoDoApp()),
           dadosAlterados: ValueNotifier(0),
           arquivoRecebido: arquivoRecebido,
         ),

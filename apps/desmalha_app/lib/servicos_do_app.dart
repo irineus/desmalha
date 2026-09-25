@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'backup/chaves_backup.dart';
 import 'classificacao/repositorio_classificacao.dart';
 import 'despesas/repositorio_despesas.dart';
+import 'painel/repositorio_fechamento.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
 import 'dados/repositorio_importacao.dart';
@@ -32,6 +33,7 @@ class ServicosDoApp {
     required this.painel,
     required this.classificacao,
     required this.despesas,
+    required this.fechamento,
     required this.dadosAlterados,
     required this.arquivoRecebido,
   });
@@ -68,6 +70,9 @@ class ServicosDoApp {
 
   /// Livro-caixa: despesas manuais e débitos do extrato.
   final RepositorioDespesas despesas;
+
+  /// Apuração gravada, DARF pago e histórico de pagamentos.
+  final RepositorioFechamento fechamento;
 
   /// Sobe a cada importação confirmada: a aba Mês recalcula.
   final ValueNotifier<int> dadosAlterados;

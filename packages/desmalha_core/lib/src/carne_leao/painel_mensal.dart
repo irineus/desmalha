@@ -99,6 +99,49 @@ class PainelApurado extends PainelMensal {
   final List<MesDaEvolucao> evolucao;
 }
 
+/// O ano encadeado de janeiro até [ate] (`'YYYY-MM'`), por competência —
+/// o mesmo cálculo que o painel mostra, para quem precisa do ano inteiro
+/// (fechamento, acerto de guia paga).
+///
+/// Entram os meses com lançamento classificado, os com despesa (o excesso
+/// do livro-caixa vira saldo negativo) e os [periodosQuitados]. Lança
+/// [StateError] se falta a tabela do IRPF de algum deles.
+Map<String, ApuracaoMensal> apurarAno({
+  required String ate,
+  required Map<String, DadosDoMes> dadosDoAno,
+  required Catalogo catalogo,
+  Set<String> periodosQuitados = const {},
+}) {
+  final ano = ate.substring(0, 4);
+  final comDados = [
+    for (var m = 1; m <= int.parse(ate.substring(5, 7)); m++)
+      if ('$ano-${m.toString().padLeft(2, '0')}' case final c
+          when (dadosDoAno[c]?.lancamentosClassificados ?? 0) > 0 ||
+              (dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0) > 0 ||
+              periodosQuitados.contains(c))
+        c,
+  ];
+  return {
+    for (final a in apurarSequencia(
+      entradas: [
+        for (final c in comDados)
+          EntradaApuracao(
+            competencia: c,
+            receitaBrutaCentavos:
+                dadosDoAno[c]?.receitaTributavelCentavos ?? 0,
+            despesasDedutiveisCentavos:
+                dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0,
+            inssPagoCentavos: dadosDoAno[c]?.inssDedutivelCentavos ?? 0,
+            numeroDependentes: dadosDoAno[c]?.dependentes ?? 0,
+          ),
+      ],
+      tabelaPara: catalogo.tabelaVigentePara,
+      periodosQuitados: periodosQuitados,
+    ))
+      a.competencia: a,
+  };
+}
+
 /// Monta o painel da [competencia] (`'YYYY-MM'`).
 ///
 /// [dadosDoAno] traz os meses do MESMO ano-calendário (as chaves fora dele
@@ -130,36 +173,18 @@ PainelMensal montarPainelMensal({
     for (var m = 1; m <= int.parse(competencia.substring(5, 7)); m++)
       '$ano-${m.toString().padLeft(2, '0')}',
   ];
-  final comDados = [
-    for (final c in meses)
-      if ((dadosDoAno[c]?.lancamentosClassificados ?? 0) > 0 ||
-          (dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0) > 0 ||
-          periodosQuitados.contains(c))
-        c,
-  ];
 
-  final List<ApuracaoMensal> apuracoes;
+  final Map<String, ApuracaoMensal> porCompetencia;
   try {
-    apuracoes = apurarSequencia(
-      entradas: [
-        for (final c in comDados)
-          EntradaApuracao(
-            competencia: c,
-            receitaBrutaCentavos:
-                dadosDoAno[c]?.receitaTributavelCentavos ?? 0,
-            despesasDedutiveisCentavos:
-                dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0,
-            inssPagoCentavos: dadosDoAno[c]?.inssDedutivelCentavos ?? 0,
-            numeroDependentes: dadosDoAno[c]?.dependentes ?? 0,
-          ),
-      ],
-      tabelaPara: catalogo.tabelaVigentePara,
+    porCompetencia = apurarAno(
+      ate: competencia,
+      dadosDoAno: dadosDoAno,
+      catalogo: catalogo,
       periodosQuitados: periodosQuitados,
     );
   } on StateError catch (e) {
     return PainelSemTabela(competencia, e.message);
   }
-  final porCompetencia = {for (final a in apuracoes) a.competencia: a};
 
   String? vencimento;
   String? motivo;
