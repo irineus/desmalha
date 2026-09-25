@@ -1,8 +1,8 @@
 import 'package:desmalha_core/desmalha_core.dart';
 
 /// Um livro-caixa pequeno e FICTÍCIO, com uma linha de cada tabela que o
-/// backup leva de mais importante. CPF e nomes inventados; valores em
-/// centavos e pontos-base inteiros.
+/// backup leva de mais importante, no formato ATUAL ([formatoBackupAtual]).
+/// CPF e nomes inventados; valores em centavos e pontos-base inteiros.
 const List<DocumentoBackup> amostraBackup = [
   DocumentoBackup('perfil', {
     'id': 1,
@@ -51,16 +51,22 @@ const List<DocumentoBackup> amostraBackup = [
     'receita_bruta_centavos': 1140000,
     'aliquota_bp': 2750,
     'imposto_devido_centavos': 175786,
-    'cenario_aplicado': 'real',
+    'cenario_aplicado': 'deducoesReais',
+    'total_para_darf_centavos': 175786,
+    'status_darf': 'emitido',
   }),
   DocumentoBackup('darfs', {
     'id': 'darf-2026-08',
-    'apuracao_id': 'ap-2026-08',
     'codigo_receita': '0190',
     'competencia': '2026-08',
     'valor_centavos': 175786,
     'vencimento': '2026-09-30',
-    'status': 'gerado',
+    'status': 'gerada',
+  }),
+  DocumentoBackup('darf_competencias', {
+    'darf_id': 'darf-2026-08',
+    'competencia': '2026-08',
+    'apuracao_id': 'ap-2026-08',
   }),
   DocumentoBackup('aceites_termos_local', {
     'documento': 'termos_uso',

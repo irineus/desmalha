@@ -13,78 +13,16 @@
 --
 -- PRAGMA foreign_keys = ON é por conexão e vive no beforeOpen (banco.dart).
 -- Sem ele, toda FK deste arquivo é decorativa.
-
--- ─── Catálogo versionado (cache do servidor, só-leitura no app) ─────
-
-CREATE TABLE cat_versoes (
-    catalogo     TEXT NOT NULL PRIMARY KEY CHECK (catalogo IN
-                 ('irpf','parametros','feriados','rubricas','profissoes','parsers')),
-    versao       INTEGER NOT NULL,
-    publicado_em INTEGER NOT NULL,
-    baixado_em   INTEGER NOT NULL,
-    hash         TEXT NOT NULL
-) AS CatVersao;
-
-CREATE TABLE cat_tabelas_irpf (
-    id                          INTEGER NOT NULL PRIMARY KEY,
-    vigencia_inicio             TEXT NOT NULL,
-    vigencia_fim                TEXT,
-    fonte_legal                 TEXT NOT NULL,
-    deducao_dependente_centavos INTEGER NOT NULL
-) AS CatTabelaIrpf;
-
-CREATE TABLE cat_faixas_irpf (
-    tabela_id                INTEGER NOT NULL REFERENCES cat_tabelas_irpf(id),
-    ordem                    INTEGER NOT NULL,
-    limite_superior_centavos INTEGER,          -- NULL na última faixa
-    aliquota_bp              INTEGER NOT NULL, -- 27,5% = 2750
-    parcela_deduzir_centavos INTEGER NOT NULL,
-    PRIMARY KEY (tabela_id, ordem)
-) AS CatFaixaIrpf;
-
-CREATE TABLE cat_parametros_fiscais (
-    chave            TEXT NOT NULL,   -- 'desconto_simplificado_mensal',
-    vigencia_inicio  TEXT NOT NULL,   -- 'trava_home_office_pct', 'darf_minimo',
-    vigencia_fim     TEXT,            -- 'isencao_2026_teto', 'redutor_2026_*'
-    valor            INTEGER NOT NULL,
-    unidade          TEXT NOT NULL CHECK (unidade IN ('centavos','bp','inteiro')),
-    fonte_legal      TEXT NOT NULL,
-    status_validacao TEXT NOT NULL
-                     CHECK (status_validacao IN ('validado','pendente_contador')),
-    PRIMARY KEY (chave, vigencia_inicio)
-) AS CatParametroFiscal;
-
-CREATE TABLE cat_feriados_bancarios (
-    data TEXT NOT NULL PRIMARY KEY,
-    nome TEXT NOT NULL
-) AS CatFeriadoBancario;
-
-CREATE TABLE cat_rubricas (
-    codigo                   TEXT NOT NULL PRIMARY KEY,
-    nome                     TEXT NOT NULL,
-    dedutivel                INTEGER NOT NULL,
-    trava_home_office        INTEGER NOT NULL DEFAULT 0,
-    exige_validacao_contador INTEGER NOT NULL DEFAULT 0,
-    ordem                    INTEGER,
-    ativo                    INTEGER NOT NULL DEFAULT 1
-) AS CatRubrica;
-
-CREATE TABLE cat_profissoes (
-    codigo        TEXT NOT NULL PRIMARY KEY,
-    nome          TEXT NOT NULL,
-    regulamentada INTEGER NOT NULL,   -- ativa exigência de CPF do pagador
-    conselho      TEXT,
-    mei_permitido INTEGER,            -- NULL = validar; alerta de radar
-    ativo         INTEGER NOT NULL DEFAULT 1
-) AS CatProfissao;
-
-CREATE TABLE cat_perfis_parser (
-    codigo         TEXT NOT NULL PRIMARY KEY,   -- 'nubank_csv_v2', 'itau_ofx'
-    banco_nome     TEXT NOT NULL,
-    formato        TEXT NOT NULL CHECK (formato IN ('ofx','csv')),
-    definicao_json TEXT NOT NULL,
-    versao         INTEGER NOT NULL
-) AS CatPerfilParser;
+--
+-- ─── v2 (25/09/2026, cadeia 2, decisão 6 do owner) ─────────────────────
+-- * As tabelas `cat_*` saíram. O catálogo vive num cache JSON fora do banco
+--   (RepositorioCatalogo) desde 17/ago/2026; as `cat_*` nunca foram
+--   preenchidas e as FKs para elas travavam gravar despesa (rubrica) e
+--   apuração (tabela do IRPF). Rubrica, profissão e tabela viram TEXT com o
+--   id do catálogo, conferido no app contra o catálogo carregado.
+-- * Os CHECKs de estado listam exatamente os `.name` dos enums do
+--   desmalha_core (estados_persistidos.dart, CenarioVencedor, StatusDarf).
+--   Um teste lê este arquivo e reprova divergência.
 
 -- ─── Perfil e conformidade ──────────────────────────────────────────
 
@@ -93,7 +31,7 @@ CREATE TABLE perfil (
     usuario_remoto_id   TEXT,            -- auth.users.id; NULL antes do login
     nome                TEXT NOT NULL,
     cpf                 TEXT NOT NULL,   -- claro dentro do arquivo cifrado
-    profissao_codigo    TEXT REFERENCES cat_profissoes(codigo),
+    profissao_codigo    TEXT,            -- id de `profissao` no catálogo
     exige_cpf_pagador   INTEGER NOT NULL DEFAULT 0,
     onboarding_completo INTEGER NOT NULL DEFAULT 0,
     codigo_recuperacao_confirmado_em INTEGER,
@@ -192,18 +130,32 @@ END;
 
 -- ─── Camada fiscal ──────────────────────────────────────────────────
 
+-- Quem manda o dinheiro. Sem documento, a chave é o nome extraído da
+-- descrição e normalizado pelo desmalha_core (`chave_nome`); com CPF ou CNPJ,
+-- o documento vira a chave forte e une as grafias do mesmo pagador. Duas
+-- grafias iguais com documentos diferentes (homônimos) convivem.
 CREATE TABLE remetentes (
     id                   TEXT NOT NULL PRIMARY KEY,
     nome                 TEXT NOT NULL,
+    chave_nome           TEXT NOT NULL,
     cpf                  TEXT,
-    classificacao_padrao TEXT CHECK (classificacao_padrao IN
-                         ('tributavel','pessoal','reembolso','repasse_terceiros')),
+    cnpj                 TEXT,             -- recebido de PJ (rodada 4, P1)
+    -- Regra por remetente (decisão 4): proposta nasce na 1ª classificação;
+    -- confirmada, aplica-se a lançamentos NOVOS como `regraRemetente`.
+    regra_classificacao  TEXT CHECK (regra_classificacao IN
+                         ('rendimentoPf','recebidoPj','pessoal','reembolso','repasse')),
+    regra_confirmada_em  INTEGER,
     titular_remetente_id TEXT REFERENCES remetentes(id),  -- mãe paga a sessão do filho
     observacoes          TEXT,
-    criado_em            INTEGER NOT NULL
+    criado_em            INTEGER NOT NULL,
+    CHECK (cpf IS NULL OR cnpj IS NULL),
+    CHECK (regra_confirmada_em IS NULL OR regra_classificacao IS NOT NULL)
 ) AS Remetente;
 
 CREATE UNIQUE INDEX uq_remetentes_cpf ON remetentes (cpf) WHERE cpf IS NOT NULL;
+CREATE UNIQUE INDEX uq_remetentes_cnpj ON remetentes (cnpj) WHERE cnpj IS NOT NULL;
+CREATE UNIQUE INDEX uq_remetentes_chave_nome
+    ON remetentes (chave_nome) WHERE cpf IS NULL AND cnpj IS NULL;
 
 CREATE TABLE apuracoes_mensais (
     id              TEXT NOT NULL PRIMARY KEY,
@@ -225,7 +177,8 @@ CREATE TABLE apuracoes_mensais (
     -- os dois cenários, ambos gravados; o app mostra por que escolheu
     imposto_cenario_real_centavos         INTEGER NOT NULL,
     imposto_cenario_simplificado_centavos INTEGER NOT NULL,
-    cenario_aplicado TEXT NOT NULL CHECK (cenario_aplicado IN ('real','simplificado')),
+    cenario_aplicado TEXT NOT NULL
+                     CHECK (cenario_aplicado IN ('deducoesReais','descontoSimplificado')),
 
     base_calculo_centavos       INTEGER NOT NULL,
     aliquota_bp                 INTEGER NOT NULL,
@@ -235,9 +188,13 @@ CREATE TABLE apuracoes_mensais (
     imposto_devido_centavos     INTEGER NOT NULL,            -- incide sobre o IMPOSTO
     imposto_diferido_anterior_centavos INTEGER NOT NULL DEFAULT 0,  -- mínimo do DARF
     imposto_diferido_centavos          INTEGER NOT NULL DEFAULT 0,
+    -- DARF mínimo: total do mês (devido + diferido anterior) e o destino dele.
+    total_para_darf_centavos INTEGER NOT NULL DEFAULT 0,
+    status_darf TEXT NOT NULL CHECK (status_darf IN
+                ('emitido','acumulaParaProximoMes','residuoParaDirpf','semImposto')),
     isento                      INTEGER NOT NULL DEFAULT 0,
 
-    tabela_irpf_id      INTEGER NOT NULL REFERENCES cat_tabelas_irpf(id),
+    tabela_irpf_id      TEXT NOT NULL,        -- id da tabela no catálogo
     catalogo_versoes_snapshot TEXT NOT NULL,  -- JSON: versão de cada catálogo usado
     parametros_snapshot TEXT NOT NULL,        -- JSON
     motor_versao        TEXT NOT NULL,        -- semver do motor
@@ -257,16 +214,37 @@ CREATE TABLE lancamentos (
     data_recebimento     TEXT NOT NULL,
     valor_centavos       INTEGER NOT NULL CHECK (valor_centavos > 0),
     classificacao        TEXT NOT NULL CHECK (classificacao IN
-                         ('tributavel','pessoal','reembolso','repasse_terceiros')),
+                         ('rendimentoPf','recebidoPj','pessoal','reembolso','repasse')),
+    -- Reembolso e repasse (rodadas 2b e 4, P2): em nome de quem está o
+    -- comprovante e, no CPF do profissional, se o custo é essencial à
+    -- atividade. Sem essas respostas o lançamento não é reembolso/repasse.
+    comprovante_titular  TEXT CHECK (comprovante_titular IN ('cliente','profissional')),
+    custo_essencial      INTEGER CHECK (custo_essencial IN (0, 1)),
     remetente_id         TEXT REFERENCES remetentes(id),
     cpf_pagador          TEXT,   -- snapshot: e-CAC exige CPF POR LANÇAMENTO
+    cnpj_pagador         TEXT,   -- recebido de PJ (P1): vai ao relatório anual
     nome_pagador         TEXT,   -- e o cadastro do remetente pode mudar depois
+    -- Falta de documento é pendência documental, nunca dispensa (rodada 2b).
+    status_documento_pagador TEXT NOT NULL DEFAULT 'naoExigido'
+                         CHECK (status_documento_pagador IN
+                         ('informado','pendente','naoExigido')),
+    -- Profissão de saúde: quem foi atendido. NULL = o próprio pagador.
+    cpf_beneficiario     TEXT,
+    nome_beneficiario    TEXT,
     origem_classificacao TEXT NOT NULL DEFAULT 'manual'
                          CHECK (origem_classificacao IN
-                         ('manual','sugestao_aceita','regra_remetente')),
+                         ('manual','sugestaoAceita','regraRemetente')),
+    -- NULL só em `regraRemetente` ainda não tocado: aparece na fila como
+    -- "proposto pela regra" até o toque (decisão 4).
+    confirmada_em        INTEGER,
     apuracao_id          TEXT REFERENCES apuracoes_mensais(id),
     criado_em            INTEGER NOT NULL,
-    atualizado_em        INTEGER NOT NULL
+    atualizado_em        INTEGER NOT NULL,
+    CHECK ((classificacao IN ('reembolso','repasse')) = (comprovante_titular IS NOT NULL)),
+    CHECK ((COALESCE(comprovante_titular, '') = 'profissional') = (custo_essencial IS NOT NULL)),
+    CHECK (status_documento_pagador != 'informado'
+           OR cpf_pagador IS NOT NULL OR cnpj_pagador IS NOT NULL),
+    CHECK (confirmada_em IS NOT NULL OR origem_classificacao = 'regraRemetente')
 ) AS Lancamento;
 
 CREATE INDEX idx_lancamentos_comp ON lancamentos (competencia);
@@ -282,27 +260,50 @@ CREATE TABLE historico_classificacao (
 
 CREATE TABLE despesas_livro_caixa (
     id                TEXT NOT NULL PRIMARY KEY,
-    rubrica_codigo    TEXT NOT NULL REFERENCES cat_rubricas(codigo),
+    rubrica_codigo    TEXT NOT NULL,            -- id de `rubrica` no catálogo
     competencia       TEXT NOT NULL,
-    data_pagamento    TEXT NOT NULL,            -- regime de caixa
+    -- Regime de caixa: data do PAGAMENTO; no cartão de crédito, data da
+    -- COMPRA (rodada 4b, P5) — a data da fatura não entra no cálculo.
+    data_pagamento    TEXT NOT NULL,
+    forma_pagamento   TEXT NOT NULL DEFAULT 'outra'
+                      CHECK (forma_pagamento IN
+                      ('extrato','dinheiro','cartaoCredito','outra')),
     valor_centavos    INTEGER NOT NULL CHECK (valor_centavos > 0),
     valor_dedutivel_centavos INTEGER NOT NULL,  -- após trava de home office
     descricao         TEXT,
     home_office       INTEGER NOT NULL DEFAULT 0,
     anexo_path        TEXT,                     -- caminho local; Fase 2
+    -- Débito do extrato que virou despesa (decisão 5).
+    transacao_id      TEXT UNIQUE REFERENCES transacoes(id),
+    -- Despesa nascida de reembolso/repasse `receitaComDespesa` (P2/P3).
+    lancamento_origem_id TEXT UNIQUE REFERENCES lancamentos(id),
+    -- Linha exclusiva da atividade (rodada 4b): quando a pessoa declarou.
+    exclusividade_declarada_em INTEGER,
     apuracao_id       TEXT REFERENCES apuracoes_mensais(id),
-    criado_em         INTEGER NOT NULL
+    criado_em         INTEGER NOT NULL,
+    CHECK ((forma_pagamento = 'extrato') = (transacao_id IS NOT NULL))
 ) AS DespesaLivroCaixa;
 
 CREATE INDEX idx_despesas_comp ON despesas_livro_caixa (competencia);
 
+-- "Você pagou INSS em <mês>?" (M1). `naoPago` é resposta gravada, diferente
+-- de não ter respondido. Guia em atraso: só o principal deduz (rodada 4, P6);
+-- multa e juros ficam em `acrescimos_centavos`.
 CREATE TABLE pagamentos_inss (
     id             TEXT NOT NULL PRIMARY KEY,
     competencia    TEXT NOT NULL,               -- mês do PAGAMENTO efetivo
-    valor_centavos INTEGER NOT NULL CHECK (valor_centavos > 0),
+    situacao       TEXT NOT NULL DEFAULT 'pago'
+                   CHECK (situacao IN ('pago','naoPago')),
+    valor_centavos INTEGER NOT NULL,            -- principal
+    acrescimos_centavos INTEGER NOT NULL DEFAULT 0 CHECK (acrescimos_centavos >= 0),
     observacao     TEXT,
-    criado_em      INTEGER NOT NULL
+    criado_em      INTEGER NOT NULL,
+    CHECK ((situacao = 'pago' AND valor_centavos > 0)
+        OR (situacao = 'naoPago' AND valor_centavos = 0 AND acrescimos_centavos = 0))
 ) AS PagamentoInss;
+
+CREATE UNIQUE INDEX uq_inss_nao_pago
+    ON pagamentos_inss (competencia) WHERE situacao = 'naoPago';
 
 CREATE TABLE dependentes (
     id              TEXT NOT NULL PRIMARY KEY,
@@ -315,23 +316,36 @@ CREATE TABLE dependentes (
 
 -- ─── Apuração e DARF ────────────────────────────────────────────────
 
+-- Uma guia pode cobrir várias competências (DARF mínimo, N:1): a ligação é
+-- `darf_competencias`. `competencia` aqui é o período de apuração da guia —
+-- o ÚLTIMO mês absorvido. "Vencida" não é estado: é o vencimento contra o
+-- relógio.
 CREATE TABLE darfs (
     id                  TEXT NOT NULL PRIMARY KEY,
-    apuracao_id         TEXT NOT NULL REFERENCES apuracoes_mensais(id),
     codigo_receita      TEXT NOT NULL DEFAULT '0190',
     competencia         TEXT NOT NULL,
-    valor_centavos      INTEGER NOT NULL,
+    valor_centavos      INTEGER NOT NULL,     -- principal
     vencimento          TEXT NOT NULL,   -- último dia útil do mês seguinte, antecipado
     vencimento_antecipado INTEGER NOT NULL DEFAULT 0,
     codigo_barras       TEXT,
-    status              TEXT NOT NULL DEFAULT 'gerado'
-                        CHECK (status IN ('gerado','pago','vencido','cancelado')),
+    status              TEXT NOT NULL DEFAULT 'gerada'
+                        CHECK (status IN ('gerada','paga','cancelada')),
     pago_em             TEXT,
-    valor_pago_centavos INTEGER,          -- p/ o relatório anual fechar ao centavo
+    valor_pago_centavos INTEGER,          -- principal pago (P11)
+    acrescimos_pagos_centavos INTEGER NOT NULL DEFAULT 0,  -- multa e juros
     criado_em           INTEGER NOT NULL
 ) AS DarfLocal;
 
-CREATE INDEX idx_darfs_venc ON darfs (vencimento) WHERE status = 'gerado';
+CREATE INDEX idx_darfs_venc ON darfs (vencimento) WHERE status = 'gerada';
+
+CREATE TABLE darf_competencias (
+    darf_id     TEXT NOT NULL REFERENCES darfs(id),
+    competencia TEXT NOT NULL,
+    apuracao_id TEXT NOT NULL REFERENCES apuracoes_mensais(id),
+    PRIMARY KEY (darf_id, competencia)
+) AS DarfCompetencia;
+
+CREATE INDEX idx_darf_competencias_comp ON darf_competencias (competencia);
 
 -- ─── Operação local ─────────────────────────────────────────────────
 

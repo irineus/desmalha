@@ -1,0 +1,2848 @@
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": false
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "perfil",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY CHECK (id = 1)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "usuario_remoto_id",
+            "getter_name": "usuarioRemotoId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "nome",
+            "getter_name": "nome",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cpf",
+            "getter_name": "cpf",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "profissao_codigo",
+            "getter_name": "profissaoCodigo",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "exige_cpf_pagador",
+            "getter_name": "exigeCpfPagador",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "onboarding_completo",
+            "getter_name": "onboardingCompleto",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "codigo_recuperacao_confirmado_em",
+            "getter_name": "codigoRecuperacaoConfirmadoEm",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "atualizado_em",
+            "getter_name": "atualizadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 1,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "aceites_termos_local",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "documento",
+            "getter_name": "documento",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (documento IN ('termos_uso', 'politica_privacidade'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "versao",
+            "getter_name": "versao",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "aceito_em",
+            "getter_name": "aceitoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "sincronizado",
+            "getter_name": "sincronizado",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "PRIMARY KEY(documento, versao)"
+        ],
+        "explicit_pk": [
+          "documento",
+          "versao"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "contas_bancarias",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "apelido",
+            "getter_name": "apelido",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "banco_codigo",
+            "getter_name": "bancoCodigo",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "origem",
+            "getter_name": "origem",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'manual' CHECK (origem IN ('manual', 'open_finance'))",
+            "default_dart": "const CustomExpression('\\'manual\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "ativa",
+            "getter_name": "ativa",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 1",
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 3,
+      "references": [
+        2
+      ],
+      "type": "table",
+      "data": {
+        "name": "importacoes",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "conta_id",
+            "getter_name": "contaId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL REFERENCES contas_bancarias(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "contas_bancarias",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "formato",
+            "getter_name": "formato",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (formato IN ('ofx', 'csv'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "nome_arquivo",
+            "getter_name": "nomeArquivo",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "hash_arquivo",
+            "getter_name": "hashArquivo",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "parser_codigo",
+            "getter_name": "parserCodigo",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "parser_versao",
+            "getter_name": "parserVersao",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "previa_json",
+            "getter_name": "previaJson",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "periodo_inicio",
+            "getter_name": "periodoInicio",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "periodo_fim",
+            "getter_name": "periodoFim",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "total_linhas",
+            "getter_name": "totalLinhas",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "total_importadas",
+            "getter_name": "totalImportadas",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "total_duplicadas",
+            "getter_name": "totalDuplicadas",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "total_ignoradas",
+            "getter_name": "totalIgnoradas",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'previa' CHECK (status IN ('previa', 'confirmada', 'descartada', 'erro'))",
+            "default_dart": "const CustomExpression('\\'previa\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "erro_detalhe",
+            "getter_name": "erroDetalhe",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 4,
+      "references": [
+        3
+      ],
+      "type": "index",
+      "data": {
+        "on": 3,
+        "name": "uq_importacao_hash",
+        "sql": "CREATE UNIQUE INDEX uq_importacao_hash\r\n    ON importacoes (hash_arquivo) WHERE status = 'confirmada';",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 5,
+      "references": [
+        2,
+        3
+      ],
+      "type": "table",
+      "data": {
+        "name": "transacoes",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "conta_id",
+            "getter_name": "contaId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL REFERENCES contas_bancarias(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "contas_bancarias",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "importacao_id",
+            "getter_name": "importacaoId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "REFERENCES importacoes(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "importacoes",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "data",
+            "getter_name": "data",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "valor_centavos",
+            "getter_name": "valorCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "descricao_raw",
+            "getter_name": "descricaoRaw",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "fitid",
+            "getter_name": "fitid",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "contraparte_nome_raw",
+            "getter_name": "contraparteNomeRaw",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "contraparte_doc",
+            "getter_name": "contraparteDoc",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "contraparte_tipo",
+            "getter_name": "contraparteTipo",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "CHECK (contraparte_tipo IN ('pf', 'pj', 'desconhecido'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 6,
+      "references": [
+        5
+      ],
+      "type": "index",
+      "data": {
+        "on": 5,
+        "name": "idx_transacoes_fitid",
+        "sql": "CREATE INDEX idx_transacoes_fitid\r\n    ON transacoes (conta_id, fitid) WHERE fitid IS NOT NULL;",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 7,
+      "references": [
+        5
+      ],
+      "type": "index",
+      "data": {
+        "on": 5,
+        "name": "idx_transacoes_data",
+        "sql": "CREATE INDEX idx_transacoes_data ON transacoes (data);",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 8,
+      "references": [
+        5
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 5,
+        "references_in_body": [
+          5
+        ],
+        "name": "trg_transacoes_imutaveis",
+        "sql": "CREATE TRIGGER trg_transacoes_imutaveis BEFORE UPDATE ON transacoes\r\nBEGIN\r\n    SELECT RAISE(ABORT, 'transacao é imutável: reclassifique o lançamento');\r\nEND;"
+      }
+    },
+    {
+      "id": 9,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "remetentes",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "nome",
+            "getter_name": "nome",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "chave_nome",
+            "getter_name": "chaveNome",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cpf",
+            "getter_name": "cpf",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cnpj",
+            "getter_name": "cnpj",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "regra_classificacao",
+            "getter_name": "regraClassificacao",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "CHECK (regra_classificacao IN ('rendimentoPf', 'recebidoPj', 'pessoal', 'reembolso', 'repasse'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "regra_confirmada_em",
+            "getter_name": "regraConfirmadaEm",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "titular_remetente_id",
+            "getter_name": "titularRemetenteId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "REFERENCES remetentes(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "remetentes",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "observacoes",
+            "getter_name": "observacoes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK(cpf IS NULL OR cnpj IS NULL)",
+          "CHECK(regra_confirmada_em IS NULL OR regra_classificacao IS NOT NULL)"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "references": [
+        9
+      ],
+      "type": "index",
+      "data": {
+        "on": 9,
+        "name": "uq_remetentes_cpf",
+        "sql": "CREATE UNIQUE INDEX uq_remetentes_cpf ON remetentes (cpf) WHERE cpf IS NOT NULL;",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 11,
+      "references": [
+        9
+      ],
+      "type": "index",
+      "data": {
+        "on": 9,
+        "name": "uq_remetentes_cnpj",
+        "sql": "CREATE UNIQUE INDEX uq_remetentes_cnpj ON remetentes (cnpj) WHERE cnpj IS NOT NULL;",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 12,
+      "references": [
+        9
+      ],
+      "type": "index",
+      "data": {
+        "on": 9,
+        "name": "uq_remetentes_chave_nome",
+        "sql": "CREATE UNIQUE INDEX uq_remetentes_chave_nome\r\n    ON remetentes (chave_nome) WHERE cpf IS NULL AND cnpj IS NULL;",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 13,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "apuracoes_mensais",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "competencia",
+            "getter_name": "competencia",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "versao",
+            "getter_name": "versao",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 1",
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'rascunho' CHECK (status IN ('rascunho', 'fechada', 'substituida'))",
+            "default_dart": "const CustomExpression('\\'rascunho\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "receita_bruta_centavos",
+            "getter_name": "receitaBrutaCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "despesas_livro_caixa_centavos",
+            "getter_name": "despesasLivroCaixaCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "saldo_negativo_anterior_centavos",
+            "getter_name": "saldoNegativoAnteriorCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "saldo_negativo_utilizado_centavos",
+            "getter_name": "saldoNegativoUtilizadoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "saldo_negativo_transportado_centavos",
+            "getter_name": "saldoNegativoTransportadoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "inss_centavos",
+            "getter_name": "inssCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "qtde_dependentes",
+            "getter_name": "qtdeDependentes",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deducao_dependentes_centavos",
+            "getter_name": "deducaoDependentesCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "desconto_simplificado_centavos",
+            "getter_name": "descontoSimplificadoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "imposto_cenario_real_centavos",
+            "getter_name": "impostoCenarioRealCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "imposto_cenario_simplificado_centavos",
+            "getter_name": "impostoCenarioSimplificadoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cenario_aplicado",
+            "getter_name": "cenarioAplicado",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (cenario_aplicado IN ('deducoesReais', 'descontoSimplificado'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "base_calculo_centavos",
+            "getter_name": "baseCalculoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "aliquota_bp",
+            "getter_name": "aliquotaBp",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "parcela_deduzir_centavos",
+            "getter_name": "parcelaDeduzirCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "imposto_apurado_centavos",
+            "getter_name": "impostoApuradoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "redutor_lei_centavos",
+            "getter_name": "redutorLeiCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "imposto_devido_centavos",
+            "getter_name": "impostoDevidoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "imposto_diferido_anterior_centavos",
+            "getter_name": "impostoDiferidoAnteriorCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "imposto_diferido_centavos",
+            "getter_name": "impostoDiferidoCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "total_para_darf_centavos",
+            "getter_name": "totalParaDarfCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status_darf",
+            "getter_name": "statusDarf",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (status_darf IN ('emitido', 'acumulaParaProximoMes', 'residuoParaDirpf', 'semImposto'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "isento",
+            "getter_name": "isento",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "tabela_irpf_id",
+            "getter_name": "tabelaIrpfId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "catalogo_versoes_snapshot",
+            "getter_name": "catalogoVersoesSnapshot",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "parametros_snapshot",
+            "getter_name": "parametrosSnapshot",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "motor_versao",
+            "getter_name": "motorVersao",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "app_versao",
+            "getter_name": "appVersao",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "calculada_em",
+            "getter_name": "calculadaEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "fechada_em",
+            "getter_name": "fechadaEm",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "UNIQUE(competencia, versao)"
+        ],
+        "unique_keys": [
+          [
+            "competencia",
+            "versao"
+          ]
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "references": [
+        13
+      ],
+      "type": "index",
+      "data": {
+        "on": 13,
+        "name": "uq_apuracao_ativa",
+        "sql": "CREATE UNIQUE INDEX uq_apuracao_ativa\r\n    ON apuracoes_mensais (competencia) WHERE status != 'substituida';",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 15,
+      "references": [
+        5,
+        9,
+        13
+      ],
+      "type": "table",
+      "data": {
+        "name": "lancamentos",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "transacao_id",
+            "getter_name": "transacaoId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "UNIQUE REFERENCES transacoes(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique",
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "transacoes",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "competencia",
+            "getter_name": "competencia",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "data_recebimento",
+            "getter_name": "dataRecebimento",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "valor_centavos",
+            "getter_name": "valorCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (valor_centavos > 0)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "classificacao",
+            "getter_name": "classificacao",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (classificacao IN ('rendimentoPf', 'recebidoPj', 'pessoal', 'reembolso', 'repasse'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "comprovante_titular",
+            "getter_name": "comprovanteTitular",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "CHECK (comprovante_titular IN ('cliente', 'profissional'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "custo_essencial",
+            "getter_name": "custoEssencial",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "CHECK (custo_essencial IN (0, 1))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "remetente_id",
+            "getter_name": "remetenteId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "REFERENCES remetentes(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "remetentes",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "cpf_pagador",
+            "getter_name": "cpfPagador",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cnpj_pagador",
+            "getter_name": "cnpjPagador",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "nome_pagador",
+            "getter_name": "nomePagador",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status_documento_pagador",
+            "getter_name": "statusDocumentoPagador",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'naoExigido' CHECK (status_documento_pagador IN ('informado', 'pendente', 'naoExigido'))",
+            "default_dart": "const CustomExpression('\\'naoExigido\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cpf_beneficiario",
+            "getter_name": "cpfBeneficiario",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "nome_beneficiario",
+            "getter_name": "nomeBeneficiario",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "origem_classificacao",
+            "getter_name": "origemClassificacao",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'manual' CHECK (origem_classificacao IN ('manual', 'sugestaoAceita', 'regraRemetente'))",
+            "default_dart": "const CustomExpression('\\'manual\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "confirmada_em",
+            "getter_name": "confirmadaEm",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "apuracao_id",
+            "getter_name": "apuracaoId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "REFERENCES apuracoes_mensais(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "apuracoes_mensais",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "atualizado_em",
+            "getter_name": "atualizadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK((classificacao IN ('reembolso', 'repasse'))=(comprovante_titular IS NOT NULL))",
+          "CHECK((COALESCE(comprovante_titular, '') = 'profissional')=(custo_essencial IS NOT NULL))",
+          "CHECK(status_documento_pagador != 'informado' OR cpf_pagador IS NOT NULL OR cnpj_pagador IS NOT NULL)",
+          "CHECK(confirmada_em IS NOT NULL OR origem_classificacao = 'regraRemetente')"
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "references": [
+        15
+      ],
+      "type": "index",
+      "data": {
+        "on": 15,
+        "name": "idx_lancamentos_comp",
+        "sql": "CREATE INDEX idx_lancamentos_comp ON lancamentos (competencia);",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 17,
+      "references": [
+        15
+      ],
+      "type": "table",
+      "data": {
+        "name": "historico_classificacao",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY AUTOINCREMENT",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "lancamento_id",
+            "getter_name": "lancamentoId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL REFERENCES lancamentos(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "lancamentos",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "de",
+            "getter_name": "de",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "para",
+            "getter_name": "para",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "motivo",
+            "getter_name": "motivo",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 18,
+      "references": [
+        5,
+        15,
+        13
+      ],
+      "type": "table",
+      "data": {
+        "name": "despesas_livro_caixa",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "rubrica_codigo",
+            "getter_name": "rubricaCodigo",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "competencia",
+            "getter_name": "competencia",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "data_pagamento",
+            "getter_name": "dataPagamento",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "forma_pagamento",
+            "getter_name": "formaPagamento",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'outra' CHECK (forma_pagamento IN ('extrato', 'dinheiro', 'cartaoCredito', 'outra'))",
+            "default_dart": "const CustomExpression('\\'outra\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "valor_centavos",
+            "getter_name": "valorCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (valor_centavos > 0)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "valor_dedutivel_centavos",
+            "getter_name": "valorDedutivelCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "descricao",
+            "getter_name": "descricao",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "home_office",
+            "getter_name": "homeOffice",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "anexo_path",
+            "getter_name": "anexoPath",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "transacao_id",
+            "getter_name": "transacaoId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "UNIQUE REFERENCES transacoes(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique",
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "transacoes",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "lancamento_origem_id",
+            "getter_name": "lancamentoOrigemId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "UNIQUE REFERENCES lancamentos(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique",
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "lancamentos",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "exclusividade_declarada_em",
+            "getter_name": "exclusividadeDeclaradaEm",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "apuracao_id",
+            "getter_name": "apuracaoId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "REFERENCES apuracoes_mensais(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "apuracoes_mensais",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK((forma_pagamento = 'extrato')=(transacao_id IS NOT NULL))"
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "references": [
+        18
+      ],
+      "type": "index",
+      "data": {
+        "on": 18,
+        "name": "idx_despesas_comp",
+        "sql": "CREATE INDEX idx_despesas_comp ON despesas_livro_caixa (competencia);",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 20,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "pagamentos_inss",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "competencia",
+            "getter_name": "competencia",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "situacao",
+            "getter_name": "situacao",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'pago' CHECK (situacao IN ('pago', 'naoPago'))",
+            "default_dart": "const CustomExpression('\\'pago\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "valor_centavos",
+            "getter_name": "valorCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "acrescimos_centavos",
+            "getter_name": "acrescimosCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0 CHECK (acrescimos_centavos >= 0)",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "observacao",
+            "getter_name": "observacao",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK((situacao = 'pago' AND valor_centavos > 0)OR(situacao = 'naoPago' AND valor_centavos = 0 AND acrescimos_centavos = 0))"
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "references": [
+        20
+      ],
+      "type": "index",
+      "data": {
+        "on": 20,
+        "name": "uq_inss_nao_pago",
+        "sql": "CREATE UNIQUE INDEX uq_inss_nao_pago\r\n    ON pagamentos_inss (competencia) WHERE situacao = 'naoPago';",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 22,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "dependentes",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "nome",
+            "getter_name": "nome",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "vigencia_inicio",
+            "getter_name": "vigenciaInicio",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "vigencia_fim",
+            "getter_name": "vigenciaFim",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 23,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "darfs",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "codigo_receita",
+            "getter_name": "codigoReceita",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT '0190'",
+            "default_dart": "const CustomExpression('\\'0190\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "competencia",
+            "getter_name": "competencia",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "valor_centavos",
+            "getter_name": "valorCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "vencimento",
+            "getter_name": "vencimento",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "vencimento_antecipado",
+            "getter_name": "vencimentoAntecipado",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "codigo_barras",
+            "getter_name": "codigoBarras",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'gerada' CHECK (status IN ('gerada', 'paga', 'cancelada'))",
+            "default_dart": "const CustomExpression('\\'gerada\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "pago_em",
+            "getter_name": "pagoEm",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "valor_pago_centavos",
+            "getter_name": "valorPagoCentavos",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "acrescimos_pagos_centavos",
+            "getter_name": "acrescimosPagosCentavos",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 0",
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 24,
+      "references": [
+        23
+      ],
+      "type": "index",
+      "data": {
+        "on": 23,
+        "name": "idx_darfs_venc",
+        "sql": "CREATE INDEX idx_darfs_venc ON darfs (vencimento) WHERE status = 'gerada';",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 25,
+      "references": [
+        23,
+        13
+      ],
+      "type": "table",
+      "data": {
+        "name": "darf_competencias",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "darf_id",
+            "getter_name": "darfId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL REFERENCES darfs(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "darfs",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          },
+          {
+            "name": "competencia",
+            "getter_name": "competencia",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "apuracao_id",
+            "getter_name": "apuracaoId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL REFERENCES apuracoes_mensais(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "apuracoes_mensais",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "PRIMARY KEY(darf_id, competencia)"
+        ],
+        "explicit_pk": [
+          "darf_id",
+          "competencia"
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "references": [
+        25
+      ],
+      "type": "index",
+      "data": {
+        "on": 25,
+        "name": "idx_darf_competencias_comp",
+        "sql": "CREATE INDEX idx_darf_competencias_comp ON darf_competencias (competencia);",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 27,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "notificacoes_locais",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "tipo",
+            "getter_name": "tipo",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (tipo IN ('lembrete_darf', 'lembrete_importacao', 'radar_pf_cnpj', 'backup', 'sistema'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "referencia_id",
+            "getter_name": "referenciaId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "agendada_para",
+            "getter_name": "agendadaPara",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "os_notif_id",
+            "getter_name": "osNotifId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL DEFAULT 'agendada' CHECK (status IN ('agendada', 'disparada', 'cancelada'))",
+            "default_dart": "const CustomExpression('\\'agendada\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 28,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "backup_estado",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY CHECK (id = 1)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "ultima_seq",
+            "getter_name": "ultimaSeq",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "ultimo_hash",
+            "getter_name": "ultimoHash",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "ultimo_em",
+            "getter_name": "ultimoEm",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "formato_versao",
+            "getter_name": "formatoVersao",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "tamanho_bytes",
+            "getter_name": "tamanhoBytes",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "resultado",
+            "getter_name": "resultado",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "CHECK (resultado IN ('ok', 'falha', 'pendente'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "erro_detalhe",
+            "getter_name": "erroDetalhe",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 29,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "envios_suporte",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "primary-key"
+            ]
+          },
+          {
+            "name": "arquivo_nome",
+            "getter_name": "arquivoNome",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "motivo",
+            "getter_name": "motivo",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "consentimento_em",
+            "getter_name": "consentimentoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "enviado_em",
+            "getter_name": "enviadoEm",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "path_remoto",
+            "getter_name": "pathRemoto",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "expira_em",
+            "getter_name": "expiraEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 30,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "auditoria",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL PRIMARY KEY AUTOINCREMENT",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "entidade",
+            "getter_name": "entidade",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "entidade_id",
+            "getter_name": "entidadeId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "acao",
+            "getter_name": "acao",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL CHECK (acao IN ('criar', 'atualizar', 'excluir', 'recalcular'))",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "detalhe",
+            "getter_name": "detalhe",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "criado_em",
+            "getter_name": "criadoEm",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "perfil",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"perfil\" (\"id\" INTEGER NOT NULL PRIMARY KEY CHECK (id = 1), \"usuario_remoto_id\" TEXT, \"nome\" TEXT NOT NULL, \"cpf\" TEXT NOT NULL, \"profissao_codigo\" TEXT, \"exige_cpf_pagador\" INTEGER NOT NULL DEFAULT 0, \"onboarding_completo\" INTEGER NOT NULL DEFAULT 0, \"codigo_recuperacao_confirmado_em\" INTEGER, \"criado_em\" INTEGER NOT NULL, \"atualizado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "aceites_termos_local",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"aceites_termos_local\" (\"documento\" TEXT NOT NULL CHECK (documento IN ('termos_uso', 'politica_privacidade')), \"versao\" TEXT NOT NULL, \"aceito_em\" INTEGER NOT NULL, \"sincronizado\" INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(documento, versao));"
+        }
+      ]
+    },
+    {
+      "name": "contas_bancarias",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"contas_bancarias\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"apelido\" TEXT NOT NULL, \"banco_codigo\" TEXT, \"origem\" TEXT NOT NULL DEFAULT 'manual' CHECK (origem IN ('manual', 'open_finance')), \"ativa\" INTEGER NOT NULL DEFAULT 1, \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "importacoes",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"importacoes\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"conta_id\" TEXT NOT NULL REFERENCES contas_bancarias(id), \"formato\" TEXT NOT NULL CHECK (formato IN ('ofx', 'csv')), \"nome_arquivo\" TEXT NOT NULL, \"hash_arquivo\" TEXT NOT NULL, \"parser_codigo\" TEXT, \"parser_versao\" INTEGER, \"previa_json\" TEXT, \"periodo_inicio\" TEXT, \"periodo_fim\" TEXT, \"total_linhas\" INTEGER, \"total_importadas\" INTEGER, \"total_duplicadas\" INTEGER, \"total_ignoradas\" INTEGER, \"status\" TEXT NOT NULL DEFAULT 'previa' CHECK (status IN ('previa', 'confirmada', 'descartada', 'erro')), \"erro_detalhe\" TEXT, \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "uq_importacao_hash",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX uq_importacao_hash ON importacoes (hash_arquivo) WHERE status = 'confirmada'"
+        }
+      ]
+    },
+    {
+      "name": "transacoes",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"transacoes\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"conta_id\" TEXT NOT NULL REFERENCES contas_bancarias(id), \"importacao_id\" TEXT REFERENCES importacoes(id), \"data\" TEXT NOT NULL, \"valor_centavos\" INTEGER NOT NULL, \"descricao_raw\" TEXT NOT NULL, \"fitid\" TEXT, \"contraparte_nome_raw\" TEXT, \"contraparte_doc\" TEXT, \"contraparte_tipo\" TEXT CHECK (contraparte_tipo IN ('pf', 'pj', 'desconhecido')), \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "idx_transacoes_fitid",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_transacoes_fitid ON transacoes (conta_id, fitid) WHERE fitid IS NOT NULL"
+        }
+      ]
+    },
+    {
+      "name": "idx_transacoes_data",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_transacoes_data ON transacoes (data)"
+        }
+      ]
+    },
+    {
+      "name": "trg_transacoes_imutaveis",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER trg_transacoes_imutaveis BEFORE UPDATE ON transacoes BEGIN SELECT RAISE (ABORT, 'transacao é imutável: reclassifique o lançamento');END"
+        }
+      ]
+    },
+    {
+      "name": "remetentes",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"remetentes\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"nome\" TEXT NOT NULL, \"chave_nome\" TEXT NOT NULL, \"cpf\" TEXT, \"cnpj\" TEXT, \"regra_classificacao\" TEXT CHECK (regra_classificacao IN ('rendimentoPf', 'recebidoPj', 'pessoal', 'reembolso', 'repasse')), \"regra_confirmada_em\" INTEGER, \"titular_remetente_id\" TEXT REFERENCES remetentes(id), \"observacoes\" TEXT, \"criado_em\" INTEGER NOT NULL, CHECK(cpf IS NULL OR cnpj IS NULL), CHECK(regra_confirmada_em IS NULL OR regra_classificacao IS NOT NULL));"
+        }
+      ]
+    },
+    {
+      "name": "uq_remetentes_cpf",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX uq_remetentes_cpf ON remetentes (cpf) WHERE cpf IS NOT NULL"
+        }
+      ]
+    },
+    {
+      "name": "uq_remetentes_cnpj",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX uq_remetentes_cnpj ON remetentes (cnpj) WHERE cnpj IS NOT NULL"
+        }
+      ]
+    },
+    {
+      "name": "uq_remetentes_chave_nome",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX uq_remetentes_chave_nome ON remetentes (chave_nome) WHERE cpf IS NULL AND cnpj IS NULL"
+        }
+      ]
+    },
+    {
+      "name": "apuracoes_mensais",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"apuracoes_mensais\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"competencia\" TEXT NOT NULL, \"versao\" INTEGER NOT NULL DEFAULT 1, \"status\" TEXT NOT NULL DEFAULT 'rascunho' CHECK (status IN ('rascunho', 'fechada', 'substituida')), \"receita_bruta_centavos\" INTEGER NOT NULL, \"despesas_livro_caixa_centavos\" INTEGER NOT NULL, \"saldo_negativo_anterior_centavos\" INTEGER NOT NULL DEFAULT 0, \"saldo_negativo_utilizado_centavos\" INTEGER NOT NULL DEFAULT 0, \"saldo_negativo_transportado_centavos\" INTEGER NOT NULL DEFAULT 0, \"inss_centavos\" INTEGER NOT NULL, \"qtde_dependentes\" INTEGER NOT NULL, \"deducao_dependentes_centavos\" INTEGER NOT NULL, \"desconto_simplificado_centavos\" INTEGER NOT NULL, \"imposto_cenario_real_centavos\" INTEGER NOT NULL, \"imposto_cenario_simplificado_centavos\" INTEGER NOT NULL, \"cenario_aplicado\" TEXT NOT NULL CHECK (cenario_aplicado IN ('deducoesReais', 'descontoSimplificado')), \"base_calculo_centavos\" INTEGER NOT NULL, \"aliquota_bp\" INTEGER NOT NULL, \"parcela_deduzir_centavos\" INTEGER NOT NULL, \"imposto_apurado_centavos\" INTEGER NOT NULL, \"redutor_lei_centavos\" INTEGER NOT NULL DEFAULT 0, \"imposto_devido_centavos\" INTEGER NOT NULL, \"imposto_diferido_anterior_centavos\" INTEGER NOT NULL DEFAULT 0, \"imposto_diferido_centavos\" INTEGER NOT NULL DEFAULT 0, \"total_para_darf_centavos\" INTEGER NOT NULL DEFAULT 0, \"status_darf\" TEXT NOT NULL CHECK (status_darf IN ('emitido', 'acumulaParaProximoMes', 'residuoParaDirpf', 'semImposto')), \"isento\" INTEGER NOT NULL DEFAULT 0, \"tabela_irpf_id\" TEXT NOT NULL, \"catalogo_versoes_snapshot\" TEXT NOT NULL, \"parametros_snapshot\" TEXT NOT NULL, \"motor_versao\" TEXT NOT NULL, \"app_versao\" TEXT NOT NULL, \"calculada_em\" INTEGER NOT NULL, \"fechada_em\" INTEGER, UNIQUE(competencia, versao));"
+        }
+      ]
+    },
+    {
+      "name": "uq_apuracao_ativa",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX uq_apuracao_ativa ON apuracoes_mensais (competencia) WHERE status != 'substituida'"
+        }
+      ]
+    },
+    {
+      "name": "lancamentos",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"lancamentos\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"transacao_id\" TEXT UNIQUE REFERENCES transacoes(id), \"competencia\" TEXT NOT NULL, \"data_recebimento\" TEXT NOT NULL, \"valor_centavos\" INTEGER NOT NULL CHECK (valor_centavos > 0), \"classificacao\" TEXT NOT NULL CHECK (classificacao IN ('rendimentoPf', 'recebidoPj', 'pessoal', 'reembolso', 'repasse')), \"comprovante_titular\" TEXT CHECK (comprovante_titular IN ('cliente', 'profissional')), \"custo_essencial\" INTEGER CHECK (custo_essencial IN (0, 1)), \"remetente_id\" TEXT REFERENCES remetentes(id), \"cpf_pagador\" TEXT, \"cnpj_pagador\" TEXT, \"nome_pagador\" TEXT, \"status_documento_pagador\" TEXT NOT NULL DEFAULT 'naoExigido' CHECK (status_documento_pagador IN ('informado', 'pendente', 'naoExigido')), \"cpf_beneficiario\" TEXT, \"nome_beneficiario\" TEXT, \"origem_classificacao\" TEXT NOT NULL DEFAULT 'manual' CHECK (origem_classificacao IN ('manual', 'sugestaoAceita', 'regraRemetente')), \"confirmada_em\" INTEGER, \"apuracao_id\" TEXT REFERENCES apuracoes_mensais(id), \"criado_em\" INTEGER NOT NULL, \"atualizado_em\" INTEGER NOT NULL, CHECK((classificacao IN ('reembolso', 'repasse'))=(comprovante_titular IS NOT NULL)), CHECK((COALESCE(comprovante_titular, '') = 'profissional')=(custo_essencial IS NOT NULL)), CHECK(status_documento_pagador != 'informado' OR cpf_pagador IS NOT NULL OR cnpj_pagador IS NOT NULL), CHECK(confirmada_em IS NOT NULL OR origem_classificacao = 'regraRemetente'));"
+        }
+      ]
+    },
+    {
+      "name": "idx_lancamentos_comp",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_lancamentos_comp ON lancamentos (competencia)"
+        }
+      ]
+    },
+    {
+      "name": "historico_classificacao",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"historico_classificacao\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"lancamento_id\" TEXT NOT NULL REFERENCES lancamentos(id), \"de\" TEXT, \"para\" TEXT NOT NULL, \"motivo\" TEXT, \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "despesas_livro_caixa",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"despesas_livro_caixa\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"rubrica_codigo\" TEXT NOT NULL, \"competencia\" TEXT NOT NULL, \"data_pagamento\" TEXT NOT NULL, \"forma_pagamento\" TEXT NOT NULL DEFAULT 'outra' CHECK (forma_pagamento IN ('extrato', 'dinheiro', 'cartaoCredito', 'outra')), \"valor_centavos\" INTEGER NOT NULL CHECK (valor_centavos > 0), \"valor_dedutivel_centavos\" INTEGER NOT NULL, \"descricao\" TEXT, \"home_office\" INTEGER NOT NULL DEFAULT 0, \"anexo_path\" TEXT, \"transacao_id\" TEXT UNIQUE REFERENCES transacoes(id), \"lancamento_origem_id\" TEXT UNIQUE REFERENCES lancamentos(id), \"exclusividade_declarada_em\" INTEGER, \"apuracao_id\" TEXT REFERENCES apuracoes_mensais(id), \"criado_em\" INTEGER NOT NULL, CHECK((forma_pagamento = 'extrato')=(transacao_id IS NOT NULL)));"
+        }
+      ]
+    },
+    {
+      "name": "idx_despesas_comp",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_despesas_comp ON despesas_livro_caixa (competencia)"
+        }
+      ]
+    },
+    {
+      "name": "pagamentos_inss",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"pagamentos_inss\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"competencia\" TEXT NOT NULL, \"situacao\" TEXT NOT NULL DEFAULT 'pago' CHECK (situacao IN ('pago', 'naoPago')), \"valor_centavos\" INTEGER NOT NULL, \"acrescimos_centavos\" INTEGER NOT NULL DEFAULT 0 CHECK (acrescimos_centavos >= 0), \"observacao\" TEXT, \"criado_em\" INTEGER NOT NULL, CHECK((situacao = 'pago' AND valor_centavos > 0)OR(situacao = 'naoPago' AND valor_centavos = 0 AND acrescimos_centavos = 0)));"
+        }
+      ]
+    },
+    {
+      "name": "uq_inss_nao_pago",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX uq_inss_nao_pago ON pagamentos_inss (competencia) WHERE situacao = 'naoPago'"
+        }
+      ]
+    },
+    {
+      "name": "dependentes",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"dependentes\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"nome\" TEXT NOT NULL, \"vigencia_inicio\" TEXT NOT NULL, \"vigencia_fim\" TEXT, \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "darfs",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"darfs\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"codigo_receita\" TEXT NOT NULL DEFAULT '0190', \"competencia\" TEXT NOT NULL, \"valor_centavos\" INTEGER NOT NULL, \"vencimento\" TEXT NOT NULL, \"vencimento_antecipado\" INTEGER NOT NULL DEFAULT 0, \"codigo_barras\" TEXT, \"status\" TEXT NOT NULL DEFAULT 'gerada' CHECK (status IN ('gerada', 'paga', 'cancelada')), \"pago_em\" TEXT, \"valor_pago_centavos\" INTEGER, \"acrescimos_pagos_centavos\" INTEGER NOT NULL DEFAULT 0, \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "idx_darfs_venc",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_darfs_venc ON darfs (vencimento) WHERE status = 'gerada'"
+        }
+      ]
+    },
+    {
+      "name": "darf_competencias",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"darf_competencias\" (\"darf_id\" TEXT NOT NULL REFERENCES darfs(id), \"competencia\" TEXT NOT NULL, \"apuracao_id\" TEXT NOT NULL REFERENCES apuracoes_mensais(id), PRIMARY KEY(darf_id, competencia));"
+        }
+      ]
+    },
+    {
+      "name": "idx_darf_competencias_comp",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_darf_competencias_comp ON darf_competencias (competencia)"
+        }
+      ]
+    },
+    {
+      "name": "notificacoes_locais",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"notificacoes_locais\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"tipo\" TEXT NOT NULL CHECK (tipo IN ('lembrete_darf', 'lembrete_importacao', 'radar_pf_cnpj', 'backup', 'sistema')), \"referencia_id\" TEXT, \"agendada_para\" INTEGER NOT NULL, \"os_notif_id\" INTEGER, \"status\" TEXT NOT NULL DEFAULT 'agendada' CHECK (status IN ('agendada', 'disparada', 'cancelada')), \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "backup_estado",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"backup_estado\" (\"id\" INTEGER NOT NULL PRIMARY KEY CHECK (id = 1), \"ultima_seq\" INTEGER, \"ultimo_hash\" TEXT, \"ultimo_em\" INTEGER, \"formato_versao\" INTEGER, \"tamanho_bytes\" INTEGER, \"resultado\" TEXT CHECK (resultado IN ('ok', 'falha', 'pendente')), \"erro_detalhe\" TEXT);"
+        }
+      ]
+    },
+    {
+      "name": "envios_suporte",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"envios_suporte\" (\"id\" TEXT NOT NULL PRIMARY KEY, \"arquivo_nome\" TEXT NOT NULL, \"motivo\" TEXT NOT NULL, \"consentimento_em\" INTEGER NOT NULL, \"enviado_em\" INTEGER, \"path_remoto\" TEXT, \"expira_em\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "auditoria",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"auditoria\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"entidade\" TEXT NOT NULL, \"entidade_id\" TEXT, \"acao\" TEXT NOT NULL CHECK (acao IN ('criar', 'atualizar', 'excluir', 'recalcular')), \"detalhe\" TEXT, \"criado_em\" INTEGER NOT NULL);"
+        }
+      ]
+    }
+  ]
+}

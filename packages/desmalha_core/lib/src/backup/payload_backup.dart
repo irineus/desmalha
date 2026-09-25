@@ -27,9 +27,13 @@ import 'dart:io' show gzip;
 import 'package:cryptography/cryptography.dart';
 
 import 'excecoes_backup.dart';
+import 'migracoes_backup.dart';
 
 /// Versão do formato lógico que este app escreve.
-const int formatoBackupAtual = 1;
+///
+/// 2 (25/09/2026): schema local v2 — estados com os nomes do motor, guia
+/// N:1 em `darf_competencias`. Ver `migrarBackup1Para2`.
+const int formatoBackupAtual = 2;
 
 /// As tabelas que ENTRAM no export (seção 6). Ficam de fora, de propósito:
 /// catálogo (re-baixável; as apurações guardam o snapshot das versões),
@@ -49,6 +53,18 @@ const Set<String> tabelasDoBackupV1 = {
   'apuracoes_mensais',
   'darfs',
   'aceites_termos_local',
+};
+
+/// Formato 2: + `darf_competencias` (a guia cobre várias competências).
+const Set<String> tabelasDoBackupV2 = {
+  ...tabelasDoBackupV1,
+  'darf_competencias',
+};
+
+/// As tabelas que cada formato pode trazer.
+const Map<int, Set<String>> tabelasDoBackupPorFormato = {
+  1: tabelasDoBackupV1,
+  2: tabelasDoBackupV2,
 };
 
 /// Plataformas que gravam backup.
@@ -120,9 +136,9 @@ class ConteudoBackup {
 typedef MigracaoBackup =
     List<DocumentoBackup> Function(List<DocumentoBackup> documentos);
 
-/// A cadeia oficial. Vazia enquanto só existe a v1; a v2 entra como
-/// `1: migrar1Para2`, com golden file da v1 continuando a restaurar.
-const Map<int, MigracaoBackup> migracoesBackup = {};
+/// A cadeia oficial: a chave é o formato de ORIGEM. O golden de cada formato
+/// anterior continua restaurando por ela.
+const Map<int, MigracaoBackup> migracoesBackup = {1: migrarBackup1Para2};
 
 /// Serializa e gzipa o payload. Calcula `hash_conteudo` e `contagens`.
 Future<List<int>> serializarPayload({
@@ -262,7 +278,8 @@ Future<ConteudoBackup> lerPayload(
 }
 
 void _validarDocumento(DocumentoBackup doc, int versao) {
-  if (versao == 1 && !tabelasDoBackupV1.contains(doc.tabela)) {
+  final permitidas = tabelasDoBackupPorFormato[versao];
+  if (permitidas != null && !permitidas.contains(doc.tabela)) {
     throw BackupInvalidoException(
       'tabela "${doc.tabela}" não faz parte do backup (formato $versao)',
     );

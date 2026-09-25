@@ -3,3161 +3,6 @@
 part of 'banco.dart';
 
 // ignore_for_file: type=lint
-class CatVersoes extends Table with TableInfo<CatVersoes, CatVersao> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatVersoes(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _catalogoMeta = const VerificationMeta(
-    'catalogo',
-  );
-  late final GeneratedColumn<String> catalogo = GeneratedColumn<String>(
-    'catalogo',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints:
-        'NOT NULL PRIMARY KEY CHECK (catalogo IN (\'irpf\', \'parametros\', \'feriados\', \'rubricas\', \'profissoes\', \'parsers\'))',
-  );
-  static const VerificationMeta _versaoMeta = const VerificationMeta('versao');
-  late final GeneratedColumn<int> versao = GeneratedColumn<int>(
-    'versao',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _publicadoEmMeta = const VerificationMeta(
-    'publicadoEm',
-  );
-  late final GeneratedColumn<int> publicadoEm = GeneratedColumn<int>(
-    'publicado_em',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _baixadoEmMeta = const VerificationMeta(
-    'baixadoEm',
-  );
-  late final GeneratedColumn<int> baixadoEm = GeneratedColumn<int>(
-    'baixado_em',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
-  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
-    'hash',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    catalogo,
-    versao,
-    publicadoEm,
-    baixadoEm,
-    hash,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_versoes';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatVersao> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('catalogo')) {
-      context.handle(
-        _catalogoMeta,
-        catalogo.isAcceptableOrUnknown(data['catalogo']!, _catalogoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_catalogoMeta);
-    }
-    if (data.containsKey('versao')) {
-      context.handle(
-        _versaoMeta,
-        versao.isAcceptableOrUnknown(data['versao']!, _versaoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_versaoMeta);
-    }
-    if (data.containsKey('publicado_em')) {
-      context.handle(
-        _publicadoEmMeta,
-        publicadoEm.isAcceptableOrUnknown(
-          data['publicado_em']!,
-          _publicadoEmMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_publicadoEmMeta);
-    }
-    if (data.containsKey('baixado_em')) {
-      context.handle(
-        _baixadoEmMeta,
-        baixadoEm.isAcceptableOrUnknown(data['baixado_em']!, _baixadoEmMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_baixadoEmMeta);
-    }
-    if (data.containsKey('hash')) {
-      context.handle(
-        _hashMeta,
-        hash.isAcceptableOrUnknown(data['hash']!, _hashMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_hashMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {catalogo};
-  @override
-  CatVersao map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatVersao(
-      catalogo: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}catalogo'],
-      )!,
-      versao: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}versao'],
-      )!,
-      publicadoEm: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}publicado_em'],
-      )!,
-      baixadoEm: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}baixado_em'],
-      )!,
-      hash: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}hash'],
-      )!,
-    );
-  }
-
-  @override
-  CatVersoes createAlias(String alias) {
-    return CatVersoes(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatVersao extends DataClass implements Insertable<CatVersao> {
-  final String catalogo;
-  final int versao;
-  final int publicadoEm;
-  final int baixadoEm;
-  final String hash;
-  const CatVersao({
-    required this.catalogo,
-    required this.versao,
-    required this.publicadoEm,
-    required this.baixadoEm,
-    required this.hash,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['catalogo'] = Variable<String>(catalogo);
-    map['versao'] = Variable<int>(versao);
-    map['publicado_em'] = Variable<int>(publicadoEm);
-    map['baixado_em'] = Variable<int>(baixadoEm);
-    map['hash'] = Variable<String>(hash);
-    return map;
-  }
-
-  CatVersoesCompanion toCompanion(bool nullToAbsent) {
-    return CatVersoesCompanion(
-      catalogo: Value(catalogo),
-      versao: Value(versao),
-      publicadoEm: Value(publicadoEm),
-      baixadoEm: Value(baixadoEm),
-      hash: Value(hash),
-    );
-  }
-
-  factory CatVersao.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatVersao(
-      catalogo: serializer.fromJson<String>(json['catalogo']),
-      versao: serializer.fromJson<int>(json['versao']),
-      publicadoEm: serializer.fromJson<int>(json['publicado_em']),
-      baixadoEm: serializer.fromJson<int>(json['baixado_em']),
-      hash: serializer.fromJson<String>(json['hash']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'catalogo': serializer.toJson<String>(catalogo),
-      'versao': serializer.toJson<int>(versao),
-      'publicado_em': serializer.toJson<int>(publicadoEm),
-      'baixado_em': serializer.toJson<int>(baixadoEm),
-      'hash': serializer.toJson<String>(hash),
-    };
-  }
-
-  CatVersao copyWith({
-    String? catalogo,
-    int? versao,
-    int? publicadoEm,
-    int? baixadoEm,
-    String? hash,
-  }) => CatVersao(
-    catalogo: catalogo ?? this.catalogo,
-    versao: versao ?? this.versao,
-    publicadoEm: publicadoEm ?? this.publicadoEm,
-    baixadoEm: baixadoEm ?? this.baixadoEm,
-    hash: hash ?? this.hash,
-  );
-  CatVersao copyWithCompanion(CatVersoesCompanion data) {
-    return CatVersao(
-      catalogo: data.catalogo.present ? data.catalogo.value : this.catalogo,
-      versao: data.versao.present ? data.versao.value : this.versao,
-      publicadoEm: data.publicadoEm.present
-          ? data.publicadoEm.value
-          : this.publicadoEm,
-      baixadoEm: data.baixadoEm.present ? data.baixadoEm.value : this.baixadoEm,
-      hash: data.hash.present ? data.hash.value : this.hash,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatVersao(')
-          ..write('catalogo: $catalogo, ')
-          ..write('versao: $versao, ')
-          ..write('publicadoEm: $publicadoEm, ')
-          ..write('baixadoEm: $baixadoEm, ')
-          ..write('hash: $hash')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(catalogo, versao, publicadoEm, baixadoEm, hash);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatVersao &&
-          other.catalogo == this.catalogo &&
-          other.versao == this.versao &&
-          other.publicadoEm == this.publicadoEm &&
-          other.baixadoEm == this.baixadoEm &&
-          other.hash == this.hash);
-}
-
-class CatVersoesCompanion extends UpdateCompanion<CatVersao> {
-  final Value<String> catalogo;
-  final Value<int> versao;
-  final Value<int> publicadoEm;
-  final Value<int> baixadoEm;
-  final Value<String> hash;
-  final Value<int> rowid;
-  const CatVersoesCompanion({
-    this.catalogo = const Value.absent(),
-    this.versao = const Value.absent(),
-    this.publicadoEm = const Value.absent(),
-    this.baixadoEm = const Value.absent(),
-    this.hash = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CatVersoesCompanion.insert({
-    required String catalogo,
-    required int versao,
-    required int publicadoEm,
-    required int baixadoEm,
-    required String hash,
-    this.rowid = const Value.absent(),
-  }) : catalogo = Value(catalogo),
-       versao = Value(versao),
-       publicadoEm = Value(publicadoEm),
-       baixadoEm = Value(baixadoEm),
-       hash = Value(hash);
-  static Insertable<CatVersao> custom({
-    Expression<String>? catalogo,
-    Expression<int>? versao,
-    Expression<int>? publicadoEm,
-    Expression<int>? baixadoEm,
-    Expression<String>? hash,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (catalogo != null) 'catalogo': catalogo,
-      if (versao != null) 'versao': versao,
-      if (publicadoEm != null) 'publicado_em': publicadoEm,
-      if (baixadoEm != null) 'baixado_em': baixadoEm,
-      if (hash != null) 'hash': hash,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CatVersoesCompanion copyWith({
-    Value<String>? catalogo,
-    Value<int>? versao,
-    Value<int>? publicadoEm,
-    Value<int>? baixadoEm,
-    Value<String>? hash,
-    Value<int>? rowid,
-  }) {
-    return CatVersoesCompanion(
-      catalogo: catalogo ?? this.catalogo,
-      versao: versao ?? this.versao,
-      publicadoEm: publicadoEm ?? this.publicadoEm,
-      baixadoEm: baixadoEm ?? this.baixadoEm,
-      hash: hash ?? this.hash,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (catalogo.present) {
-      map['catalogo'] = Variable<String>(catalogo.value);
-    }
-    if (versao.present) {
-      map['versao'] = Variable<int>(versao.value);
-    }
-    if (publicadoEm.present) {
-      map['publicado_em'] = Variable<int>(publicadoEm.value);
-    }
-    if (baixadoEm.present) {
-      map['baixado_em'] = Variable<int>(baixadoEm.value);
-    }
-    if (hash.present) {
-      map['hash'] = Variable<String>(hash.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatVersoesCompanion(')
-          ..write('catalogo: $catalogo, ')
-          ..write('versao: $versao, ')
-          ..write('publicadoEm: $publicadoEm, ')
-          ..write('baixadoEm: $baixadoEm, ')
-          ..write('hash: $hash, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class CatTabelasIrpf extends Table
-    with TableInfo<CatTabelasIrpf, CatTabelaIrpf> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatTabelasIrpf(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL PRIMARY KEY',
-  );
-  static const VerificationMeta _vigenciaInicioMeta = const VerificationMeta(
-    'vigenciaInicio',
-  );
-  late final GeneratedColumn<String> vigenciaInicio = GeneratedColumn<String>(
-    'vigencia_inicio',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _vigenciaFimMeta = const VerificationMeta(
-    'vigenciaFim',
-  );
-  late final GeneratedColumn<String> vigenciaFim = GeneratedColumn<String>(
-    'vigencia_fim',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    $customConstraints: '',
-  );
-  static const VerificationMeta _fonteLegalMeta = const VerificationMeta(
-    'fonteLegal',
-  );
-  late final GeneratedColumn<String> fonteLegal = GeneratedColumn<String>(
-    'fonte_legal',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _deducaoDependenteCentavosMeta =
-      const VerificationMeta('deducaoDependenteCentavos');
-  late final GeneratedColumn<int> deducaoDependenteCentavos =
-      GeneratedColumn<int>(
-        'deducao_dependente_centavos',
-        aliasedName,
-        false,
-        type: DriftSqlType.int,
-        requiredDuringInsert: true,
-        $customConstraints: 'NOT NULL',
-      );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    vigenciaInicio,
-    vigenciaFim,
-    fonteLegal,
-    deducaoDependenteCentavos,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_tabelas_irpf';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatTabelaIrpf> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('vigencia_inicio')) {
-      context.handle(
-        _vigenciaInicioMeta,
-        vigenciaInicio.isAcceptableOrUnknown(
-          data['vigencia_inicio']!,
-          _vigenciaInicioMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_vigenciaInicioMeta);
-    }
-    if (data.containsKey('vigencia_fim')) {
-      context.handle(
-        _vigenciaFimMeta,
-        vigenciaFim.isAcceptableOrUnknown(
-          data['vigencia_fim']!,
-          _vigenciaFimMeta,
-        ),
-      );
-    }
-    if (data.containsKey('fonte_legal')) {
-      context.handle(
-        _fonteLegalMeta,
-        fonteLegal.isAcceptableOrUnknown(data['fonte_legal']!, _fonteLegalMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_fonteLegalMeta);
-    }
-    if (data.containsKey('deducao_dependente_centavos')) {
-      context.handle(
-        _deducaoDependenteCentavosMeta,
-        deducaoDependenteCentavos.isAcceptableOrUnknown(
-          data['deducao_dependente_centavos']!,
-          _deducaoDependenteCentavosMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_deducaoDependenteCentavosMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  CatTabelaIrpf map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatTabelaIrpf(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      vigenciaInicio: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vigencia_inicio'],
-      )!,
-      vigenciaFim: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vigencia_fim'],
-      ),
-      fonteLegal: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}fonte_legal'],
-      )!,
-      deducaoDependenteCentavos: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}deducao_dependente_centavos'],
-      )!,
-    );
-  }
-
-  @override
-  CatTabelasIrpf createAlias(String alias) {
-    return CatTabelasIrpf(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatTabelaIrpf extends DataClass implements Insertable<CatTabelaIrpf> {
-  final int id;
-  final String vigenciaInicio;
-  final String? vigenciaFim;
-  final String fonteLegal;
-  final int deducaoDependenteCentavos;
-  const CatTabelaIrpf({
-    required this.id,
-    required this.vigenciaInicio,
-    this.vigenciaFim,
-    required this.fonteLegal,
-    required this.deducaoDependenteCentavos,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['vigencia_inicio'] = Variable<String>(vigenciaInicio);
-    if (!nullToAbsent || vigenciaFim != null) {
-      map['vigencia_fim'] = Variable<String>(vigenciaFim);
-    }
-    map['fonte_legal'] = Variable<String>(fonteLegal);
-    map['deducao_dependente_centavos'] = Variable<int>(
-      deducaoDependenteCentavos,
-    );
-    return map;
-  }
-
-  CatTabelasIrpfCompanion toCompanion(bool nullToAbsent) {
-    return CatTabelasIrpfCompanion(
-      id: Value(id),
-      vigenciaInicio: Value(vigenciaInicio),
-      vigenciaFim: vigenciaFim == null && nullToAbsent
-          ? const Value.absent()
-          : Value(vigenciaFim),
-      fonteLegal: Value(fonteLegal),
-      deducaoDependenteCentavos: Value(deducaoDependenteCentavos),
-    );
-  }
-
-  factory CatTabelaIrpf.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatTabelaIrpf(
-      id: serializer.fromJson<int>(json['id']),
-      vigenciaInicio: serializer.fromJson<String>(json['vigencia_inicio']),
-      vigenciaFim: serializer.fromJson<String?>(json['vigencia_fim']),
-      fonteLegal: serializer.fromJson<String>(json['fonte_legal']),
-      deducaoDependenteCentavos: serializer.fromJson<int>(
-        json['deducao_dependente_centavos'],
-      ),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'vigencia_inicio': serializer.toJson<String>(vigenciaInicio),
-      'vigencia_fim': serializer.toJson<String?>(vigenciaFim),
-      'fonte_legal': serializer.toJson<String>(fonteLegal),
-      'deducao_dependente_centavos': serializer.toJson<int>(
-        deducaoDependenteCentavos,
-      ),
-    };
-  }
-
-  CatTabelaIrpf copyWith({
-    int? id,
-    String? vigenciaInicio,
-    Value<String?> vigenciaFim = const Value.absent(),
-    String? fonteLegal,
-    int? deducaoDependenteCentavos,
-  }) => CatTabelaIrpf(
-    id: id ?? this.id,
-    vigenciaInicio: vigenciaInicio ?? this.vigenciaInicio,
-    vigenciaFim: vigenciaFim.present ? vigenciaFim.value : this.vigenciaFim,
-    fonteLegal: fonteLegal ?? this.fonteLegal,
-    deducaoDependenteCentavos:
-        deducaoDependenteCentavos ?? this.deducaoDependenteCentavos,
-  );
-  CatTabelaIrpf copyWithCompanion(CatTabelasIrpfCompanion data) {
-    return CatTabelaIrpf(
-      id: data.id.present ? data.id.value : this.id,
-      vigenciaInicio: data.vigenciaInicio.present
-          ? data.vigenciaInicio.value
-          : this.vigenciaInicio,
-      vigenciaFim: data.vigenciaFim.present
-          ? data.vigenciaFim.value
-          : this.vigenciaFim,
-      fonteLegal: data.fonteLegal.present
-          ? data.fonteLegal.value
-          : this.fonteLegal,
-      deducaoDependenteCentavos: data.deducaoDependenteCentavos.present
-          ? data.deducaoDependenteCentavos.value
-          : this.deducaoDependenteCentavos,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatTabelaIrpf(')
-          ..write('id: $id, ')
-          ..write('vigenciaInicio: $vigenciaInicio, ')
-          ..write('vigenciaFim: $vigenciaFim, ')
-          ..write('fonteLegal: $fonteLegal, ')
-          ..write('deducaoDependenteCentavos: $deducaoDependenteCentavos')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    vigenciaInicio,
-    vigenciaFim,
-    fonteLegal,
-    deducaoDependenteCentavos,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatTabelaIrpf &&
-          other.id == this.id &&
-          other.vigenciaInicio == this.vigenciaInicio &&
-          other.vigenciaFim == this.vigenciaFim &&
-          other.fonteLegal == this.fonteLegal &&
-          other.deducaoDependenteCentavos == this.deducaoDependenteCentavos);
-}
-
-class CatTabelasIrpfCompanion extends UpdateCompanion<CatTabelaIrpf> {
-  final Value<int> id;
-  final Value<String> vigenciaInicio;
-  final Value<String?> vigenciaFim;
-  final Value<String> fonteLegal;
-  final Value<int> deducaoDependenteCentavos;
-  const CatTabelasIrpfCompanion({
-    this.id = const Value.absent(),
-    this.vigenciaInicio = const Value.absent(),
-    this.vigenciaFim = const Value.absent(),
-    this.fonteLegal = const Value.absent(),
-    this.deducaoDependenteCentavos = const Value.absent(),
-  });
-  CatTabelasIrpfCompanion.insert({
-    this.id = const Value.absent(),
-    required String vigenciaInicio,
-    this.vigenciaFim = const Value.absent(),
-    required String fonteLegal,
-    required int deducaoDependenteCentavos,
-  }) : vigenciaInicio = Value(vigenciaInicio),
-       fonteLegal = Value(fonteLegal),
-       deducaoDependenteCentavos = Value(deducaoDependenteCentavos);
-  static Insertable<CatTabelaIrpf> custom({
-    Expression<int>? id,
-    Expression<String>? vigenciaInicio,
-    Expression<String>? vigenciaFim,
-    Expression<String>? fonteLegal,
-    Expression<int>? deducaoDependenteCentavos,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (vigenciaInicio != null) 'vigencia_inicio': vigenciaInicio,
-      if (vigenciaFim != null) 'vigencia_fim': vigenciaFim,
-      if (fonteLegal != null) 'fonte_legal': fonteLegal,
-      if (deducaoDependenteCentavos != null)
-        'deducao_dependente_centavos': deducaoDependenteCentavos,
-    });
-  }
-
-  CatTabelasIrpfCompanion copyWith({
-    Value<int>? id,
-    Value<String>? vigenciaInicio,
-    Value<String?>? vigenciaFim,
-    Value<String>? fonteLegal,
-    Value<int>? deducaoDependenteCentavos,
-  }) {
-    return CatTabelasIrpfCompanion(
-      id: id ?? this.id,
-      vigenciaInicio: vigenciaInicio ?? this.vigenciaInicio,
-      vigenciaFim: vigenciaFim ?? this.vigenciaFim,
-      fonteLegal: fonteLegal ?? this.fonteLegal,
-      deducaoDependenteCentavos:
-          deducaoDependenteCentavos ?? this.deducaoDependenteCentavos,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (vigenciaInicio.present) {
-      map['vigencia_inicio'] = Variable<String>(vigenciaInicio.value);
-    }
-    if (vigenciaFim.present) {
-      map['vigencia_fim'] = Variable<String>(vigenciaFim.value);
-    }
-    if (fonteLegal.present) {
-      map['fonte_legal'] = Variable<String>(fonteLegal.value);
-    }
-    if (deducaoDependenteCentavos.present) {
-      map['deducao_dependente_centavos'] = Variable<int>(
-        deducaoDependenteCentavos.value,
-      );
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatTabelasIrpfCompanion(')
-          ..write('id: $id, ')
-          ..write('vigenciaInicio: $vigenciaInicio, ')
-          ..write('vigenciaFim: $vigenciaFim, ')
-          ..write('fonteLegal: $fonteLegal, ')
-          ..write('deducaoDependenteCentavos: $deducaoDependenteCentavos')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class CatFaixasIrpf extends Table with TableInfo<CatFaixasIrpf, CatFaixaIrpf> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatFaixasIrpf(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _tabelaIdMeta = const VerificationMeta(
-    'tabelaId',
-  );
-  late final GeneratedColumn<int> tabelaId = GeneratedColumn<int>(
-    'tabela_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL REFERENCES cat_tabelas_irpf(id)',
-  );
-  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
-  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
-    'ordem',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _limiteSuperiorCentavosMeta =
-      const VerificationMeta('limiteSuperiorCentavos');
-  late final GeneratedColumn<int> limiteSuperiorCentavos = GeneratedColumn<int>(
-    'limite_superior_centavos',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: '',
-  );
-  static const VerificationMeta _aliquotaBpMeta = const VerificationMeta(
-    'aliquotaBp',
-  );
-  late final GeneratedColumn<int> aliquotaBp = GeneratedColumn<int>(
-    'aliquota_bp',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _parcelaDeduzirCentavosMeta =
-      const VerificationMeta('parcelaDeduzirCentavos');
-  late final GeneratedColumn<int> parcelaDeduzirCentavos = GeneratedColumn<int>(
-    'parcela_deduzir_centavos',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    tabelaId,
-    ordem,
-    limiteSuperiorCentavos,
-    aliquotaBp,
-    parcelaDeduzirCentavos,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_faixas_irpf';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatFaixaIrpf> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('tabela_id')) {
-      context.handle(
-        _tabelaIdMeta,
-        tabelaId.isAcceptableOrUnknown(data['tabela_id']!, _tabelaIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_tabelaIdMeta);
-    }
-    if (data.containsKey('ordem')) {
-      context.handle(
-        _ordemMeta,
-        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_ordemMeta);
-    }
-    if (data.containsKey('limite_superior_centavos')) {
-      context.handle(
-        _limiteSuperiorCentavosMeta,
-        limiteSuperiorCentavos.isAcceptableOrUnknown(
-          data['limite_superior_centavos']!,
-          _limiteSuperiorCentavosMeta,
-        ),
-      );
-    }
-    if (data.containsKey('aliquota_bp')) {
-      context.handle(
-        _aliquotaBpMeta,
-        aliquotaBp.isAcceptableOrUnknown(data['aliquota_bp']!, _aliquotaBpMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_aliquotaBpMeta);
-    }
-    if (data.containsKey('parcela_deduzir_centavos')) {
-      context.handle(
-        _parcelaDeduzirCentavosMeta,
-        parcelaDeduzirCentavos.isAcceptableOrUnknown(
-          data['parcela_deduzir_centavos']!,
-          _parcelaDeduzirCentavosMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_parcelaDeduzirCentavosMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {tabelaId, ordem};
-  @override
-  CatFaixaIrpf map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatFaixaIrpf(
-      tabelaId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}tabela_id'],
-      )!,
-      ordem: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}ordem'],
-      )!,
-      limiteSuperiorCentavos: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}limite_superior_centavos'],
-      ),
-      aliquotaBp: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}aliquota_bp'],
-      )!,
-      parcelaDeduzirCentavos: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}parcela_deduzir_centavos'],
-      )!,
-    );
-  }
-
-  @override
-  CatFaixasIrpf createAlias(String alias) {
-    return CatFaixasIrpf(attachedDatabase, alias);
-  }
-
-  @override
-  List<String> get customConstraints => const ['PRIMARY KEY(tabela_id, ordem)'];
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatFaixaIrpf extends DataClass implements Insertable<CatFaixaIrpf> {
-  final int tabelaId;
-  final int ordem;
-  final int? limiteSuperiorCentavos;
-
-  /// NULL na última faixa
-  final int aliquotaBp;
-
-  /// 27,5% = 2750
-  final int parcelaDeduzirCentavos;
-  const CatFaixaIrpf({
-    required this.tabelaId,
-    required this.ordem,
-    this.limiteSuperiorCentavos,
-    required this.aliquotaBp,
-    required this.parcelaDeduzirCentavos,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['tabela_id'] = Variable<int>(tabelaId);
-    map['ordem'] = Variable<int>(ordem);
-    if (!nullToAbsent || limiteSuperiorCentavos != null) {
-      map['limite_superior_centavos'] = Variable<int>(limiteSuperiorCentavos);
-    }
-    map['aliquota_bp'] = Variable<int>(aliquotaBp);
-    map['parcela_deduzir_centavos'] = Variable<int>(parcelaDeduzirCentavos);
-    return map;
-  }
-
-  CatFaixasIrpfCompanion toCompanion(bool nullToAbsent) {
-    return CatFaixasIrpfCompanion(
-      tabelaId: Value(tabelaId),
-      ordem: Value(ordem),
-      limiteSuperiorCentavos: limiteSuperiorCentavos == null && nullToAbsent
-          ? const Value.absent()
-          : Value(limiteSuperiorCentavos),
-      aliquotaBp: Value(aliquotaBp),
-      parcelaDeduzirCentavos: Value(parcelaDeduzirCentavos),
-    );
-  }
-
-  factory CatFaixaIrpf.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatFaixaIrpf(
-      tabelaId: serializer.fromJson<int>(json['tabela_id']),
-      ordem: serializer.fromJson<int>(json['ordem']),
-      limiteSuperiorCentavos: serializer.fromJson<int?>(
-        json['limite_superior_centavos'],
-      ),
-      aliquotaBp: serializer.fromJson<int>(json['aliquota_bp']),
-      parcelaDeduzirCentavos: serializer.fromJson<int>(
-        json['parcela_deduzir_centavos'],
-      ),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'tabela_id': serializer.toJson<int>(tabelaId),
-      'ordem': serializer.toJson<int>(ordem),
-      'limite_superior_centavos': serializer.toJson<int?>(
-        limiteSuperiorCentavos,
-      ),
-      'aliquota_bp': serializer.toJson<int>(aliquotaBp),
-      'parcela_deduzir_centavos': serializer.toJson<int>(
-        parcelaDeduzirCentavos,
-      ),
-    };
-  }
-
-  CatFaixaIrpf copyWith({
-    int? tabelaId,
-    int? ordem,
-    Value<int?> limiteSuperiorCentavos = const Value.absent(),
-    int? aliquotaBp,
-    int? parcelaDeduzirCentavos,
-  }) => CatFaixaIrpf(
-    tabelaId: tabelaId ?? this.tabelaId,
-    ordem: ordem ?? this.ordem,
-    limiteSuperiorCentavos: limiteSuperiorCentavos.present
-        ? limiteSuperiorCentavos.value
-        : this.limiteSuperiorCentavos,
-    aliquotaBp: aliquotaBp ?? this.aliquotaBp,
-    parcelaDeduzirCentavos:
-        parcelaDeduzirCentavos ?? this.parcelaDeduzirCentavos,
-  );
-  CatFaixaIrpf copyWithCompanion(CatFaixasIrpfCompanion data) {
-    return CatFaixaIrpf(
-      tabelaId: data.tabelaId.present ? data.tabelaId.value : this.tabelaId,
-      ordem: data.ordem.present ? data.ordem.value : this.ordem,
-      limiteSuperiorCentavos: data.limiteSuperiorCentavos.present
-          ? data.limiteSuperiorCentavos.value
-          : this.limiteSuperiorCentavos,
-      aliquotaBp: data.aliquotaBp.present
-          ? data.aliquotaBp.value
-          : this.aliquotaBp,
-      parcelaDeduzirCentavos: data.parcelaDeduzirCentavos.present
-          ? data.parcelaDeduzirCentavos.value
-          : this.parcelaDeduzirCentavos,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatFaixaIrpf(')
-          ..write('tabelaId: $tabelaId, ')
-          ..write('ordem: $ordem, ')
-          ..write('limiteSuperiorCentavos: $limiteSuperiorCentavos, ')
-          ..write('aliquotaBp: $aliquotaBp, ')
-          ..write('parcelaDeduzirCentavos: $parcelaDeduzirCentavos')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    tabelaId,
-    ordem,
-    limiteSuperiorCentavos,
-    aliquotaBp,
-    parcelaDeduzirCentavos,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatFaixaIrpf &&
-          other.tabelaId == this.tabelaId &&
-          other.ordem == this.ordem &&
-          other.limiteSuperiorCentavos == this.limiteSuperiorCentavos &&
-          other.aliquotaBp == this.aliquotaBp &&
-          other.parcelaDeduzirCentavos == this.parcelaDeduzirCentavos);
-}
-
-class CatFaixasIrpfCompanion extends UpdateCompanion<CatFaixaIrpf> {
-  final Value<int> tabelaId;
-  final Value<int> ordem;
-  final Value<int?> limiteSuperiorCentavos;
-  final Value<int> aliquotaBp;
-  final Value<int> parcelaDeduzirCentavos;
-  final Value<int> rowid;
-  const CatFaixasIrpfCompanion({
-    this.tabelaId = const Value.absent(),
-    this.ordem = const Value.absent(),
-    this.limiteSuperiorCentavos = const Value.absent(),
-    this.aliquotaBp = const Value.absent(),
-    this.parcelaDeduzirCentavos = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CatFaixasIrpfCompanion.insert({
-    required int tabelaId,
-    required int ordem,
-    this.limiteSuperiorCentavos = const Value.absent(),
-    required int aliquotaBp,
-    required int parcelaDeduzirCentavos,
-    this.rowid = const Value.absent(),
-  }) : tabelaId = Value(tabelaId),
-       ordem = Value(ordem),
-       aliquotaBp = Value(aliquotaBp),
-       parcelaDeduzirCentavos = Value(parcelaDeduzirCentavos);
-  static Insertable<CatFaixaIrpf> custom({
-    Expression<int>? tabelaId,
-    Expression<int>? ordem,
-    Expression<int>? limiteSuperiorCentavos,
-    Expression<int>? aliquotaBp,
-    Expression<int>? parcelaDeduzirCentavos,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (tabelaId != null) 'tabela_id': tabelaId,
-      if (ordem != null) 'ordem': ordem,
-      if (limiteSuperiorCentavos != null)
-        'limite_superior_centavos': limiteSuperiorCentavos,
-      if (aliquotaBp != null) 'aliquota_bp': aliquotaBp,
-      if (parcelaDeduzirCentavos != null)
-        'parcela_deduzir_centavos': parcelaDeduzirCentavos,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CatFaixasIrpfCompanion copyWith({
-    Value<int>? tabelaId,
-    Value<int>? ordem,
-    Value<int?>? limiteSuperiorCentavos,
-    Value<int>? aliquotaBp,
-    Value<int>? parcelaDeduzirCentavos,
-    Value<int>? rowid,
-  }) {
-    return CatFaixasIrpfCompanion(
-      tabelaId: tabelaId ?? this.tabelaId,
-      ordem: ordem ?? this.ordem,
-      limiteSuperiorCentavos:
-          limiteSuperiorCentavos ?? this.limiteSuperiorCentavos,
-      aliquotaBp: aliquotaBp ?? this.aliquotaBp,
-      parcelaDeduzirCentavos:
-          parcelaDeduzirCentavos ?? this.parcelaDeduzirCentavos,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (tabelaId.present) {
-      map['tabela_id'] = Variable<int>(tabelaId.value);
-    }
-    if (ordem.present) {
-      map['ordem'] = Variable<int>(ordem.value);
-    }
-    if (limiteSuperiorCentavos.present) {
-      map['limite_superior_centavos'] = Variable<int>(
-        limiteSuperiorCentavos.value,
-      );
-    }
-    if (aliquotaBp.present) {
-      map['aliquota_bp'] = Variable<int>(aliquotaBp.value);
-    }
-    if (parcelaDeduzirCentavos.present) {
-      map['parcela_deduzir_centavos'] = Variable<int>(
-        parcelaDeduzirCentavos.value,
-      );
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatFaixasIrpfCompanion(')
-          ..write('tabelaId: $tabelaId, ')
-          ..write('ordem: $ordem, ')
-          ..write('limiteSuperiorCentavos: $limiteSuperiorCentavos, ')
-          ..write('aliquotaBp: $aliquotaBp, ')
-          ..write('parcelaDeduzirCentavos: $parcelaDeduzirCentavos, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class CatParametrosFiscais extends Table
-    with TableInfo<CatParametrosFiscais, CatParametroFiscal> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatParametrosFiscais(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _chaveMeta = const VerificationMeta('chave');
-  late final GeneratedColumn<String> chave = GeneratedColumn<String>(
-    'chave',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _vigenciaInicioMeta = const VerificationMeta(
-    'vigenciaInicio',
-  );
-  late final GeneratedColumn<String> vigenciaInicio = GeneratedColumn<String>(
-    'vigencia_inicio',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _vigenciaFimMeta = const VerificationMeta(
-    'vigenciaFim',
-  );
-  late final GeneratedColumn<String> vigenciaFim = GeneratedColumn<String>(
-    'vigencia_fim',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    $customConstraints: '',
-  );
-  static const VerificationMeta _valorMeta = const VerificationMeta('valor');
-  late final GeneratedColumn<int> valor = GeneratedColumn<int>(
-    'valor',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _unidadeMeta = const VerificationMeta(
-    'unidade',
-  );
-  late final GeneratedColumn<String> unidade = GeneratedColumn<String>(
-    'unidade',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints:
-        'NOT NULL CHECK (unidade IN (\'centavos\', \'bp\', \'inteiro\'))',
-  );
-  static const VerificationMeta _fonteLegalMeta = const VerificationMeta(
-    'fonteLegal',
-  );
-  late final GeneratedColumn<String> fonteLegal = GeneratedColumn<String>(
-    'fonte_legal',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _statusValidacaoMeta = const VerificationMeta(
-    'statusValidacao',
-  );
-  late final GeneratedColumn<String> statusValidacao = GeneratedColumn<String>(
-    'status_validacao',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints:
-        'NOT NULL CHECK (status_validacao IN (\'validado\', \'pendente_contador\'))',
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    chave,
-    vigenciaInicio,
-    vigenciaFim,
-    valor,
-    unidade,
-    fonteLegal,
-    statusValidacao,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_parametros_fiscais';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatParametroFiscal> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('chave')) {
-      context.handle(
-        _chaveMeta,
-        chave.isAcceptableOrUnknown(data['chave']!, _chaveMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_chaveMeta);
-    }
-    if (data.containsKey('vigencia_inicio')) {
-      context.handle(
-        _vigenciaInicioMeta,
-        vigenciaInicio.isAcceptableOrUnknown(
-          data['vigencia_inicio']!,
-          _vigenciaInicioMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_vigenciaInicioMeta);
-    }
-    if (data.containsKey('vigencia_fim')) {
-      context.handle(
-        _vigenciaFimMeta,
-        vigenciaFim.isAcceptableOrUnknown(
-          data['vigencia_fim']!,
-          _vigenciaFimMeta,
-        ),
-      );
-    }
-    if (data.containsKey('valor')) {
-      context.handle(
-        _valorMeta,
-        valor.isAcceptableOrUnknown(data['valor']!, _valorMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_valorMeta);
-    }
-    if (data.containsKey('unidade')) {
-      context.handle(
-        _unidadeMeta,
-        unidade.isAcceptableOrUnknown(data['unidade']!, _unidadeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_unidadeMeta);
-    }
-    if (data.containsKey('fonte_legal')) {
-      context.handle(
-        _fonteLegalMeta,
-        fonteLegal.isAcceptableOrUnknown(data['fonte_legal']!, _fonteLegalMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_fonteLegalMeta);
-    }
-    if (data.containsKey('status_validacao')) {
-      context.handle(
-        _statusValidacaoMeta,
-        statusValidacao.isAcceptableOrUnknown(
-          data['status_validacao']!,
-          _statusValidacaoMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_statusValidacaoMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {chave, vigenciaInicio};
-  @override
-  CatParametroFiscal map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatParametroFiscal(
-      chave: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}chave'],
-      )!,
-      vigenciaInicio: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vigencia_inicio'],
-      )!,
-      vigenciaFim: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vigencia_fim'],
-      ),
-      valor: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}valor'],
-      )!,
-      unidade: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}unidade'],
-      )!,
-      fonteLegal: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}fonte_legal'],
-      )!,
-      statusValidacao: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status_validacao'],
-      )!,
-    );
-  }
-
-  @override
-  CatParametrosFiscais createAlias(String alias) {
-    return CatParametrosFiscais(attachedDatabase, alias);
-  }
-
-  @override
-  List<String> get customConstraints => const [
-    'PRIMARY KEY(chave, vigencia_inicio)',
-  ];
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatParametroFiscal extends DataClass
-    implements Insertable<CatParametroFiscal> {
-  final String chave;
-
-  /// 'desconto_simplificado_mensal',
-  final String vigenciaInicio;
-
-  /// 'trava_home_office_pct', 'darf_minimo',
-  final String? vigenciaFim;
-
-  /// 'isencao_2026_teto', 'redutor_2026_*'
-  final int valor;
-  final String unidade;
-  final String fonteLegal;
-  final String statusValidacao;
-  const CatParametroFiscal({
-    required this.chave,
-    required this.vigenciaInicio,
-    this.vigenciaFim,
-    required this.valor,
-    required this.unidade,
-    required this.fonteLegal,
-    required this.statusValidacao,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['chave'] = Variable<String>(chave);
-    map['vigencia_inicio'] = Variable<String>(vigenciaInicio);
-    if (!nullToAbsent || vigenciaFim != null) {
-      map['vigencia_fim'] = Variable<String>(vigenciaFim);
-    }
-    map['valor'] = Variable<int>(valor);
-    map['unidade'] = Variable<String>(unidade);
-    map['fonte_legal'] = Variable<String>(fonteLegal);
-    map['status_validacao'] = Variable<String>(statusValidacao);
-    return map;
-  }
-
-  CatParametrosFiscaisCompanion toCompanion(bool nullToAbsent) {
-    return CatParametrosFiscaisCompanion(
-      chave: Value(chave),
-      vigenciaInicio: Value(vigenciaInicio),
-      vigenciaFim: vigenciaFim == null && nullToAbsent
-          ? const Value.absent()
-          : Value(vigenciaFim),
-      valor: Value(valor),
-      unidade: Value(unidade),
-      fonteLegal: Value(fonteLegal),
-      statusValidacao: Value(statusValidacao),
-    );
-  }
-
-  factory CatParametroFiscal.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatParametroFiscal(
-      chave: serializer.fromJson<String>(json['chave']),
-      vigenciaInicio: serializer.fromJson<String>(json['vigencia_inicio']),
-      vigenciaFim: serializer.fromJson<String?>(json['vigencia_fim']),
-      valor: serializer.fromJson<int>(json['valor']),
-      unidade: serializer.fromJson<String>(json['unidade']),
-      fonteLegal: serializer.fromJson<String>(json['fonte_legal']),
-      statusValidacao: serializer.fromJson<String>(json['status_validacao']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'chave': serializer.toJson<String>(chave),
-      'vigencia_inicio': serializer.toJson<String>(vigenciaInicio),
-      'vigencia_fim': serializer.toJson<String?>(vigenciaFim),
-      'valor': serializer.toJson<int>(valor),
-      'unidade': serializer.toJson<String>(unidade),
-      'fonte_legal': serializer.toJson<String>(fonteLegal),
-      'status_validacao': serializer.toJson<String>(statusValidacao),
-    };
-  }
-
-  CatParametroFiscal copyWith({
-    String? chave,
-    String? vigenciaInicio,
-    Value<String?> vigenciaFim = const Value.absent(),
-    int? valor,
-    String? unidade,
-    String? fonteLegal,
-    String? statusValidacao,
-  }) => CatParametroFiscal(
-    chave: chave ?? this.chave,
-    vigenciaInicio: vigenciaInicio ?? this.vigenciaInicio,
-    vigenciaFim: vigenciaFim.present ? vigenciaFim.value : this.vigenciaFim,
-    valor: valor ?? this.valor,
-    unidade: unidade ?? this.unidade,
-    fonteLegal: fonteLegal ?? this.fonteLegal,
-    statusValidacao: statusValidacao ?? this.statusValidacao,
-  );
-  CatParametroFiscal copyWithCompanion(CatParametrosFiscaisCompanion data) {
-    return CatParametroFiscal(
-      chave: data.chave.present ? data.chave.value : this.chave,
-      vigenciaInicio: data.vigenciaInicio.present
-          ? data.vigenciaInicio.value
-          : this.vigenciaInicio,
-      vigenciaFim: data.vigenciaFim.present
-          ? data.vigenciaFim.value
-          : this.vigenciaFim,
-      valor: data.valor.present ? data.valor.value : this.valor,
-      unidade: data.unidade.present ? data.unidade.value : this.unidade,
-      fonteLegal: data.fonteLegal.present
-          ? data.fonteLegal.value
-          : this.fonteLegal,
-      statusValidacao: data.statusValidacao.present
-          ? data.statusValidacao.value
-          : this.statusValidacao,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatParametroFiscal(')
-          ..write('chave: $chave, ')
-          ..write('vigenciaInicio: $vigenciaInicio, ')
-          ..write('vigenciaFim: $vigenciaFim, ')
-          ..write('valor: $valor, ')
-          ..write('unidade: $unidade, ')
-          ..write('fonteLegal: $fonteLegal, ')
-          ..write('statusValidacao: $statusValidacao')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    chave,
-    vigenciaInicio,
-    vigenciaFim,
-    valor,
-    unidade,
-    fonteLegal,
-    statusValidacao,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatParametroFiscal &&
-          other.chave == this.chave &&
-          other.vigenciaInicio == this.vigenciaInicio &&
-          other.vigenciaFim == this.vigenciaFim &&
-          other.valor == this.valor &&
-          other.unidade == this.unidade &&
-          other.fonteLegal == this.fonteLegal &&
-          other.statusValidacao == this.statusValidacao);
-}
-
-class CatParametrosFiscaisCompanion
-    extends UpdateCompanion<CatParametroFiscal> {
-  final Value<String> chave;
-  final Value<String> vigenciaInicio;
-  final Value<String?> vigenciaFim;
-  final Value<int> valor;
-  final Value<String> unidade;
-  final Value<String> fonteLegal;
-  final Value<String> statusValidacao;
-  final Value<int> rowid;
-  const CatParametrosFiscaisCompanion({
-    this.chave = const Value.absent(),
-    this.vigenciaInicio = const Value.absent(),
-    this.vigenciaFim = const Value.absent(),
-    this.valor = const Value.absent(),
-    this.unidade = const Value.absent(),
-    this.fonteLegal = const Value.absent(),
-    this.statusValidacao = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CatParametrosFiscaisCompanion.insert({
-    required String chave,
-    required String vigenciaInicio,
-    this.vigenciaFim = const Value.absent(),
-    required int valor,
-    required String unidade,
-    required String fonteLegal,
-    required String statusValidacao,
-    this.rowid = const Value.absent(),
-  }) : chave = Value(chave),
-       vigenciaInicio = Value(vigenciaInicio),
-       valor = Value(valor),
-       unidade = Value(unidade),
-       fonteLegal = Value(fonteLegal),
-       statusValidacao = Value(statusValidacao);
-  static Insertable<CatParametroFiscal> custom({
-    Expression<String>? chave,
-    Expression<String>? vigenciaInicio,
-    Expression<String>? vigenciaFim,
-    Expression<int>? valor,
-    Expression<String>? unidade,
-    Expression<String>? fonteLegal,
-    Expression<String>? statusValidacao,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (chave != null) 'chave': chave,
-      if (vigenciaInicio != null) 'vigencia_inicio': vigenciaInicio,
-      if (vigenciaFim != null) 'vigencia_fim': vigenciaFim,
-      if (valor != null) 'valor': valor,
-      if (unidade != null) 'unidade': unidade,
-      if (fonteLegal != null) 'fonte_legal': fonteLegal,
-      if (statusValidacao != null) 'status_validacao': statusValidacao,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CatParametrosFiscaisCompanion copyWith({
-    Value<String>? chave,
-    Value<String>? vigenciaInicio,
-    Value<String?>? vigenciaFim,
-    Value<int>? valor,
-    Value<String>? unidade,
-    Value<String>? fonteLegal,
-    Value<String>? statusValidacao,
-    Value<int>? rowid,
-  }) {
-    return CatParametrosFiscaisCompanion(
-      chave: chave ?? this.chave,
-      vigenciaInicio: vigenciaInicio ?? this.vigenciaInicio,
-      vigenciaFim: vigenciaFim ?? this.vigenciaFim,
-      valor: valor ?? this.valor,
-      unidade: unidade ?? this.unidade,
-      fonteLegal: fonteLegal ?? this.fonteLegal,
-      statusValidacao: statusValidacao ?? this.statusValidacao,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (chave.present) {
-      map['chave'] = Variable<String>(chave.value);
-    }
-    if (vigenciaInicio.present) {
-      map['vigencia_inicio'] = Variable<String>(vigenciaInicio.value);
-    }
-    if (vigenciaFim.present) {
-      map['vigencia_fim'] = Variable<String>(vigenciaFim.value);
-    }
-    if (valor.present) {
-      map['valor'] = Variable<int>(valor.value);
-    }
-    if (unidade.present) {
-      map['unidade'] = Variable<String>(unidade.value);
-    }
-    if (fonteLegal.present) {
-      map['fonte_legal'] = Variable<String>(fonteLegal.value);
-    }
-    if (statusValidacao.present) {
-      map['status_validacao'] = Variable<String>(statusValidacao.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatParametrosFiscaisCompanion(')
-          ..write('chave: $chave, ')
-          ..write('vigenciaInicio: $vigenciaInicio, ')
-          ..write('vigenciaFim: $vigenciaFim, ')
-          ..write('valor: $valor, ')
-          ..write('unidade: $unidade, ')
-          ..write('fonteLegal: $fonteLegal, ')
-          ..write('statusValidacao: $statusValidacao, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class CatFeriadosBancarios extends Table
-    with TableInfo<CatFeriadosBancarios, CatFeriadoBancario> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatFeriadosBancarios(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _dataMeta = const VerificationMeta('data');
-  late final GeneratedColumn<String> data = GeneratedColumn<String>(
-    'data',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL PRIMARY KEY',
-  );
-  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
-  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
-    'nome',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  @override
-  List<GeneratedColumn> get $columns => [data, nome];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_feriados_bancarios';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatFeriadoBancario> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('data')) {
-      context.handle(
-        _dataMeta,
-        this.data.isAcceptableOrUnknown(data['data']!, _dataMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_dataMeta);
-    }
-    if (data.containsKey('nome')) {
-      context.handle(
-        _nomeMeta,
-        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nomeMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {data};
-  @override
-  CatFeriadoBancario map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatFeriadoBancario(
-      data: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}data'],
-      )!,
-      nome: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}nome'],
-      )!,
-    );
-  }
-
-  @override
-  CatFeriadosBancarios createAlias(String alias) {
-    return CatFeriadosBancarios(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatFeriadoBancario extends DataClass
-    implements Insertable<CatFeriadoBancario> {
-  final String data;
-  final String nome;
-  const CatFeriadoBancario({required this.data, required this.nome});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['data'] = Variable<String>(data);
-    map['nome'] = Variable<String>(nome);
-    return map;
-  }
-
-  CatFeriadosBancariosCompanion toCompanion(bool nullToAbsent) {
-    return CatFeriadosBancariosCompanion(data: Value(data), nome: Value(nome));
-  }
-
-  factory CatFeriadoBancario.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatFeriadoBancario(
-      data: serializer.fromJson<String>(json['data']),
-      nome: serializer.fromJson<String>(json['nome']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'data': serializer.toJson<String>(data),
-      'nome': serializer.toJson<String>(nome),
-    };
-  }
-
-  CatFeriadoBancario copyWith({String? data, String? nome}) =>
-      CatFeriadoBancario(data: data ?? this.data, nome: nome ?? this.nome);
-  CatFeriadoBancario copyWithCompanion(CatFeriadosBancariosCompanion data) {
-    return CatFeriadoBancario(
-      data: data.data.present ? data.data.value : this.data,
-      nome: data.nome.present ? data.nome.value : this.nome,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatFeriadoBancario(')
-          ..write('data: $data, ')
-          ..write('nome: $nome')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(data, nome);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatFeriadoBancario &&
-          other.data == this.data &&
-          other.nome == this.nome);
-}
-
-class CatFeriadosBancariosCompanion
-    extends UpdateCompanion<CatFeriadoBancario> {
-  final Value<String> data;
-  final Value<String> nome;
-  final Value<int> rowid;
-  const CatFeriadosBancariosCompanion({
-    this.data = const Value.absent(),
-    this.nome = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CatFeriadosBancariosCompanion.insert({
-    required String data,
-    required String nome,
-    this.rowid = const Value.absent(),
-  }) : data = Value(data),
-       nome = Value(nome);
-  static Insertable<CatFeriadoBancario> custom({
-    Expression<String>? data,
-    Expression<String>? nome,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (data != null) 'data': data,
-      if (nome != null) 'nome': nome,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CatFeriadosBancariosCompanion copyWith({
-    Value<String>? data,
-    Value<String>? nome,
-    Value<int>? rowid,
-  }) {
-    return CatFeriadosBancariosCompanion(
-      data: data ?? this.data,
-      nome: nome ?? this.nome,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (data.present) {
-      map['data'] = Variable<String>(data.value);
-    }
-    if (nome.present) {
-      map['nome'] = Variable<String>(nome.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatFeriadosBancariosCompanion(')
-          ..write('data: $data, ')
-          ..write('nome: $nome, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class CatRubricas extends Table with TableInfo<CatRubricas, CatRubrica> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatRubricas(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _codigoMeta = const VerificationMeta('codigo');
-  late final GeneratedColumn<String> codigo = GeneratedColumn<String>(
-    'codigo',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL PRIMARY KEY',
-  );
-  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
-  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
-    'nome',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _dedutivelMeta = const VerificationMeta(
-    'dedutivel',
-  );
-  late final GeneratedColumn<int> dedutivel = GeneratedColumn<int>(
-    'dedutivel',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _travaHomeOfficeMeta = const VerificationMeta(
-    'travaHomeOffice',
-  );
-  late final GeneratedColumn<int> travaHomeOffice = GeneratedColumn<int>(
-    'trava_home_office',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 0',
-    defaultValue: const CustomExpression('0'),
-  );
-  static const VerificationMeta _exigeValidacaoContadorMeta =
-      const VerificationMeta('exigeValidacaoContador');
-  late final GeneratedColumn<int> exigeValidacaoContador = GeneratedColumn<int>(
-    'exige_validacao_contador',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 0',
-    defaultValue: const CustomExpression('0'),
-  );
-  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
-  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
-    'ordem',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: '',
-  );
-  static const VerificationMeta _ativoMeta = const VerificationMeta('ativo');
-  late final GeneratedColumn<int> ativo = GeneratedColumn<int>(
-    'ativo',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 1',
-    defaultValue: const CustomExpression('1'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    codigo,
-    nome,
-    dedutivel,
-    travaHomeOffice,
-    exigeValidacaoContador,
-    ordem,
-    ativo,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_rubricas';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatRubrica> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('codigo')) {
-      context.handle(
-        _codigoMeta,
-        codigo.isAcceptableOrUnknown(data['codigo']!, _codigoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_codigoMeta);
-    }
-    if (data.containsKey('nome')) {
-      context.handle(
-        _nomeMeta,
-        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nomeMeta);
-    }
-    if (data.containsKey('dedutivel')) {
-      context.handle(
-        _dedutivelMeta,
-        dedutivel.isAcceptableOrUnknown(data['dedutivel']!, _dedutivelMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_dedutivelMeta);
-    }
-    if (data.containsKey('trava_home_office')) {
-      context.handle(
-        _travaHomeOfficeMeta,
-        travaHomeOffice.isAcceptableOrUnknown(
-          data['trava_home_office']!,
-          _travaHomeOfficeMeta,
-        ),
-      );
-    }
-    if (data.containsKey('exige_validacao_contador')) {
-      context.handle(
-        _exigeValidacaoContadorMeta,
-        exigeValidacaoContador.isAcceptableOrUnknown(
-          data['exige_validacao_contador']!,
-          _exigeValidacaoContadorMeta,
-        ),
-      );
-    }
-    if (data.containsKey('ordem')) {
-      context.handle(
-        _ordemMeta,
-        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
-      );
-    }
-    if (data.containsKey('ativo')) {
-      context.handle(
-        _ativoMeta,
-        ativo.isAcceptableOrUnknown(data['ativo']!, _ativoMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {codigo};
-  @override
-  CatRubrica map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatRubrica(
-      codigo: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}codigo'],
-      )!,
-      nome: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}nome'],
-      )!,
-      dedutivel: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}dedutivel'],
-      )!,
-      travaHomeOffice: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}trava_home_office'],
-      )!,
-      exigeValidacaoContador: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}exige_validacao_contador'],
-      )!,
-      ordem: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}ordem'],
-      ),
-      ativo: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}ativo'],
-      )!,
-    );
-  }
-
-  @override
-  CatRubricas createAlias(String alias) {
-    return CatRubricas(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatRubrica extends DataClass implements Insertable<CatRubrica> {
-  final String codigo;
-  final String nome;
-  final int dedutivel;
-  final int travaHomeOffice;
-  final int exigeValidacaoContador;
-  final int? ordem;
-  final int ativo;
-  const CatRubrica({
-    required this.codigo,
-    required this.nome,
-    required this.dedutivel,
-    required this.travaHomeOffice,
-    required this.exigeValidacaoContador,
-    this.ordem,
-    required this.ativo,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['codigo'] = Variable<String>(codigo);
-    map['nome'] = Variable<String>(nome);
-    map['dedutivel'] = Variable<int>(dedutivel);
-    map['trava_home_office'] = Variable<int>(travaHomeOffice);
-    map['exige_validacao_contador'] = Variable<int>(exigeValidacaoContador);
-    if (!nullToAbsent || ordem != null) {
-      map['ordem'] = Variable<int>(ordem);
-    }
-    map['ativo'] = Variable<int>(ativo);
-    return map;
-  }
-
-  CatRubricasCompanion toCompanion(bool nullToAbsent) {
-    return CatRubricasCompanion(
-      codigo: Value(codigo),
-      nome: Value(nome),
-      dedutivel: Value(dedutivel),
-      travaHomeOffice: Value(travaHomeOffice),
-      exigeValidacaoContador: Value(exigeValidacaoContador),
-      ordem: ordem == null && nullToAbsent
-          ? const Value.absent()
-          : Value(ordem),
-      ativo: Value(ativo),
-    );
-  }
-
-  factory CatRubrica.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatRubrica(
-      codigo: serializer.fromJson<String>(json['codigo']),
-      nome: serializer.fromJson<String>(json['nome']),
-      dedutivel: serializer.fromJson<int>(json['dedutivel']),
-      travaHomeOffice: serializer.fromJson<int>(json['trava_home_office']),
-      exigeValidacaoContador: serializer.fromJson<int>(
-        json['exige_validacao_contador'],
-      ),
-      ordem: serializer.fromJson<int?>(json['ordem']),
-      ativo: serializer.fromJson<int>(json['ativo']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'codigo': serializer.toJson<String>(codigo),
-      'nome': serializer.toJson<String>(nome),
-      'dedutivel': serializer.toJson<int>(dedutivel),
-      'trava_home_office': serializer.toJson<int>(travaHomeOffice),
-      'exige_validacao_contador': serializer.toJson<int>(
-        exigeValidacaoContador,
-      ),
-      'ordem': serializer.toJson<int?>(ordem),
-      'ativo': serializer.toJson<int>(ativo),
-    };
-  }
-
-  CatRubrica copyWith({
-    String? codigo,
-    String? nome,
-    int? dedutivel,
-    int? travaHomeOffice,
-    int? exigeValidacaoContador,
-    Value<int?> ordem = const Value.absent(),
-    int? ativo,
-  }) => CatRubrica(
-    codigo: codigo ?? this.codigo,
-    nome: nome ?? this.nome,
-    dedutivel: dedutivel ?? this.dedutivel,
-    travaHomeOffice: travaHomeOffice ?? this.travaHomeOffice,
-    exigeValidacaoContador:
-        exigeValidacaoContador ?? this.exigeValidacaoContador,
-    ordem: ordem.present ? ordem.value : this.ordem,
-    ativo: ativo ?? this.ativo,
-  );
-  CatRubrica copyWithCompanion(CatRubricasCompanion data) {
-    return CatRubrica(
-      codigo: data.codigo.present ? data.codigo.value : this.codigo,
-      nome: data.nome.present ? data.nome.value : this.nome,
-      dedutivel: data.dedutivel.present ? data.dedutivel.value : this.dedutivel,
-      travaHomeOffice: data.travaHomeOffice.present
-          ? data.travaHomeOffice.value
-          : this.travaHomeOffice,
-      exigeValidacaoContador: data.exigeValidacaoContador.present
-          ? data.exigeValidacaoContador.value
-          : this.exigeValidacaoContador,
-      ordem: data.ordem.present ? data.ordem.value : this.ordem,
-      ativo: data.ativo.present ? data.ativo.value : this.ativo,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatRubrica(')
-          ..write('codigo: $codigo, ')
-          ..write('nome: $nome, ')
-          ..write('dedutivel: $dedutivel, ')
-          ..write('travaHomeOffice: $travaHomeOffice, ')
-          ..write('exigeValidacaoContador: $exigeValidacaoContador, ')
-          ..write('ordem: $ordem, ')
-          ..write('ativo: $ativo')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    codigo,
-    nome,
-    dedutivel,
-    travaHomeOffice,
-    exigeValidacaoContador,
-    ordem,
-    ativo,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatRubrica &&
-          other.codigo == this.codigo &&
-          other.nome == this.nome &&
-          other.dedutivel == this.dedutivel &&
-          other.travaHomeOffice == this.travaHomeOffice &&
-          other.exigeValidacaoContador == this.exigeValidacaoContador &&
-          other.ordem == this.ordem &&
-          other.ativo == this.ativo);
-}
-
-class CatRubricasCompanion extends UpdateCompanion<CatRubrica> {
-  final Value<String> codigo;
-  final Value<String> nome;
-  final Value<int> dedutivel;
-  final Value<int> travaHomeOffice;
-  final Value<int> exigeValidacaoContador;
-  final Value<int?> ordem;
-  final Value<int> ativo;
-  final Value<int> rowid;
-  const CatRubricasCompanion({
-    this.codigo = const Value.absent(),
-    this.nome = const Value.absent(),
-    this.dedutivel = const Value.absent(),
-    this.travaHomeOffice = const Value.absent(),
-    this.exigeValidacaoContador = const Value.absent(),
-    this.ordem = const Value.absent(),
-    this.ativo = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CatRubricasCompanion.insert({
-    required String codigo,
-    required String nome,
-    required int dedutivel,
-    this.travaHomeOffice = const Value.absent(),
-    this.exigeValidacaoContador = const Value.absent(),
-    this.ordem = const Value.absent(),
-    this.ativo = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : codigo = Value(codigo),
-       nome = Value(nome),
-       dedutivel = Value(dedutivel);
-  static Insertable<CatRubrica> custom({
-    Expression<String>? codigo,
-    Expression<String>? nome,
-    Expression<int>? dedutivel,
-    Expression<int>? travaHomeOffice,
-    Expression<int>? exigeValidacaoContador,
-    Expression<int>? ordem,
-    Expression<int>? ativo,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (codigo != null) 'codigo': codigo,
-      if (nome != null) 'nome': nome,
-      if (dedutivel != null) 'dedutivel': dedutivel,
-      if (travaHomeOffice != null) 'trava_home_office': travaHomeOffice,
-      if (exigeValidacaoContador != null)
-        'exige_validacao_contador': exigeValidacaoContador,
-      if (ordem != null) 'ordem': ordem,
-      if (ativo != null) 'ativo': ativo,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CatRubricasCompanion copyWith({
-    Value<String>? codigo,
-    Value<String>? nome,
-    Value<int>? dedutivel,
-    Value<int>? travaHomeOffice,
-    Value<int>? exigeValidacaoContador,
-    Value<int?>? ordem,
-    Value<int>? ativo,
-    Value<int>? rowid,
-  }) {
-    return CatRubricasCompanion(
-      codigo: codigo ?? this.codigo,
-      nome: nome ?? this.nome,
-      dedutivel: dedutivel ?? this.dedutivel,
-      travaHomeOffice: travaHomeOffice ?? this.travaHomeOffice,
-      exigeValidacaoContador:
-          exigeValidacaoContador ?? this.exigeValidacaoContador,
-      ordem: ordem ?? this.ordem,
-      ativo: ativo ?? this.ativo,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (codigo.present) {
-      map['codigo'] = Variable<String>(codigo.value);
-    }
-    if (nome.present) {
-      map['nome'] = Variable<String>(nome.value);
-    }
-    if (dedutivel.present) {
-      map['dedutivel'] = Variable<int>(dedutivel.value);
-    }
-    if (travaHomeOffice.present) {
-      map['trava_home_office'] = Variable<int>(travaHomeOffice.value);
-    }
-    if (exigeValidacaoContador.present) {
-      map['exige_validacao_contador'] = Variable<int>(
-        exigeValidacaoContador.value,
-      );
-    }
-    if (ordem.present) {
-      map['ordem'] = Variable<int>(ordem.value);
-    }
-    if (ativo.present) {
-      map['ativo'] = Variable<int>(ativo.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatRubricasCompanion(')
-          ..write('codigo: $codigo, ')
-          ..write('nome: $nome, ')
-          ..write('dedutivel: $dedutivel, ')
-          ..write('travaHomeOffice: $travaHomeOffice, ')
-          ..write('exigeValidacaoContador: $exigeValidacaoContador, ')
-          ..write('ordem: $ordem, ')
-          ..write('ativo: $ativo, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class CatProfissoes extends Table with TableInfo<CatProfissoes, CatProfissao> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatProfissoes(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _codigoMeta = const VerificationMeta('codigo');
-  late final GeneratedColumn<String> codigo = GeneratedColumn<String>(
-    'codigo',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL PRIMARY KEY',
-  );
-  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
-  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
-    'nome',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _regulamentadaMeta = const VerificationMeta(
-    'regulamentada',
-  );
-  late final GeneratedColumn<int> regulamentada = GeneratedColumn<int>(
-    'regulamentada',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _conselhoMeta = const VerificationMeta(
-    'conselho',
-  );
-  late final GeneratedColumn<String> conselho = GeneratedColumn<String>(
-    'conselho',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    $customConstraints: '',
-  );
-  static const VerificationMeta _meiPermitidoMeta = const VerificationMeta(
-    'meiPermitido',
-  );
-  late final GeneratedColumn<int> meiPermitido = GeneratedColumn<int>(
-    'mei_permitido',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: '',
-  );
-  static const VerificationMeta _ativoMeta = const VerificationMeta('ativo');
-  late final GeneratedColumn<int> ativo = GeneratedColumn<int>(
-    'ativo',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 1',
-    defaultValue: const CustomExpression('1'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    codigo,
-    nome,
-    regulamentada,
-    conselho,
-    meiPermitido,
-    ativo,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_profissoes';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatProfissao> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('codigo')) {
-      context.handle(
-        _codigoMeta,
-        codigo.isAcceptableOrUnknown(data['codigo']!, _codigoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_codigoMeta);
-    }
-    if (data.containsKey('nome')) {
-      context.handle(
-        _nomeMeta,
-        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nomeMeta);
-    }
-    if (data.containsKey('regulamentada')) {
-      context.handle(
-        _regulamentadaMeta,
-        regulamentada.isAcceptableOrUnknown(
-          data['regulamentada']!,
-          _regulamentadaMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_regulamentadaMeta);
-    }
-    if (data.containsKey('conselho')) {
-      context.handle(
-        _conselhoMeta,
-        conselho.isAcceptableOrUnknown(data['conselho']!, _conselhoMeta),
-      );
-    }
-    if (data.containsKey('mei_permitido')) {
-      context.handle(
-        _meiPermitidoMeta,
-        meiPermitido.isAcceptableOrUnknown(
-          data['mei_permitido']!,
-          _meiPermitidoMeta,
-        ),
-      );
-    }
-    if (data.containsKey('ativo')) {
-      context.handle(
-        _ativoMeta,
-        ativo.isAcceptableOrUnknown(data['ativo']!, _ativoMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {codigo};
-  @override
-  CatProfissao map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatProfissao(
-      codigo: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}codigo'],
-      )!,
-      nome: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}nome'],
-      )!,
-      regulamentada: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}regulamentada'],
-      )!,
-      conselho: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}conselho'],
-      ),
-      meiPermitido: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}mei_permitido'],
-      ),
-      ativo: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}ativo'],
-      )!,
-    );
-  }
-
-  @override
-  CatProfissoes createAlias(String alias) {
-    return CatProfissoes(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatProfissao extends DataClass implements Insertable<CatProfissao> {
-  final String codigo;
-  final String nome;
-  final int regulamentada;
-
-  /// ativa exigência de CPF do pagador
-  final String? conselho;
-  final int? meiPermitido;
-
-  /// NULL = validar; alerta de radar
-  final int ativo;
-  const CatProfissao({
-    required this.codigo,
-    required this.nome,
-    required this.regulamentada,
-    this.conselho,
-    this.meiPermitido,
-    required this.ativo,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['codigo'] = Variable<String>(codigo);
-    map['nome'] = Variable<String>(nome);
-    map['regulamentada'] = Variable<int>(regulamentada);
-    if (!nullToAbsent || conselho != null) {
-      map['conselho'] = Variable<String>(conselho);
-    }
-    if (!nullToAbsent || meiPermitido != null) {
-      map['mei_permitido'] = Variable<int>(meiPermitido);
-    }
-    map['ativo'] = Variable<int>(ativo);
-    return map;
-  }
-
-  CatProfissoesCompanion toCompanion(bool nullToAbsent) {
-    return CatProfissoesCompanion(
-      codigo: Value(codigo),
-      nome: Value(nome),
-      regulamentada: Value(regulamentada),
-      conselho: conselho == null && nullToAbsent
-          ? const Value.absent()
-          : Value(conselho),
-      meiPermitido: meiPermitido == null && nullToAbsent
-          ? const Value.absent()
-          : Value(meiPermitido),
-      ativo: Value(ativo),
-    );
-  }
-
-  factory CatProfissao.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatProfissao(
-      codigo: serializer.fromJson<String>(json['codigo']),
-      nome: serializer.fromJson<String>(json['nome']),
-      regulamentada: serializer.fromJson<int>(json['regulamentada']),
-      conselho: serializer.fromJson<String?>(json['conselho']),
-      meiPermitido: serializer.fromJson<int?>(json['mei_permitido']),
-      ativo: serializer.fromJson<int>(json['ativo']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'codigo': serializer.toJson<String>(codigo),
-      'nome': serializer.toJson<String>(nome),
-      'regulamentada': serializer.toJson<int>(regulamentada),
-      'conselho': serializer.toJson<String?>(conselho),
-      'mei_permitido': serializer.toJson<int?>(meiPermitido),
-      'ativo': serializer.toJson<int>(ativo),
-    };
-  }
-
-  CatProfissao copyWith({
-    String? codigo,
-    String? nome,
-    int? regulamentada,
-    Value<String?> conselho = const Value.absent(),
-    Value<int?> meiPermitido = const Value.absent(),
-    int? ativo,
-  }) => CatProfissao(
-    codigo: codigo ?? this.codigo,
-    nome: nome ?? this.nome,
-    regulamentada: regulamentada ?? this.regulamentada,
-    conselho: conselho.present ? conselho.value : this.conselho,
-    meiPermitido: meiPermitido.present ? meiPermitido.value : this.meiPermitido,
-    ativo: ativo ?? this.ativo,
-  );
-  CatProfissao copyWithCompanion(CatProfissoesCompanion data) {
-    return CatProfissao(
-      codigo: data.codigo.present ? data.codigo.value : this.codigo,
-      nome: data.nome.present ? data.nome.value : this.nome,
-      regulamentada: data.regulamentada.present
-          ? data.regulamentada.value
-          : this.regulamentada,
-      conselho: data.conselho.present ? data.conselho.value : this.conselho,
-      meiPermitido: data.meiPermitido.present
-          ? data.meiPermitido.value
-          : this.meiPermitido,
-      ativo: data.ativo.present ? data.ativo.value : this.ativo,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatProfissao(')
-          ..write('codigo: $codigo, ')
-          ..write('nome: $nome, ')
-          ..write('regulamentada: $regulamentada, ')
-          ..write('conselho: $conselho, ')
-          ..write('meiPermitido: $meiPermitido, ')
-          ..write('ativo: $ativo')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(codigo, nome, regulamentada, conselho, meiPermitido, ativo);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatProfissao &&
-          other.codigo == this.codigo &&
-          other.nome == this.nome &&
-          other.regulamentada == this.regulamentada &&
-          other.conselho == this.conselho &&
-          other.meiPermitido == this.meiPermitido &&
-          other.ativo == this.ativo);
-}
-
-class CatProfissoesCompanion extends UpdateCompanion<CatProfissao> {
-  final Value<String> codigo;
-  final Value<String> nome;
-  final Value<int> regulamentada;
-  final Value<String?> conselho;
-  final Value<int?> meiPermitido;
-  final Value<int> ativo;
-  final Value<int> rowid;
-  const CatProfissoesCompanion({
-    this.codigo = const Value.absent(),
-    this.nome = const Value.absent(),
-    this.regulamentada = const Value.absent(),
-    this.conselho = const Value.absent(),
-    this.meiPermitido = const Value.absent(),
-    this.ativo = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CatProfissoesCompanion.insert({
-    required String codigo,
-    required String nome,
-    required int regulamentada,
-    this.conselho = const Value.absent(),
-    this.meiPermitido = const Value.absent(),
-    this.ativo = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : codigo = Value(codigo),
-       nome = Value(nome),
-       regulamentada = Value(regulamentada);
-  static Insertable<CatProfissao> custom({
-    Expression<String>? codigo,
-    Expression<String>? nome,
-    Expression<int>? regulamentada,
-    Expression<String>? conselho,
-    Expression<int>? meiPermitido,
-    Expression<int>? ativo,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (codigo != null) 'codigo': codigo,
-      if (nome != null) 'nome': nome,
-      if (regulamentada != null) 'regulamentada': regulamentada,
-      if (conselho != null) 'conselho': conselho,
-      if (meiPermitido != null) 'mei_permitido': meiPermitido,
-      if (ativo != null) 'ativo': ativo,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CatProfissoesCompanion copyWith({
-    Value<String>? codigo,
-    Value<String>? nome,
-    Value<int>? regulamentada,
-    Value<String?>? conselho,
-    Value<int?>? meiPermitido,
-    Value<int>? ativo,
-    Value<int>? rowid,
-  }) {
-    return CatProfissoesCompanion(
-      codigo: codigo ?? this.codigo,
-      nome: nome ?? this.nome,
-      regulamentada: regulamentada ?? this.regulamentada,
-      conselho: conselho ?? this.conselho,
-      meiPermitido: meiPermitido ?? this.meiPermitido,
-      ativo: ativo ?? this.ativo,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (codigo.present) {
-      map['codigo'] = Variable<String>(codigo.value);
-    }
-    if (nome.present) {
-      map['nome'] = Variable<String>(nome.value);
-    }
-    if (regulamentada.present) {
-      map['regulamentada'] = Variable<int>(regulamentada.value);
-    }
-    if (conselho.present) {
-      map['conselho'] = Variable<String>(conselho.value);
-    }
-    if (meiPermitido.present) {
-      map['mei_permitido'] = Variable<int>(meiPermitido.value);
-    }
-    if (ativo.present) {
-      map['ativo'] = Variable<int>(ativo.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatProfissoesCompanion(')
-          ..write('codigo: $codigo, ')
-          ..write('nome: $nome, ')
-          ..write('regulamentada: $regulamentada, ')
-          ..write('conselho: $conselho, ')
-          ..write('meiPermitido: $meiPermitido, ')
-          ..write('ativo: $ativo, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class CatPerfisParser extends Table
-    with TableInfo<CatPerfisParser, CatPerfilParser> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  CatPerfisParser(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _codigoMeta = const VerificationMeta('codigo');
-  late final GeneratedColumn<String> codigo = GeneratedColumn<String>(
-    'codigo',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL PRIMARY KEY',
-  );
-  static const VerificationMeta _bancoNomeMeta = const VerificationMeta(
-    'bancoNome',
-  );
-  late final GeneratedColumn<String> bancoNome = GeneratedColumn<String>(
-    'banco_nome',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _formatoMeta = const VerificationMeta(
-    'formato',
-  );
-  late final GeneratedColumn<String> formato = GeneratedColumn<String>(
-    'formato',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL CHECK (formato IN (\'ofx\', \'csv\'))',
-  );
-  static const VerificationMeta _definicaoJsonMeta = const VerificationMeta(
-    'definicaoJson',
-  );
-  late final GeneratedColumn<String> definicaoJson = GeneratedColumn<String>(
-    'definicao_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  static const VerificationMeta _versaoMeta = const VerificationMeta('versao');
-  late final GeneratedColumn<int> versao = GeneratedColumn<int>(
-    'versao',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    codigo,
-    bancoNome,
-    formato,
-    definicaoJson,
-    versao,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'cat_perfis_parser';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CatPerfilParser> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('codigo')) {
-      context.handle(
-        _codigoMeta,
-        codigo.isAcceptableOrUnknown(data['codigo']!, _codigoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_codigoMeta);
-    }
-    if (data.containsKey('banco_nome')) {
-      context.handle(
-        _bancoNomeMeta,
-        bancoNome.isAcceptableOrUnknown(data['banco_nome']!, _bancoNomeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_bancoNomeMeta);
-    }
-    if (data.containsKey('formato')) {
-      context.handle(
-        _formatoMeta,
-        formato.isAcceptableOrUnknown(data['formato']!, _formatoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_formatoMeta);
-    }
-    if (data.containsKey('definicao_json')) {
-      context.handle(
-        _definicaoJsonMeta,
-        definicaoJson.isAcceptableOrUnknown(
-          data['definicao_json']!,
-          _definicaoJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_definicaoJsonMeta);
-    }
-    if (data.containsKey('versao')) {
-      context.handle(
-        _versaoMeta,
-        versao.isAcceptableOrUnknown(data['versao']!, _versaoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_versaoMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {codigo};
-  @override
-  CatPerfilParser map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatPerfilParser(
-      codigo: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}codigo'],
-      )!,
-      bancoNome: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}banco_nome'],
-      )!,
-      formato: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}formato'],
-      )!,
-      definicaoJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}definicao_json'],
-      )!,
-      versao: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}versao'],
-      )!,
-    );
-  }
-
-  @override
-  CatPerfisParser createAlias(String alias) {
-    return CatPerfisParser(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class CatPerfilParser extends DataClass implements Insertable<CatPerfilParser> {
-  final String codigo;
-
-  /// 'nubank_csv_v2', 'itau_ofx'
-  final String bancoNome;
-  final String formato;
-  final String definicaoJson;
-  final int versao;
-  const CatPerfilParser({
-    required this.codigo,
-    required this.bancoNome,
-    required this.formato,
-    required this.definicaoJson,
-    required this.versao,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['codigo'] = Variable<String>(codigo);
-    map['banco_nome'] = Variable<String>(bancoNome);
-    map['formato'] = Variable<String>(formato);
-    map['definicao_json'] = Variable<String>(definicaoJson);
-    map['versao'] = Variable<int>(versao);
-    return map;
-  }
-
-  CatPerfisParserCompanion toCompanion(bool nullToAbsent) {
-    return CatPerfisParserCompanion(
-      codigo: Value(codigo),
-      bancoNome: Value(bancoNome),
-      formato: Value(formato),
-      definicaoJson: Value(definicaoJson),
-      versao: Value(versao),
-    );
-  }
-
-  factory CatPerfilParser.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatPerfilParser(
-      codigo: serializer.fromJson<String>(json['codigo']),
-      bancoNome: serializer.fromJson<String>(json['banco_nome']),
-      formato: serializer.fromJson<String>(json['formato']),
-      definicaoJson: serializer.fromJson<String>(json['definicao_json']),
-      versao: serializer.fromJson<int>(json['versao']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'codigo': serializer.toJson<String>(codigo),
-      'banco_nome': serializer.toJson<String>(bancoNome),
-      'formato': serializer.toJson<String>(formato),
-      'definicao_json': serializer.toJson<String>(definicaoJson),
-      'versao': serializer.toJson<int>(versao),
-    };
-  }
-
-  CatPerfilParser copyWith({
-    String? codigo,
-    String? bancoNome,
-    String? formato,
-    String? definicaoJson,
-    int? versao,
-  }) => CatPerfilParser(
-    codigo: codigo ?? this.codigo,
-    bancoNome: bancoNome ?? this.bancoNome,
-    formato: formato ?? this.formato,
-    definicaoJson: definicaoJson ?? this.definicaoJson,
-    versao: versao ?? this.versao,
-  );
-  CatPerfilParser copyWithCompanion(CatPerfisParserCompanion data) {
-    return CatPerfilParser(
-      codigo: data.codigo.present ? data.codigo.value : this.codigo,
-      bancoNome: data.bancoNome.present ? data.bancoNome.value : this.bancoNome,
-      formato: data.formato.present ? data.formato.value : this.formato,
-      definicaoJson: data.definicaoJson.present
-          ? data.definicaoJson.value
-          : this.definicaoJson,
-      versao: data.versao.present ? data.versao.value : this.versao,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatPerfilParser(')
-          ..write('codigo: $codigo, ')
-          ..write('bancoNome: $bancoNome, ')
-          ..write('formato: $formato, ')
-          ..write('definicaoJson: $definicaoJson, ')
-          ..write('versao: $versao')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(codigo, bancoNome, formato, definicaoJson, versao);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CatPerfilParser &&
-          other.codigo == this.codigo &&
-          other.bancoNome == this.bancoNome &&
-          other.formato == this.formato &&
-          other.definicaoJson == this.definicaoJson &&
-          other.versao == this.versao);
-}
-
-class CatPerfisParserCompanion extends UpdateCompanion<CatPerfilParser> {
-  final Value<String> codigo;
-  final Value<String> bancoNome;
-  final Value<String> formato;
-  final Value<String> definicaoJson;
-  final Value<int> versao;
-  final Value<int> rowid;
-  const CatPerfisParserCompanion({
-    this.codigo = const Value.absent(),
-    this.bancoNome = const Value.absent(),
-    this.formato = const Value.absent(),
-    this.definicaoJson = const Value.absent(),
-    this.versao = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CatPerfisParserCompanion.insert({
-    required String codigo,
-    required String bancoNome,
-    required String formato,
-    required String definicaoJson,
-    required int versao,
-    this.rowid = const Value.absent(),
-  }) : codigo = Value(codigo),
-       bancoNome = Value(bancoNome),
-       formato = Value(formato),
-       definicaoJson = Value(definicaoJson),
-       versao = Value(versao);
-  static Insertable<CatPerfilParser> custom({
-    Expression<String>? codigo,
-    Expression<String>? bancoNome,
-    Expression<String>? formato,
-    Expression<String>? definicaoJson,
-    Expression<int>? versao,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (codigo != null) 'codigo': codigo,
-      if (bancoNome != null) 'banco_nome': bancoNome,
-      if (formato != null) 'formato': formato,
-      if (definicaoJson != null) 'definicao_json': definicaoJson,
-      if (versao != null) 'versao': versao,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CatPerfisParserCompanion copyWith({
-    Value<String>? codigo,
-    Value<String>? bancoNome,
-    Value<String>? formato,
-    Value<String>? definicaoJson,
-    Value<int>? versao,
-    Value<int>? rowid,
-  }) {
-    return CatPerfisParserCompanion(
-      codigo: codigo ?? this.codigo,
-      bancoNome: bancoNome ?? this.bancoNome,
-      formato: formato ?? this.formato,
-      definicaoJson: definicaoJson ?? this.definicaoJson,
-      versao: versao ?? this.versao,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (codigo.present) {
-      map['codigo'] = Variable<String>(codigo.value);
-    }
-    if (bancoNome.present) {
-      map['banco_nome'] = Variable<String>(bancoNome.value);
-    }
-    if (formato.present) {
-      map['formato'] = Variable<String>(formato.value);
-    }
-    if (definicaoJson.present) {
-      map['definicao_json'] = Variable<String>(definicaoJson.value);
-    }
-    if (versao.present) {
-      map['versao'] = Variable<int>(versao.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CatPerfisParserCompanion(')
-          ..write('codigo: $codigo, ')
-          ..write('bancoNome: $bancoNome, ')
-          ..write('formato: $formato, ')
-          ..write('definicaoJson: $definicaoJson, ')
-          ..write('versao: $versao, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class Perfil extends Table with TableInfo<Perfil, PerfilLocal> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -3210,7 +55,7 @@ class Perfil extends Table with TableInfo<Perfil, PerfilLocal> {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    $customConstraints: 'REFERENCES cat_profissoes(codigo)',
+    $customConstraints: '',
   );
   static const VerificationMeta _exigeCpfPagadorMeta = const VerificationMeta(
     'exigeCpfPagador',
@@ -3449,6 +294,8 @@ class PerfilLocal extends DataClass implements Insertable<PerfilLocal> {
 
   /// claro dentro do arquivo cifrado
   final String? profissaoCodigo;
+
+  /// id de `profissao` no catálogo
   final int exigeCpfPagador;
   final int onboardingCompleto;
   final int? codigoRecuperacaoConfirmadoEm;
@@ -6300,6 +3147,17 @@ class Remetentes extends Table with TableInfo<Remetentes, Remetente> {
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
+  static const VerificationMeta _chaveNomeMeta = const VerificationMeta(
+    'chaveNome',
+  );
+  late final GeneratedColumn<String> chaveNome = GeneratedColumn<String>(
+    'chave_nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
   static const VerificationMeta _cpfMeta = const VerificationMeta('cpf');
   late final GeneratedColumn<String> cpf = GeneratedColumn<String>(
     'cpf',
@@ -6309,17 +3167,37 @@ class Remetentes extends Table with TableInfo<Remetentes, Remetente> {
     requiredDuringInsert: false,
     $customConstraints: '',
   );
-  static const VerificationMeta _classificacaoPadraoMeta =
-      const VerificationMeta('classificacaoPadrao');
+  static const VerificationMeta _cnpjMeta = const VerificationMeta('cnpj');
+  late final GeneratedColumn<String> cnpj = GeneratedColumn<String>(
+    'cnpj',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: '',
+  );
+  static const VerificationMeta _regraClassificacaoMeta =
+      const VerificationMeta('regraClassificacao');
   late final GeneratedColumn<String>
-  classificacaoPadrao = GeneratedColumn<String>(
-    'classificacao_padrao',
+  regraClassificacao = GeneratedColumn<String>(
+    'regra_classificacao',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     $customConstraints:
-        'CHECK (classificacao_padrao IN (\'tributavel\', \'pessoal\', \'reembolso\', \'repasse_terceiros\'))',
+        'CHECK (regra_classificacao IN (\'rendimentoPf\', \'recebidoPj\', \'pessoal\', \'reembolso\', \'repasse\'))',
+  );
+  static const VerificationMeta _regraConfirmadaEmMeta = const VerificationMeta(
+    'regraConfirmadaEm',
+  );
+  late final GeneratedColumn<int> regraConfirmadaEm = GeneratedColumn<int>(
+    'regra_confirmada_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: '',
   );
   static const VerificationMeta _titularRemetenteIdMeta =
       const VerificationMeta('titularRemetenteId');
@@ -6358,8 +3236,11 @@ class Remetentes extends Table with TableInfo<Remetentes, Remetente> {
   List<GeneratedColumn> get $columns => [
     id,
     nome,
+    chaveNome,
     cpf,
-    classificacaoPadrao,
+    cnpj,
+    regraClassificacao,
+    regraConfirmadaEm,
     titularRemetenteId,
     observacoes,
     criadoEm,
@@ -6389,18 +3270,41 @@ class Remetentes extends Table with TableInfo<Remetentes, Remetente> {
     } else if (isInserting) {
       context.missing(_nomeMeta);
     }
+    if (data.containsKey('chave_nome')) {
+      context.handle(
+        _chaveNomeMeta,
+        chaveNome.isAcceptableOrUnknown(data['chave_nome']!, _chaveNomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_chaveNomeMeta);
+    }
     if (data.containsKey('cpf')) {
       context.handle(
         _cpfMeta,
         cpf.isAcceptableOrUnknown(data['cpf']!, _cpfMeta),
       );
     }
-    if (data.containsKey('classificacao_padrao')) {
+    if (data.containsKey('cnpj')) {
       context.handle(
-        _classificacaoPadraoMeta,
-        classificacaoPadrao.isAcceptableOrUnknown(
-          data['classificacao_padrao']!,
-          _classificacaoPadraoMeta,
+        _cnpjMeta,
+        cnpj.isAcceptableOrUnknown(data['cnpj']!, _cnpjMeta),
+      );
+    }
+    if (data.containsKey('regra_classificacao')) {
+      context.handle(
+        _regraClassificacaoMeta,
+        regraClassificacao.isAcceptableOrUnknown(
+          data['regra_classificacao']!,
+          _regraClassificacaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('regra_confirmada_em')) {
+      context.handle(
+        _regraConfirmadaEmMeta,
+        regraConfirmadaEm.isAcceptableOrUnknown(
+          data['regra_confirmada_em']!,
+          _regraConfirmadaEmMeta,
         ),
       );
     }
@@ -6447,13 +3351,25 @@ class Remetentes extends Table with TableInfo<Remetentes, Remetente> {
         DriftSqlType.string,
         data['${effectivePrefix}nome'],
       )!,
+      chaveNome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}chave_nome'],
+      )!,
       cpf: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}cpf'],
       ),
-      classificacaoPadrao: attachedDatabase.typeMapping.read(
+      cnpj: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}classificacao_padrao'],
+        data['${effectivePrefix}cnpj'],
+      ),
+      regraClassificacao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}regra_classificacao'],
+      ),
+      regraConfirmadaEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}regra_confirmada_em'],
       ),
       titularRemetenteId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -6476,14 +3392,26 @@ class Remetentes extends Table with TableInfo<Remetentes, Remetente> {
   }
 
   @override
+  List<String> get customConstraints => const [
+    'CHECK(cpf IS NULL OR cnpj IS NULL)',
+    'CHECK(regra_confirmada_em IS NULL OR regra_classificacao IS NOT NULL)',
+  ];
+  @override
   bool get dontWriteConstraints => true;
 }
 
 class Remetente extends DataClass implements Insertable<Remetente> {
   final String id;
   final String nome;
+  final String chaveNome;
   final String? cpf;
-  final String? classificacaoPadrao;
+  final String? cnpj;
+
+  /// recebido de PJ (rodada 4, P1)
+  /// Regra por remetente (decisão 4): proposta nasce na 1ª classificação;
+  /// confirmada, aplica-se a lançamentos NOVOS como `regraRemetente`.
+  final String? regraClassificacao;
+  final int? regraConfirmadaEm;
   final String? titularRemetenteId;
 
   /// mãe paga a sessão do filho
@@ -6492,8 +3420,11 @@ class Remetente extends DataClass implements Insertable<Remetente> {
   const Remetente({
     required this.id,
     required this.nome,
+    required this.chaveNome,
     this.cpf,
-    this.classificacaoPadrao,
+    this.cnpj,
+    this.regraClassificacao,
+    this.regraConfirmadaEm,
     this.titularRemetenteId,
     this.observacoes,
     required this.criadoEm,
@@ -6503,11 +3434,18 @@ class Remetente extends DataClass implements Insertable<Remetente> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['nome'] = Variable<String>(nome);
+    map['chave_nome'] = Variable<String>(chaveNome);
     if (!nullToAbsent || cpf != null) {
       map['cpf'] = Variable<String>(cpf);
     }
-    if (!nullToAbsent || classificacaoPadrao != null) {
-      map['classificacao_padrao'] = Variable<String>(classificacaoPadrao);
+    if (!nullToAbsent || cnpj != null) {
+      map['cnpj'] = Variable<String>(cnpj);
+    }
+    if (!nullToAbsent || regraClassificacao != null) {
+      map['regra_classificacao'] = Variable<String>(regraClassificacao);
+    }
+    if (!nullToAbsent || regraConfirmadaEm != null) {
+      map['regra_confirmada_em'] = Variable<int>(regraConfirmadaEm);
     }
     if (!nullToAbsent || titularRemetenteId != null) {
       map['titular_remetente_id'] = Variable<String>(titularRemetenteId);
@@ -6523,10 +3461,15 @@ class Remetente extends DataClass implements Insertable<Remetente> {
     return RemetentesCompanion(
       id: Value(id),
       nome: Value(nome),
+      chaveNome: Value(chaveNome),
       cpf: cpf == null && nullToAbsent ? const Value.absent() : Value(cpf),
-      classificacaoPadrao: classificacaoPadrao == null && nullToAbsent
+      cnpj: cnpj == null && nullToAbsent ? const Value.absent() : Value(cnpj),
+      regraClassificacao: regraClassificacao == null && nullToAbsent
           ? const Value.absent()
-          : Value(classificacaoPadrao),
+          : Value(regraClassificacao),
+      regraConfirmadaEm: regraConfirmadaEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(regraConfirmadaEm),
       titularRemetenteId: titularRemetenteId == null && nullToAbsent
           ? const Value.absent()
           : Value(titularRemetenteId),
@@ -6545,10 +3488,13 @@ class Remetente extends DataClass implements Insertable<Remetente> {
     return Remetente(
       id: serializer.fromJson<String>(json['id']),
       nome: serializer.fromJson<String>(json['nome']),
+      chaveNome: serializer.fromJson<String>(json['chave_nome']),
       cpf: serializer.fromJson<String?>(json['cpf']),
-      classificacaoPadrao: serializer.fromJson<String?>(
-        json['classificacao_padrao'],
+      cnpj: serializer.fromJson<String?>(json['cnpj']),
+      regraClassificacao: serializer.fromJson<String?>(
+        json['regra_classificacao'],
       ),
+      regraConfirmadaEm: serializer.fromJson<int?>(json['regra_confirmada_em']),
       titularRemetenteId: serializer.fromJson<String?>(
         json['titular_remetente_id'],
       ),
@@ -6562,8 +3508,11 @@ class Remetente extends DataClass implements Insertable<Remetente> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'nome': serializer.toJson<String>(nome),
+      'chave_nome': serializer.toJson<String>(chaveNome),
       'cpf': serializer.toJson<String?>(cpf),
-      'classificacao_padrao': serializer.toJson<String?>(classificacaoPadrao),
+      'cnpj': serializer.toJson<String?>(cnpj),
+      'regra_classificacao': serializer.toJson<String?>(regraClassificacao),
+      'regra_confirmada_em': serializer.toJson<int?>(regraConfirmadaEm),
       'titular_remetente_id': serializer.toJson<String?>(titularRemetenteId),
       'observacoes': serializer.toJson<String?>(observacoes),
       'criado_em': serializer.toJson<int>(criadoEm),
@@ -6573,18 +3522,26 @@ class Remetente extends DataClass implements Insertable<Remetente> {
   Remetente copyWith({
     String? id,
     String? nome,
+    String? chaveNome,
     Value<String?> cpf = const Value.absent(),
-    Value<String?> classificacaoPadrao = const Value.absent(),
+    Value<String?> cnpj = const Value.absent(),
+    Value<String?> regraClassificacao = const Value.absent(),
+    Value<int?> regraConfirmadaEm = const Value.absent(),
     Value<String?> titularRemetenteId = const Value.absent(),
     Value<String?> observacoes = const Value.absent(),
     int? criadoEm,
   }) => Remetente(
     id: id ?? this.id,
     nome: nome ?? this.nome,
+    chaveNome: chaveNome ?? this.chaveNome,
     cpf: cpf.present ? cpf.value : this.cpf,
-    classificacaoPadrao: classificacaoPadrao.present
-        ? classificacaoPadrao.value
-        : this.classificacaoPadrao,
+    cnpj: cnpj.present ? cnpj.value : this.cnpj,
+    regraClassificacao: regraClassificacao.present
+        ? regraClassificacao.value
+        : this.regraClassificacao,
+    regraConfirmadaEm: regraConfirmadaEm.present
+        ? regraConfirmadaEm.value
+        : this.regraConfirmadaEm,
     titularRemetenteId: titularRemetenteId.present
         ? titularRemetenteId.value
         : this.titularRemetenteId,
@@ -6595,10 +3552,15 @@ class Remetente extends DataClass implements Insertable<Remetente> {
     return Remetente(
       id: data.id.present ? data.id.value : this.id,
       nome: data.nome.present ? data.nome.value : this.nome,
+      chaveNome: data.chaveNome.present ? data.chaveNome.value : this.chaveNome,
       cpf: data.cpf.present ? data.cpf.value : this.cpf,
-      classificacaoPadrao: data.classificacaoPadrao.present
-          ? data.classificacaoPadrao.value
-          : this.classificacaoPadrao,
+      cnpj: data.cnpj.present ? data.cnpj.value : this.cnpj,
+      regraClassificacao: data.regraClassificacao.present
+          ? data.regraClassificacao.value
+          : this.regraClassificacao,
+      regraConfirmadaEm: data.regraConfirmadaEm.present
+          ? data.regraConfirmadaEm.value
+          : this.regraConfirmadaEm,
       titularRemetenteId: data.titularRemetenteId.present
           ? data.titularRemetenteId.value
           : this.titularRemetenteId,
@@ -6614,8 +3576,11 @@ class Remetente extends DataClass implements Insertable<Remetente> {
     return (StringBuffer('Remetente(')
           ..write('id: $id, ')
           ..write('nome: $nome, ')
+          ..write('chaveNome: $chaveNome, ')
           ..write('cpf: $cpf, ')
-          ..write('classificacaoPadrao: $classificacaoPadrao, ')
+          ..write('cnpj: $cnpj, ')
+          ..write('regraClassificacao: $regraClassificacao, ')
+          ..write('regraConfirmadaEm: $regraConfirmadaEm, ')
           ..write('titularRemetenteId: $titularRemetenteId, ')
           ..write('observacoes: $observacoes, ')
           ..write('criadoEm: $criadoEm')
@@ -6627,8 +3592,11 @@ class Remetente extends DataClass implements Insertable<Remetente> {
   int get hashCode => Object.hash(
     id,
     nome,
+    chaveNome,
     cpf,
-    classificacaoPadrao,
+    cnpj,
+    regraClassificacao,
+    regraConfirmadaEm,
     titularRemetenteId,
     observacoes,
     criadoEm,
@@ -6639,8 +3607,11 @@ class Remetente extends DataClass implements Insertable<Remetente> {
       (other is Remetente &&
           other.id == this.id &&
           other.nome == this.nome &&
+          other.chaveNome == this.chaveNome &&
           other.cpf == this.cpf &&
-          other.classificacaoPadrao == this.classificacaoPadrao &&
+          other.cnpj == this.cnpj &&
+          other.regraClassificacao == this.regraClassificacao &&
+          other.regraConfirmadaEm == this.regraConfirmadaEm &&
           other.titularRemetenteId == this.titularRemetenteId &&
           other.observacoes == this.observacoes &&
           other.criadoEm == this.criadoEm);
@@ -6649,8 +3620,11 @@ class Remetente extends DataClass implements Insertable<Remetente> {
 class RemetentesCompanion extends UpdateCompanion<Remetente> {
   final Value<String> id;
   final Value<String> nome;
+  final Value<String> chaveNome;
   final Value<String?> cpf;
-  final Value<String?> classificacaoPadrao;
+  final Value<String?> cnpj;
+  final Value<String?> regraClassificacao;
+  final Value<int?> regraConfirmadaEm;
   final Value<String?> titularRemetenteId;
   final Value<String?> observacoes;
   final Value<int> criadoEm;
@@ -6658,8 +3632,11 @@ class RemetentesCompanion extends UpdateCompanion<Remetente> {
   const RemetentesCompanion({
     this.id = const Value.absent(),
     this.nome = const Value.absent(),
+    this.chaveNome = const Value.absent(),
     this.cpf = const Value.absent(),
-    this.classificacaoPadrao = const Value.absent(),
+    this.cnpj = const Value.absent(),
+    this.regraClassificacao = const Value.absent(),
+    this.regraConfirmadaEm = const Value.absent(),
     this.titularRemetenteId = const Value.absent(),
     this.observacoes = const Value.absent(),
     this.criadoEm = const Value.absent(),
@@ -6668,20 +3645,27 @@ class RemetentesCompanion extends UpdateCompanion<Remetente> {
   RemetentesCompanion.insert({
     required String id,
     required String nome,
+    required String chaveNome,
     this.cpf = const Value.absent(),
-    this.classificacaoPadrao = const Value.absent(),
+    this.cnpj = const Value.absent(),
+    this.regraClassificacao = const Value.absent(),
+    this.regraConfirmadaEm = const Value.absent(),
     this.titularRemetenteId = const Value.absent(),
     this.observacoes = const Value.absent(),
     required int criadoEm,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        nome = Value(nome),
+       chaveNome = Value(chaveNome),
        criadoEm = Value(criadoEm);
   static Insertable<Remetente> custom({
     Expression<String>? id,
     Expression<String>? nome,
+    Expression<String>? chaveNome,
     Expression<String>? cpf,
-    Expression<String>? classificacaoPadrao,
+    Expression<String>? cnpj,
+    Expression<String>? regraClassificacao,
+    Expression<int>? regraConfirmadaEm,
     Expression<String>? titularRemetenteId,
     Expression<String>? observacoes,
     Expression<int>? criadoEm,
@@ -6690,9 +3674,11 @@ class RemetentesCompanion extends UpdateCompanion<Remetente> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (nome != null) 'nome': nome,
+      if (chaveNome != null) 'chave_nome': chaveNome,
       if (cpf != null) 'cpf': cpf,
-      if (classificacaoPadrao != null)
-        'classificacao_padrao': classificacaoPadrao,
+      if (cnpj != null) 'cnpj': cnpj,
+      if (regraClassificacao != null) 'regra_classificacao': regraClassificacao,
+      if (regraConfirmadaEm != null) 'regra_confirmada_em': regraConfirmadaEm,
       if (titularRemetenteId != null)
         'titular_remetente_id': titularRemetenteId,
       if (observacoes != null) 'observacoes': observacoes,
@@ -6704,8 +3690,11 @@ class RemetentesCompanion extends UpdateCompanion<Remetente> {
   RemetentesCompanion copyWith({
     Value<String>? id,
     Value<String>? nome,
+    Value<String>? chaveNome,
     Value<String?>? cpf,
-    Value<String?>? classificacaoPadrao,
+    Value<String?>? cnpj,
+    Value<String?>? regraClassificacao,
+    Value<int?>? regraConfirmadaEm,
     Value<String?>? titularRemetenteId,
     Value<String?>? observacoes,
     Value<int>? criadoEm,
@@ -6714,8 +3703,11 @@ class RemetentesCompanion extends UpdateCompanion<Remetente> {
     return RemetentesCompanion(
       id: id ?? this.id,
       nome: nome ?? this.nome,
+      chaveNome: chaveNome ?? this.chaveNome,
       cpf: cpf ?? this.cpf,
-      classificacaoPadrao: classificacaoPadrao ?? this.classificacaoPadrao,
+      cnpj: cnpj ?? this.cnpj,
+      regraClassificacao: regraClassificacao ?? this.regraClassificacao,
+      regraConfirmadaEm: regraConfirmadaEm ?? this.regraConfirmadaEm,
       titularRemetenteId: titularRemetenteId ?? this.titularRemetenteId,
       observacoes: observacoes ?? this.observacoes,
       criadoEm: criadoEm ?? this.criadoEm,
@@ -6732,11 +3724,20 @@ class RemetentesCompanion extends UpdateCompanion<Remetente> {
     if (nome.present) {
       map['nome'] = Variable<String>(nome.value);
     }
+    if (chaveNome.present) {
+      map['chave_nome'] = Variable<String>(chaveNome.value);
+    }
     if (cpf.present) {
       map['cpf'] = Variable<String>(cpf.value);
     }
-    if (classificacaoPadrao.present) {
-      map['classificacao_padrao'] = Variable<String>(classificacaoPadrao.value);
+    if (cnpj.present) {
+      map['cnpj'] = Variable<String>(cnpj.value);
+    }
+    if (regraClassificacao.present) {
+      map['regra_classificacao'] = Variable<String>(regraClassificacao.value);
+    }
+    if (regraConfirmadaEm.present) {
+      map['regra_confirmada_em'] = Variable<int>(regraConfirmadaEm.value);
     }
     if (titularRemetenteId.present) {
       map['titular_remetente_id'] = Variable<String>(titularRemetenteId.value);
@@ -6758,8 +3759,11 @@ class RemetentesCompanion extends UpdateCompanion<Remetente> {
     return (StringBuffer('RemetentesCompanion(')
           ..write('id: $id, ')
           ..write('nome: $nome, ')
+          ..write('chaveNome: $chaveNome, ')
           ..write('cpf: $cpf, ')
-          ..write('classificacaoPadrao: $classificacaoPadrao, ')
+          ..write('cnpj: $cnpj, ')
+          ..write('regraClassificacao: $regraClassificacao, ')
+          ..write('regraConfirmadaEm: $regraConfirmadaEm, ')
           ..write('titularRemetenteId: $titularRemetenteId, ')
           ..write('observacoes: $observacoes, ')
           ..write('criadoEm: $criadoEm, ')
@@ -6949,7 +3953,7 @@ class ApuracoesMensais extends Table
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     $customConstraints:
-        'NOT NULL CHECK (cenario_aplicado IN (\'real\', \'simplificado\'))',
+        'NOT NULL CHECK (cenario_aplicado IN (\'deducoesReais\', \'descontoSimplificado\'))',
   );
   static const VerificationMeta _baseCalculoCentavosMeta =
       const VerificationMeta('baseCalculoCentavos');
@@ -7037,6 +4041,29 @@ class ApuracoesMensais extends Table
         $customConstraints: 'NOT NULL DEFAULT 0',
         defaultValue: const CustomExpression('0'),
       );
+  static const VerificationMeta _totalParaDarfCentavosMeta =
+      const VerificationMeta('totalParaDarfCentavos');
+  late final GeneratedColumn<int> totalParaDarfCentavos = GeneratedColumn<int>(
+    'total_para_darf_centavos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0',
+    defaultValue: const CustomExpression('0'),
+  );
+  static const VerificationMeta _statusDarfMeta = const VerificationMeta(
+    'statusDarf',
+  );
+  late final GeneratedColumn<String> statusDarf = GeneratedColumn<String>(
+    'status_darf',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints:
+        'NOT NULL CHECK (status_darf IN (\'emitido\', \'acumulaParaProximoMes\', \'residuoParaDirpf\', \'semImposto\'))',
+  );
   static const VerificationMeta _isentoMeta = const VerificationMeta('isento');
   late final GeneratedColumn<int> isento = GeneratedColumn<int>(
     'isento',
@@ -7050,13 +4077,13 @@ class ApuracoesMensais extends Table
   static const VerificationMeta _tabelaIrpfIdMeta = const VerificationMeta(
     'tabelaIrpfId',
   );
-  late final GeneratedColumn<int> tabelaIrpfId = GeneratedColumn<int>(
+  late final GeneratedColumn<String> tabelaIrpfId = GeneratedColumn<String>(
     'tabela_irpf_id',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL REFERENCES cat_tabelas_irpf(id)',
+    $customConstraints: 'NOT NULL',
   );
   static const VerificationMeta _catalogoVersoesSnapshotMeta =
       const VerificationMeta('catalogoVersoesSnapshot');
@@ -7150,6 +4177,8 @@ class ApuracoesMensais extends Table
     impostoDevidoCentavos,
     impostoDiferidoAnteriorCentavos,
     impostoDiferidoCentavos,
+    totalParaDarfCentavos,
+    statusDarf,
     isento,
     tabelaIrpfId,
     catalogoVersoesSnapshot,
@@ -7404,6 +4433,23 @@ class ApuracoesMensais extends Table
         ),
       );
     }
+    if (data.containsKey('total_para_darf_centavos')) {
+      context.handle(
+        _totalParaDarfCentavosMeta,
+        totalParaDarfCentavos.isAcceptableOrUnknown(
+          data['total_para_darf_centavos']!,
+          _totalParaDarfCentavosMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status_darf')) {
+      context.handle(
+        _statusDarfMeta,
+        statusDarf.isAcceptableOrUnknown(data['status_darf']!, _statusDarfMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusDarfMeta);
+    }
     if (data.containsKey('isento')) {
       context.handle(
         _isentoMeta,
@@ -7588,12 +4634,20 @@ class ApuracoesMensais extends Table
         DriftSqlType.int,
         data['${effectivePrefix}imposto_diferido_centavos'],
       )!,
+      totalParaDarfCentavos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_para_darf_centavos'],
+      )!,
+      statusDarf: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status_darf'],
+      )!,
       isento: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}isento'],
       )!,
       tabelaIrpfId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}tabela_irpf_id'],
       )!,
       catalogoVersoesSnapshot: attachedDatabase.typeMapping.read(
@@ -7669,8 +4723,14 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
 
   /// mínimo do DARF
   final int impostoDiferidoCentavos;
+
+  /// DARF mínimo: total do mês (devido + diferido anterior) e o destino dele.
+  final int totalParaDarfCentavos;
+  final String statusDarf;
   final int isento;
-  final int tabelaIrpfId;
+  final String tabelaIrpfId;
+
+  /// id da tabela no catálogo
   final String catalogoVersoesSnapshot;
 
   /// JSON: versão de cada catálogo usado
@@ -7708,6 +4768,8 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
     required this.impostoDevidoCentavos,
     required this.impostoDiferidoAnteriorCentavos,
     required this.impostoDiferidoCentavos,
+    required this.totalParaDarfCentavos,
+    required this.statusDarf,
     required this.isento,
     required this.tabelaIrpfId,
     required this.catalogoVersoesSnapshot,
@@ -7762,8 +4824,10 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
       impostoDiferidoAnteriorCentavos,
     );
     map['imposto_diferido_centavos'] = Variable<int>(impostoDiferidoCentavos);
+    map['total_para_darf_centavos'] = Variable<int>(totalParaDarfCentavos);
+    map['status_darf'] = Variable<String>(statusDarf);
     map['isento'] = Variable<int>(isento);
-    map['tabela_irpf_id'] = Variable<int>(tabelaIrpfId);
+    map['tabela_irpf_id'] = Variable<String>(tabelaIrpfId);
     map['catalogo_versoes_snapshot'] = Variable<String>(
       catalogoVersoesSnapshot,
     );
@@ -7807,6 +4871,8 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
       impostoDevidoCentavos: Value(impostoDevidoCentavos),
       impostoDiferidoAnteriorCentavos: Value(impostoDiferidoAnteriorCentavos),
       impostoDiferidoCentavos: Value(impostoDiferidoCentavos),
+      totalParaDarfCentavos: Value(totalParaDarfCentavos),
+      statusDarf: Value(statusDarf),
       isento: Value(isento),
       tabelaIrpfId: Value(tabelaIrpfId),
       catalogoVersoesSnapshot: Value(catalogoVersoesSnapshot),
@@ -7882,8 +4948,12 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
       impostoDiferidoCentavos: serializer.fromJson<int>(
         json['imposto_diferido_centavos'],
       ),
+      totalParaDarfCentavos: serializer.fromJson<int>(
+        json['total_para_darf_centavos'],
+      ),
+      statusDarf: serializer.fromJson<String>(json['status_darf']),
       isento: serializer.fromJson<int>(json['isento']),
-      tabelaIrpfId: serializer.fromJson<int>(json['tabela_irpf_id']),
+      tabelaIrpfId: serializer.fromJson<String>(json['tabela_irpf_id']),
       catalogoVersoesSnapshot: serializer.fromJson<String>(
         json['catalogo_versoes_snapshot'],
       ),
@@ -7948,8 +5018,10 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
       'imposto_diferido_centavos': serializer.toJson<int>(
         impostoDiferidoCentavos,
       ),
+      'total_para_darf_centavos': serializer.toJson<int>(totalParaDarfCentavos),
+      'status_darf': serializer.toJson<String>(statusDarf),
       'isento': serializer.toJson<int>(isento),
-      'tabela_irpf_id': serializer.toJson<int>(tabelaIrpfId),
+      'tabela_irpf_id': serializer.toJson<String>(tabelaIrpfId),
       'catalogo_versoes_snapshot': serializer.toJson<String>(
         catalogoVersoesSnapshot,
       ),
@@ -7986,8 +5058,10 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
     int? impostoDevidoCentavos,
     int? impostoDiferidoAnteriorCentavos,
     int? impostoDiferidoCentavos,
+    int? totalParaDarfCentavos,
+    String? statusDarf,
     int? isento,
-    int? tabelaIrpfId,
+    String? tabelaIrpfId,
     String? catalogoVersoesSnapshot,
     String? parametrosSnapshot,
     String? motorVersao,
@@ -8033,6 +5107,8 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
         impostoDiferidoAnteriorCentavos ?? this.impostoDiferidoAnteriorCentavos,
     impostoDiferidoCentavos:
         impostoDiferidoCentavos ?? this.impostoDiferidoCentavos,
+    totalParaDarfCentavos: totalParaDarfCentavos ?? this.totalParaDarfCentavos,
+    statusDarf: statusDarf ?? this.statusDarf,
     isento: isento ?? this.isento,
     tabelaIrpfId: tabelaIrpfId ?? this.tabelaIrpfId,
     catalogoVersoesSnapshot:
@@ -8115,6 +5191,12 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
       impostoDiferidoCentavos: data.impostoDiferidoCentavos.present
           ? data.impostoDiferidoCentavos.value
           : this.impostoDiferidoCentavos,
+      totalParaDarfCentavos: data.totalParaDarfCentavos.present
+          ? data.totalParaDarfCentavos.value
+          : this.totalParaDarfCentavos,
+      statusDarf: data.statusDarf.present
+          ? data.statusDarf.value
+          : this.statusDarf,
       isento: data.isento.present ? data.isento.value : this.isento,
       tabelaIrpfId: data.tabelaIrpfId.present
           ? data.tabelaIrpfId.value
@@ -8175,6 +5257,8 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
             'impostoDiferidoAnteriorCentavos: $impostoDiferidoAnteriorCentavos, ',
           )
           ..write('impostoDiferidoCentavos: $impostoDiferidoCentavos, ')
+          ..write('totalParaDarfCentavos: $totalParaDarfCentavos, ')
+          ..write('statusDarf: $statusDarf, ')
           ..write('isento: $isento, ')
           ..write('tabelaIrpfId: $tabelaIrpfId, ')
           ..write('catalogoVersoesSnapshot: $catalogoVersoesSnapshot, ')
@@ -8213,6 +5297,8 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
     impostoDevidoCentavos,
     impostoDiferidoAnteriorCentavos,
     impostoDiferidoCentavos,
+    totalParaDarfCentavos,
+    statusDarf,
     isento,
     tabelaIrpfId,
     catalogoVersoesSnapshot,
@@ -8256,6 +5342,8 @@ class ApuracaoLocal extends DataClass implements Insertable<ApuracaoLocal> {
           other.impostoDiferidoAnteriorCentavos ==
               this.impostoDiferidoAnteriorCentavos &&
           other.impostoDiferidoCentavos == this.impostoDiferidoCentavos &&
+          other.totalParaDarfCentavos == this.totalParaDarfCentavos &&
+          other.statusDarf == this.statusDarf &&
           other.isento == this.isento &&
           other.tabelaIrpfId == this.tabelaIrpfId &&
           other.catalogoVersoesSnapshot == this.catalogoVersoesSnapshot &&
@@ -8291,8 +5379,10 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
   final Value<int> impostoDevidoCentavos;
   final Value<int> impostoDiferidoAnteriorCentavos;
   final Value<int> impostoDiferidoCentavos;
+  final Value<int> totalParaDarfCentavos;
+  final Value<String> statusDarf;
   final Value<int> isento;
-  final Value<int> tabelaIrpfId;
+  final Value<String> tabelaIrpfId;
   final Value<String> catalogoVersoesSnapshot;
   final Value<String> parametrosSnapshot;
   final Value<String> motorVersao;
@@ -8325,6 +5415,8 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
     this.impostoDevidoCentavos = const Value.absent(),
     this.impostoDiferidoAnteriorCentavos = const Value.absent(),
     this.impostoDiferidoCentavos = const Value.absent(),
+    this.totalParaDarfCentavos = const Value.absent(),
+    this.statusDarf = const Value.absent(),
     this.isento = const Value.absent(),
     this.tabelaIrpfId = const Value.absent(),
     this.catalogoVersoesSnapshot = const Value.absent(),
@@ -8360,8 +5452,10 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
     required int impostoDevidoCentavos,
     this.impostoDiferidoAnteriorCentavos = const Value.absent(),
     this.impostoDiferidoCentavos = const Value.absent(),
+    this.totalParaDarfCentavos = const Value.absent(),
+    required String statusDarf,
     this.isento = const Value.absent(),
-    required int tabelaIrpfId,
+    required String tabelaIrpfId,
     required String catalogoVersoesSnapshot,
     required String parametrosSnapshot,
     required String motorVersao,
@@ -8387,6 +5481,7 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
        parcelaDeduzirCentavos = Value(parcelaDeduzirCentavos),
        impostoApuradoCentavos = Value(impostoApuradoCentavos),
        impostoDevidoCentavos = Value(impostoDevidoCentavos),
+       statusDarf = Value(statusDarf),
        tabelaIrpfId = Value(tabelaIrpfId),
        catalogoVersoesSnapshot = Value(catalogoVersoesSnapshot),
        parametrosSnapshot = Value(parametrosSnapshot),
@@ -8418,8 +5513,10 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
     Expression<int>? impostoDevidoCentavos,
     Expression<int>? impostoDiferidoAnteriorCentavos,
     Expression<int>? impostoDiferidoCentavos,
+    Expression<int>? totalParaDarfCentavos,
+    Expression<String>? statusDarf,
     Expression<int>? isento,
-    Expression<int>? tabelaIrpfId,
+    Expression<String>? tabelaIrpfId,
     Expression<String>? catalogoVersoesSnapshot,
     Expression<String>? parametrosSnapshot,
     Expression<String>? motorVersao,
@@ -8471,6 +5568,9 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
         'imposto_diferido_anterior_centavos': impostoDiferidoAnteriorCentavos,
       if (impostoDiferidoCentavos != null)
         'imposto_diferido_centavos': impostoDiferidoCentavos,
+      if (totalParaDarfCentavos != null)
+        'total_para_darf_centavos': totalParaDarfCentavos,
+      if (statusDarf != null) 'status_darf': statusDarf,
       if (isento != null) 'isento': isento,
       if (tabelaIrpfId != null) 'tabela_irpf_id': tabelaIrpfId,
       if (catalogoVersoesSnapshot != null)
@@ -8509,8 +5609,10 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
     Value<int>? impostoDevidoCentavos,
     Value<int>? impostoDiferidoAnteriorCentavos,
     Value<int>? impostoDiferidoCentavos,
+    Value<int>? totalParaDarfCentavos,
+    Value<String>? statusDarf,
     Value<int>? isento,
-    Value<int>? tabelaIrpfId,
+    Value<String>? tabelaIrpfId,
     Value<String>? catalogoVersoesSnapshot,
     Value<String>? parametrosSnapshot,
     Value<String>? motorVersao,
@@ -8560,6 +5662,9 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
           this.impostoDiferidoAnteriorCentavos,
       impostoDiferidoCentavos:
           impostoDiferidoCentavos ?? this.impostoDiferidoCentavos,
+      totalParaDarfCentavos:
+          totalParaDarfCentavos ?? this.totalParaDarfCentavos,
+      statusDarf: statusDarf ?? this.statusDarf,
       isento: isento ?? this.isento,
       tabelaIrpfId: tabelaIrpfId ?? this.tabelaIrpfId,
       catalogoVersoesSnapshot:
@@ -8674,11 +5779,19 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
         impostoDiferidoCentavos.value,
       );
     }
+    if (totalParaDarfCentavos.present) {
+      map['total_para_darf_centavos'] = Variable<int>(
+        totalParaDarfCentavos.value,
+      );
+    }
+    if (statusDarf.present) {
+      map['status_darf'] = Variable<String>(statusDarf.value);
+    }
     if (isento.present) {
       map['isento'] = Variable<int>(isento.value);
     }
     if (tabelaIrpfId.present) {
-      map['tabela_irpf_id'] = Variable<int>(tabelaIrpfId.value);
+      map['tabela_irpf_id'] = Variable<String>(tabelaIrpfId.value);
     }
     if (catalogoVersoesSnapshot.present) {
       map['catalogo_versoes_snapshot'] = Variable<String>(
@@ -8745,6 +5858,8 @@ class ApuracoesMensaisCompanion extends UpdateCompanion<ApuracaoLocal> {
             'impostoDiferidoAnteriorCentavos: $impostoDiferidoAnteriorCentavos, ',
           )
           ..write('impostoDiferidoCentavos: $impostoDiferidoCentavos, ')
+          ..write('totalParaDarfCentavos: $totalParaDarfCentavos, ')
+          ..write('statusDarf: $statusDarf, ')
           ..write('isento: $isento, ')
           ..write('tabelaIrpfId: $tabelaIrpfId, ')
           ..write('catalogoVersoesSnapshot: $catalogoVersoesSnapshot, ')
@@ -8827,7 +5942,30 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     $customConstraints:
-        'NOT NULL CHECK (classificacao IN (\'tributavel\', \'pessoal\', \'reembolso\', \'repasse_terceiros\'))',
+        'NOT NULL CHECK (classificacao IN (\'rendimentoPf\', \'recebidoPj\', \'pessoal\', \'reembolso\', \'repasse\'))',
+  );
+  static const VerificationMeta _comprovanteTitularMeta =
+      const VerificationMeta('comprovanteTitular');
+  late final GeneratedColumn<String> comprovanteTitular =
+      GeneratedColumn<String>(
+        'comprovante_titular',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        $customConstraints:
+            'CHECK (comprovante_titular IN (\'cliente\', \'profissional\'))',
+      );
+  static const VerificationMeta _custoEssencialMeta = const VerificationMeta(
+    'custoEssencial',
+  );
+  late final GeneratedColumn<int> custoEssencial = GeneratedColumn<int>(
+    'custo_essencial',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'CHECK (custo_essencial IN (0, 1))',
   );
   static const VerificationMeta _remetenteIdMeta = const VerificationMeta(
     'remetenteId',
@@ -8851,11 +5989,57 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
     requiredDuringInsert: false,
     $customConstraints: '',
   );
+  static const VerificationMeta _cnpjPagadorMeta = const VerificationMeta(
+    'cnpjPagador',
+  );
+  late final GeneratedColumn<String> cnpjPagador = GeneratedColumn<String>(
+    'cnpj_pagador',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: '',
+  );
   static const VerificationMeta _nomePagadorMeta = const VerificationMeta(
     'nomePagador',
   );
   late final GeneratedColumn<String> nomePagador = GeneratedColumn<String>(
     'nome_pagador',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: '',
+  );
+  static const VerificationMeta _statusDocumentoPagadorMeta =
+      const VerificationMeta('statusDocumentoPagador');
+  late final GeneratedColumn<String>
+  statusDocumentoPagador = GeneratedColumn<String>(
+    'status_documento_pagador',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT \'naoExigido\' CHECK (status_documento_pagador IN (\'informado\', \'pendente\', \'naoExigido\'))',
+    defaultValue: const CustomExpression('\'naoExigido\''),
+  );
+  static const VerificationMeta _cpfBeneficiarioMeta = const VerificationMeta(
+    'cpfBeneficiario',
+  );
+  late final GeneratedColumn<String> cpfBeneficiario = GeneratedColumn<String>(
+    'cpf_beneficiario',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: '',
+  );
+  static const VerificationMeta _nomeBeneficiarioMeta = const VerificationMeta(
+    'nomeBeneficiario',
+  );
+  late final GeneratedColumn<String> nomeBeneficiario = GeneratedColumn<String>(
+    'nome_beneficiario',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -8872,8 +6056,19 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     $customConstraints:
-        'NOT NULL DEFAULT \'manual\' CHECK (origem_classificacao IN (\'manual\', \'sugestao_aceita\', \'regra_remetente\'))',
+        'NOT NULL DEFAULT \'manual\' CHECK (origem_classificacao IN (\'manual\', \'sugestaoAceita\', \'regraRemetente\'))',
     defaultValue: const CustomExpression('\'manual\''),
+  );
+  static const VerificationMeta _confirmadaEmMeta = const VerificationMeta(
+    'confirmadaEm',
+  );
+  late final GeneratedColumn<int> confirmadaEm = GeneratedColumn<int>(
+    'confirmada_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: '',
   );
   static const VerificationMeta _apuracaoIdMeta = const VerificationMeta(
     'apuracaoId',
@@ -8916,10 +6111,17 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
     dataRecebimento,
     valorCentavos,
     classificacao,
+    comprovanteTitular,
+    custoEssencial,
     remetenteId,
     cpfPagador,
+    cnpjPagador,
     nomePagador,
+    statusDocumentoPagador,
+    cpfBeneficiario,
+    nomeBeneficiario,
     origemClassificacao,
+    confirmadaEm,
     apuracaoId,
     criadoEm,
     atualizadoEm,
@@ -8994,6 +6196,24 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
     } else if (isInserting) {
       context.missing(_classificacaoMeta);
     }
+    if (data.containsKey('comprovante_titular')) {
+      context.handle(
+        _comprovanteTitularMeta,
+        comprovanteTitular.isAcceptableOrUnknown(
+          data['comprovante_titular']!,
+          _comprovanteTitularMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custo_essencial')) {
+      context.handle(
+        _custoEssencialMeta,
+        custoEssencial.isAcceptableOrUnknown(
+          data['custo_essencial']!,
+          _custoEssencialMeta,
+        ),
+      );
+    }
     if (data.containsKey('remetente_id')) {
       context.handle(
         _remetenteIdMeta,
@@ -9009,6 +6229,15 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
         cpfPagador.isAcceptableOrUnknown(data['cpf_pagador']!, _cpfPagadorMeta),
       );
     }
+    if (data.containsKey('cnpj_pagador')) {
+      context.handle(
+        _cnpjPagadorMeta,
+        cnpjPagador.isAcceptableOrUnknown(
+          data['cnpj_pagador']!,
+          _cnpjPagadorMeta,
+        ),
+      );
+    }
     if (data.containsKey('nome_pagador')) {
       context.handle(
         _nomePagadorMeta,
@@ -9018,12 +6247,48 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
         ),
       );
     }
+    if (data.containsKey('status_documento_pagador')) {
+      context.handle(
+        _statusDocumentoPagadorMeta,
+        statusDocumentoPagador.isAcceptableOrUnknown(
+          data['status_documento_pagador']!,
+          _statusDocumentoPagadorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cpf_beneficiario')) {
+      context.handle(
+        _cpfBeneficiarioMeta,
+        cpfBeneficiario.isAcceptableOrUnknown(
+          data['cpf_beneficiario']!,
+          _cpfBeneficiarioMeta,
+        ),
+      );
+    }
+    if (data.containsKey('nome_beneficiario')) {
+      context.handle(
+        _nomeBeneficiarioMeta,
+        nomeBeneficiario.isAcceptableOrUnknown(
+          data['nome_beneficiario']!,
+          _nomeBeneficiarioMeta,
+        ),
+      );
+    }
     if (data.containsKey('origem_classificacao')) {
       context.handle(
         _origemClassificacaoMeta,
         origemClassificacao.isAcceptableOrUnknown(
           data['origem_classificacao']!,
           _origemClassificacaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('confirmada_em')) {
+      context.handle(
+        _confirmadaEmMeta,
+        confirmadaEm.isAcceptableOrUnknown(
+          data['confirmada_em']!,
+          _confirmadaEmMeta,
         ),
       );
     }
@@ -9085,6 +6350,14 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
         DriftSqlType.string,
         data['${effectivePrefix}classificacao'],
       )!,
+      comprovanteTitular: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}comprovante_titular'],
+      ),
+      custoEssencial: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}custo_essencial'],
+      ),
       remetenteId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}remetente_id'],
@@ -9093,14 +6366,34 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
         DriftSqlType.string,
         data['${effectivePrefix}cpf_pagador'],
       ),
+      cnpjPagador: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cnpj_pagador'],
+      ),
       nomePagador: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}nome_pagador'],
+      ),
+      statusDocumentoPagador: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status_documento_pagador'],
+      )!,
+      cpfBeneficiario: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cpf_beneficiario'],
+      ),
+      nomeBeneficiario: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome_beneficiario'],
       ),
       origemClassificacao: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}origem_classificacao'],
       )!,
+      confirmadaEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}confirmada_em'],
+      ),
       apuracaoId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}apuracao_id'],
@@ -9122,6 +6415,13 @@ class Lancamentos extends Table with TableInfo<Lancamentos, Lancamento> {
   }
 
   @override
+  List<String> get customConstraints => const [
+    'CHECK((classificacao IN (\'reembolso\', \'repasse\'))=(comprovante_titular IS NOT NULL))',
+    'CHECK((COALESCE(comprovante_titular, \'\') = \'profissional\')=(custo_essencial IS NOT NULL))',
+    'CHECK(status_documento_pagador != \'informado\' OR cpf_pagador IS NOT NULL OR cnpj_pagador IS NOT NULL)',
+    'CHECK(confirmada_em IS NOT NULL OR origem_classificacao = \'regraRemetente\')',
+  ];
+  @override
   bool get dontWriteConstraints => true;
 }
 
@@ -9136,14 +6436,33 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
   final String dataRecebimento;
   final int valorCentavos;
   final String classificacao;
+
+  /// Reembolso e repasse (rodadas 2b e 4, P2): em nome de quem está o
+  /// comprovante e, no CPF do profissional, se o custo é essencial à
+  /// atividade. Sem essas respostas o lançamento não é reembolso/repasse.
+  final String? comprovanteTitular;
+  final int? custoEssencial;
   final String? remetenteId;
   final String? cpfPagador;
 
   /// snapshot: e-CAC exige CPF POR LANÇAMENTO
+  final String? cnpjPagador;
+
+  /// recebido de PJ (P1): vai ao relatório anual
   final String? nomePagador;
 
   /// e o cadastro do remetente pode mudar depois
+  /// Falta de documento é pendência documental, nunca dispensa (rodada 2b).
+  final String statusDocumentoPagador;
+
+  /// Profissão de saúde: quem foi atendido. NULL = o próprio pagador.
+  final String? cpfBeneficiario;
+  final String? nomeBeneficiario;
   final String origemClassificacao;
+
+  /// NULL só em `regraRemetente` ainda não tocado: aparece na fila como
+  /// "proposto pela regra" até o toque (decisão 4).
+  final int? confirmadaEm;
   final String? apuracaoId;
   final int criadoEm;
   final int atualizadoEm;
@@ -9154,10 +6473,17 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
     required this.dataRecebimento,
     required this.valorCentavos,
     required this.classificacao,
+    this.comprovanteTitular,
+    this.custoEssencial,
     this.remetenteId,
     this.cpfPagador,
+    this.cnpjPagador,
     this.nomePagador,
+    required this.statusDocumentoPagador,
+    this.cpfBeneficiario,
+    this.nomeBeneficiario,
     required this.origemClassificacao,
+    this.confirmadaEm,
     this.apuracaoId,
     required this.criadoEm,
     required this.atualizadoEm,
@@ -9173,16 +6499,35 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
     map['data_recebimento'] = Variable<String>(dataRecebimento);
     map['valor_centavos'] = Variable<int>(valorCentavos);
     map['classificacao'] = Variable<String>(classificacao);
+    if (!nullToAbsent || comprovanteTitular != null) {
+      map['comprovante_titular'] = Variable<String>(comprovanteTitular);
+    }
+    if (!nullToAbsent || custoEssencial != null) {
+      map['custo_essencial'] = Variable<int>(custoEssencial);
+    }
     if (!nullToAbsent || remetenteId != null) {
       map['remetente_id'] = Variable<String>(remetenteId);
     }
     if (!nullToAbsent || cpfPagador != null) {
       map['cpf_pagador'] = Variable<String>(cpfPagador);
     }
+    if (!nullToAbsent || cnpjPagador != null) {
+      map['cnpj_pagador'] = Variable<String>(cnpjPagador);
+    }
     if (!nullToAbsent || nomePagador != null) {
       map['nome_pagador'] = Variable<String>(nomePagador);
     }
+    map['status_documento_pagador'] = Variable<String>(statusDocumentoPagador);
+    if (!nullToAbsent || cpfBeneficiario != null) {
+      map['cpf_beneficiario'] = Variable<String>(cpfBeneficiario);
+    }
+    if (!nullToAbsent || nomeBeneficiario != null) {
+      map['nome_beneficiario'] = Variable<String>(nomeBeneficiario);
+    }
     map['origem_classificacao'] = Variable<String>(origemClassificacao);
+    if (!nullToAbsent || confirmadaEm != null) {
+      map['confirmada_em'] = Variable<int>(confirmadaEm);
+    }
     if (!nullToAbsent || apuracaoId != null) {
       map['apuracao_id'] = Variable<String>(apuracaoId);
     }
@@ -9201,16 +6546,35 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
       dataRecebimento: Value(dataRecebimento),
       valorCentavos: Value(valorCentavos),
       classificacao: Value(classificacao),
+      comprovanteTitular: comprovanteTitular == null && nullToAbsent
+          ? const Value.absent()
+          : Value(comprovanteTitular),
+      custoEssencial: custoEssencial == null && nullToAbsent
+          ? const Value.absent()
+          : Value(custoEssencial),
       remetenteId: remetenteId == null && nullToAbsent
           ? const Value.absent()
           : Value(remetenteId),
       cpfPagador: cpfPagador == null && nullToAbsent
           ? const Value.absent()
           : Value(cpfPagador),
+      cnpjPagador: cnpjPagador == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cnpjPagador),
       nomePagador: nomePagador == null && nullToAbsent
           ? const Value.absent()
           : Value(nomePagador),
+      statusDocumentoPagador: Value(statusDocumentoPagador),
+      cpfBeneficiario: cpfBeneficiario == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cpfBeneficiario),
+      nomeBeneficiario: nomeBeneficiario == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nomeBeneficiario),
       origemClassificacao: Value(origemClassificacao),
+      confirmadaEm: confirmadaEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(confirmadaEm),
       apuracaoId: apuracaoId == null && nullToAbsent
           ? const Value.absent()
           : Value(apuracaoId),
@@ -9231,12 +6595,23 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
       dataRecebimento: serializer.fromJson<String>(json['data_recebimento']),
       valorCentavos: serializer.fromJson<int>(json['valor_centavos']),
       classificacao: serializer.fromJson<String>(json['classificacao']),
+      comprovanteTitular: serializer.fromJson<String?>(
+        json['comprovante_titular'],
+      ),
+      custoEssencial: serializer.fromJson<int?>(json['custo_essencial']),
       remetenteId: serializer.fromJson<String?>(json['remetente_id']),
       cpfPagador: serializer.fromJson<String?>(json['cpf_pagador']),
+      cnpjPagador: serializer.fromJson<String?>(json['cnpj_pagador']),
       nomePagador: serializer.fromJson<String?>(json['nome_pagador']),
+      statusDocumentoPagador: serializer.fromJson<String>(
+        json['status_documento_pagador'],
+      ),
+      cpfBeneficiario: serializer.fromJson<String?>(json['cpf_beneficiario']),
+      nomeBeneficiario: serializer.fromJson<String?>(json['nome_beneficiario']),
       origemClassificacao: serializer.fromJson<String>(
         json['origem_classificacao'],
       ),
+      confirmadaEm: serializer.fromJson<int?>(json['confirmada_em']),
       apuracaoId: serializer.fromJson<String?>(json['apuracao_id']),
       criadoEm: serializer.fromJson<int>(json['criado_em']),
       atualizadoEm: serializer.fromJson<int>(json['atualizado_em']),
@@ -9252,10 +6627,19 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
       'data_recebimento': serializer.toJson<String>(dataRecebimento),
       'valor_centavos': serializer.toJson<int>(valorCentavos),
       'classificacao': serializer.toJson<String>(classificacao),
+      'comprovante_titular': serializer.toJson<String?>(comprovanteTitular),
+      'custo_essencial': serializer.toJson<int?>(custoEssencial),
       'remetente_id': serializer.toJson<String?>(remetenteId),
       'cpf_pagador': serializer.toJson<String?>(cpfPagador),
+      'cnpj_pagador': serializer.toJson<String?>(cnpjPagador),
       'nome_pagador': serializer.toJson<String?>(nomePagador),
+      'status_documento_pagador': serializer.toJson<String>(
+        statusDocumentoPagador,
+      ),
+      'cpf_beneficiario': serializer.toJson<String?>(cpfBeneficiario),
+      'nome_beneficiario': serializer.toJson<String?>(nomeBeneficiario),
       'origem_classificacao': serializer.toJson<String>(origemClassificacao),
+      'confirmada_em': serializer.toJson<int?>(confirmadaEm),
       'apuracao_id': serializer.toJson<String?>(apuracaoId),
       'criado_em': serializer.toJson<int>(criadoEm),
       'atualizado_em': serializer.toJson<int>(atualizadoEm),
@@ -9269,10 +6653,17 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
     String? dataRecebimento,
     int? valorCentavos,
     String? classificacao,
+    Value<String?> comprovanteTitular = const Value.absent(),
+    Value<int?> custoEssencial = const Value.absent(),
     Value<String?> remetenteId = const Value.absent(),
     Value<String?> cpfPagador = const Value.absent(),
+    Value<String?> cnpjPagador = const Value.absent(),
     Value<String?> nomePagador = const Value.absent(),
+    String? statusDocumentoPagador,
+    Value<String?> cpfBeneficiario = const Value.absent(),
+    Value<String?> nomeBeneficiario = const Value.absent(),
     String? origemClassificacao,
+    Value<int?> confirmadaEm = const Value.absent(),
     Value<String?> apuracaoId = const Value.absent(),
     int? criadoEm,
     int? atualizadoEm,
@@ -9283,10 +6674,26 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
     dataRecebimento: dataRecebimento ?? this.dataRecebimento,
     valorCentavos: valorCentavos ?? this.valorCentavos,
     classificacao: classificacao ?? this.classificacao,
+    comprovanteTitular: comprovanteTitular.present
+        ? comprovanteTitular.value
+        : this.comprovanteTitular,
+    custoEssencial: custoEssencial.present
+        ? custoEssencial.value
+        : this.custoEssencial,
     remetenteId: remetenteId.present ? remetenteId.value : this.remetenteId,
     cpfPagador: cpfPagador.present ? cpfPagador.value : this.cpfPagador,
+    cnpjPagador: cnpjPagador.present ? cnpjPagador.value : this.cnpjPagador,
     nomePagador: nomePagador.present ? nomePagador.value : this.nomePagador,
+    statusDocumentoPagador:
+        statusDocumentoPagador ?? this.statusDocumentoPagador,
+    cpfBeneficiario: cpfBeneficiario.present
+        ? cpfBeneficiario.value
+        : this.cpfBeneficiario,
+    nomeBeneficiario: nomeBeneficiario.present
+        ? nomeBeneficiario.value
+        : this.nomeBeneficiario,
     origemClassificacao: origemClassificacao ?? this.origemClassificacao,
+    confirmadaEm: confirmadaEm.present ? confirmadaEm.value : this.confirmadaEm,
     apuracaoId: apuracaoId.present ? apuracaoId.value : this.apuracaoId,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -9309,18 +6716,39 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
       classificacao: data.classificacao.present
           ? data.classificacao.value
           : this.classificacao,
+      comprovanteTitular: data.comprovanteTitular.present
+          ? data.comprovanteTitular.value
+          : this.comprovanteTitular,
+      custoEssencial: data.custoEssencial.present
+          ? data.custoEssencial.value
+          : this.custoEssencial,
       remetenteId: data.remetenteId.present
           ? data.remetenteId.value
           : this.remetenteId,
       cpfPagador: data.cpfPagador.present
           ? data.cpfPagador.value
           : this.cpfPagador,
+      cnpjPagador: data.cnpjPagador.present
+          ? data.cnpjPagador.value
+          : this.cnpjPagador,
       nomePagador: data.nomePagador.present
           ? data.nomePagador.value
           : this.nomePagador,
+      statusDocumentoPagador: data.statusDocumentoPagador.present
+          ? data.statusDocumentoPagador.value
+          : this.statusDocumentoPagador,
+      cpfBeneficiario: data.cpfBeneficiario.present
+          ? data.cpfBeneficiario.value
+          : this.cpfBeneficiario,
+      nomeBeneficiario: data.nomeBeneficiario.present
+          ? data.nomeBeneficiario.value
+          : this.nomeBeneficiario,
       origemClassificacao: data.origemClassificacao.present
           ? data.origemClassificacao.value
           : this.origemClassificacao,
+      confirmadaEm: data.confirmadaEm.present
+          ? data.confirmadaEm.value
+          : this.confirmadaEm,
       apuracaoId: data.apuracaoId.present
           ? data.apuracaoId.value
           : this.apuracaoId,
@@ -9340,10 +6768,17 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
           ..write('dataRecebimento: $dataRecebimento, ')
           ..write('valorCentavos: $valorCentavos, ')
           ..write('classificacao: $classificacao, ')
+          ..write('comprovanteTitular: $comprovanteTitular, ')
+          ..write('custoEssencial: $custoEssencial, ')
           ..write('remetenteId: $remetenteId, ')
           ..write('cpfPagador: $cpfPagador, ')
+          ..write('cnpjPagador: $cnpjPagador, ')
           ..write('nomePagador: $nomePagador, ')
+          ..write('statusDocumentoPagador: $statusDocumentoPagador, ')
+          ..write('cpfBeneficiario: $cpfBeneficiario, ')
+          ..write('nomeBeneficiario: $nomeBeneficiario, ')
           ..write('origemClassificacao: $origemClassificacao, ')
+          ..write('confirmadaEm: $confirmadaEm, ')
           ..write('apuracaoId: $apuracaoId, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm')
@@ -9359,10 +6794,17 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
     dataRecebimento,
     valorCentavos,
     classificacao,
+    comprovanteTitular,
+    custoEssencial,
     remetenteId,
     cpfPagador,
+    cnpjPagador,
     nomePagador,
+    statusDocumentoPagador,
+    cpfBeneficiario,
+    nomeBeneficiario,
     origemClassificacao,
+    confirmadaEm,
     apuracaoId,
     criadoEm,
     atualizadoEm,
@@ -9377,10 +6819,17 @@ class Lancamento extends DataClass implements Insertable<Lancamento> {
           other.dataRecebimento == this.dataRecebimento &&
           other.valorCentavos == this.valorCentavos &&
           other.classificacao == this.classificacao &&
+          other.comprovanteTitular == this.comprovanteTitular &&
+          other.custoEssencial == this.custoEssencial &&
           other.remetenteId == this.remetenteId &&
           other.cpfPagador == this.cpfPagador &&
+          other.cnpjPagador == this.cnpjPagador &&
           other.nomePagador == this.nomePagador &&
+          other.statusDocumentoPagador == this.statusDocumentoPagador &&
+          other.cpfBeneficiario == this.cpfBeneficiario &&
+          other.nomeBeneficiario == this.nomeBeneficiario &&
           other.origemClassificacao == this.origemClassificacao &&
+          other.confirmadaEm == this.confirmadaEm &&
           other.apuracaoId == this.apuracaoId &&
           other.criadoEm == this.criadoEm &&
           other.atualizadoEm == this.atualizadoEm);
@@ -9393,10 +6842,17 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
   final Value<String> dataRecebimento;
   final Value<int> valorCentavos;
   final Value<String> classificacao;
+  final Value<String?> comprovanteTitular;
+  final Value<int?> custoEssencial;
   final Value<String?> remetenteId;
   final Value<String?> cpfPagador;
+  final Value<String?> cnpjPagador;
   final Value<String?> nomePagador;
+  final Value<String> statusDocumentoPagador;
+  final Value<String?> cpfBeneficiario;
+  final Value<String?> nomeBeneficiario;
   final Value<String> origemClassificacao;
+  final Value<int?> confirmadaEm;
   final Value<String?> apuracaoId;
   final Value<int> criadoEm;
   final Value<int> atualizadoEm;
@@ -9408,10 +6864,17 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
     this.dataRecebimento = const Value.absent(),
     this.valorCentavos = const Value.absent(),
     this.classificacao = const Value.absent(),
+    this.comprovanteTitular = const Value.absent(),
+    this.custoEssencial = const Value.absent(),
     this.remetenteId = const Value.absent(),
     this.cpfPagador = const Value.absent(),
+    this.cnpjPagador = const Value.absent(),
     this.nomePagador = const Value.absent(),
+    this.statusDocumentoPagador = const Value.absent(),
+    this.cpfBeneficiario = const Value.absent(),
+    this.nomeBeneficiario = const Value.absent(),
     this.origemClassificacao = const Value.absent(),
+    this.confirmadaEm = const Value.absent(),
     this.apuracaoId = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
@@ -9424,10 +6887,17 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
     required String dataRecebimento,
     required int valorCentavos,
     required String classificacao,
+    this.comprovanteTitular = const Value.absent(),
+    this.custoEssencial = const Value.absent(),
     this.remetenteId = const Value.absent(),
     this.cpfPagador = const Value.absent(),
+    this.cnpjPagador = const Value.absent(),
     this.nomePagador = const Value.absent(),
+    this.statusDocumentoPagador = const Value.absent(),
+    this.cpfBeneficiario = const Value.absent(),
+    this.nomeBeneficiario = const Value.absent(),
     this.origemClassificacao = const Value.absent(),
+    this.confirmadaEm = const Value.absent(),
     this.apuracaoId = const Value.absent(),
     required int criadoEm,
     required int atualizadoEm,
@@ -9446,10 +6916,17 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
     Expression<String>? dataRecebimento,
     Expression<int>? valorCentavos,
     Expression<String>? classificacao,
+    Expression<String>? comprovanteTitular,
+    Expression<int>? custoEssencial,
     Expression<String>? remetenteId,
     Expression<String>? cpfPagador,
+    Expression<String>? cnpjPagador,
     Expression<String>? nomePagador,
+    Expression<String>? statusDocumentoPagador,
+    Expression<String>? cpfBeneficiario,
+    Expression<String>? nomeBeneficiario,
     Expression<String>? origemClassificacao,
+    Expression<int>? confirmadaEm,
     Expression<String>? apuracaoId,
     Expression<int>? criadoEm,
     Expression<int>? atualizadoEm,
@@ -9462,11 +6939,19 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
       if (dataRecebimento != null) 'data_recebimento': dataRecebimento,
       if (valorCentavos != null) 'valor_centavos': valorCentavos,
       if (classificacao != null) 'classificacao': classificacao,
+      if (comprovanteTitular != null) 'comprovante_titular': comprovanteTitular,
+      if (custoEssencial != null) 'custo_essencial': custoEssencial,
       if (remetenteId != null) 'remetente_id': remetenteId,
       if (cpfPagador != null) 'cpf_pagador': cpfPagador,
+      if (cnpjPagador != null) 'cnpj_pagador': cnpjPagador,
       if (nomePagador != null) 'nome_pagador': nomePagador,
+      if (statusDocumentoPagador != null)
+        'status_documento_pagador': statusDocumentoPagador,
+      if (cpfBeneficiario != null) 'cpf_beneficiario': cpfBeneficiario,
+      if (nomeBeneficiario != null) 'nome_beneficiario': nomeBeneficiario,
       if (origemClassificacao != null)
         'origem_classificacao': origemClassificacao,
+      if (confirmadaEm != null) 'confirmada_em': confirmadaEm,
       if (apuracaoId != null) 'apuracao_id': apuracaoId,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
@@ -9481,10 +6966,17 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
     Value<String>? dataRecebimento,
     Value<int>? valorCentavos,
     Value<String>? classificacao,
+    Value<String?>? comprovanteTitular,
+    Value<int?>? custoEssencial,
     Value<String?>? remetenteId,
     Value<String?>? cpfPagador,
+    Value<String?>? cnpjPagador,
     Value<String?>? nomePagador,
+    Value<String>? statusDocumentoPagador,
+    Value<String?>? cpfBeneficiario,
+    Value<String?>? nomeBeneficiario,
     Value<String>? origemClassificacao,
+    Value<int?>? confirmadaEm,
     Value<String?>? apuracaoId,
     Value<int>? criadoEm,
     Value<int>? atualizadoEm,
@@ -9497,10 +6989,18 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
       dataRecebimento: dataRecebimento ?? this.dataRecebimento,
       valorCentavos: valorCentavos ?? this.valorCentavos,
       classificacao: classificacao ?? this.classificacao,
+      comprovanteTitular: comprovanteTitular ?? this.comprovanteTitular,
+      custoEssencial: custoEssencial ?? this.custoEssencial,
       remetenteId: remetenteId ?? this.remetenteId,
       cpfPagador: cpfPagador ?? this.cpfPagador,
+      cnpjPagador: cnpjPagador ?? this.cnpjPagador,
       nomePagador: nomePagador ?? this.nomePagador,
+      statusDocumentoPagador:
+          statusDocumentoPagador ?? this.statusDocumentoPagador,
+      cpfBeneficiario: cpfBeneficiario ?? this.cpfBeneficiario,
+      nomeBeneficiario: nomeBeneficiario ?? this.nomeBeneficiario,
       origemClassificacao: origemClassificacao ?? this.origemClassificacao,
+      confirmadaEm: confirmadaEm ?? this.confirmadaEm,
       apuracaoId: apuracaoId ?? this.apuracaoId,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -9529,17 +7029,40 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
     if (classificacao.present) {
       map['classificacao'] = Variable<String>(classificacao.value);
     }
+    if (comprovanteTitular.present) {
+      map['comprovante_titular'] = Variable<String>(comprovanteTitular.value);
+    }
+    if (custoEssencial.present) {
+      map['custo_essencial'] = Variable<int>(custoEssencial.value);
+    }
     if (remetenteId.present) {
       map['remetente_id'] = Variable<String>(remetenteId.value);
     }
     if (cpfPagador.present) {
       map['cpf_pagador'] = Variable<String>(cpfPagador.value);
     }
+    if (cnpjPagador.present) {
+      map['cnpj_pagador'] = Variable<String>(cnpjPagador.value);
+    }
     if (nomePagador.present) {
       map['nome_pagador'] = Variable<String>(nomePagador.value);
     }
+    if (statusDocumentoPagador.present) {
+      map['status_documento_pagador'] = Variable<String>(
+        statusDocumentoPagador.value,
+      );
+    }
+    if (cpfBeneficiario.present) {
+      map['cpf_beneficiario'] = Variable<String>(cpfBeneficiario.value);
+    }
+    if (nomeBeneficiario.present) {
+      map['nome_beneficiario'] = Variable<String>(nomeBeneficiario.value);
+    }
     if (origemClassificacao.present) {
       map['origem_classificacao'] = Variable<String>(origemClassificacao.value);
+    }
+    if (confirmadaEm.present) {
+      map['confirmada_em'] = Variable<int>(confirmadaEm.value);
     }
     if (apuracaoId.present) {
       map['apuracao_id'] = Variable<String>(apuracaoId.value);
@@ -9565,10 +7088,17 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
           ..write('dataRecebimento: $dataRecebimento, ')
           ..write('valorCentavos: $valorCentavos, ')
           ..write('classificacao: $classificacao, ')
+          ..write('comprovanteTitular: $comprovanteTitular, ')
+          ..write('custoEssencial: $custoEssencial, ')
           ..write('remetenteId: $remetenteId, ')
           ..write('cpfPagador: $cpfPagador, ')
+          ..write('cnpjPagador: $cnpjPagador, ')
           ..write('nomePagador: $nomePagador, ')
+          ..write('statusDocumentoPagador: $statusDocumentoPagador, ')
+          ..write('cpfBeneficiario: $cpfBeneficiario, ')
+          ..write('nomeBeneficiario: $nomeBeneficiario, ')
           ..write('origemClassificacao: $origemClassificacao, ')
+          ..write('confirmadaEm: $confirmadaEm, ')
           ..write('apuracaoId: $apuracaoId, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm, ')
@@ -10001,7 +7531,7 @@ class DespesasLivroCaixa extends Table
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL REFERENCES cat_rubricas(codigo)',
+    $customConstraints: 'NOT NULL',
   );
   static const VerificationMeta _competenciaMeta = const VerificationMeta(
     'competencia',
@@ -10024,6 +7554,19 @@ class DespesasLivroCaixa extends Table
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _formaPagamentoMeta = const VerificationMeta(
+    'formaPagamento',
+  );
+  late final GeneratedColumn<String> formaPagamento = GeneratedColumn<String>(
+    'forma_pagamento',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT \'outra\' CHECK (forma_pagamento IN (\'extrato\', \'dinheiro\', \'cartaoCredito\', \'outra\'))',
+    defaultValue: const CustomExpression('\'outra\''),
   );
   static const VerificationMeta _valorCentavosMeta = const VerificationMeta(
     'valorCentavos',
@@ -10080,6 +7623,39 @@ class DespesasLivroCaixa extends Table
     requiredDuringInsert: false,
     $customConstraints: '',
   );
+  static const VerificationMeta _transacaoIdMeta = const VerificationMeta(
+    'transacaoId',
+  );
+  late final GeneratedColumn<String> transacaoId = GeneratedColumn<String>(
+    'transacao_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'UNIQUE REFERENCES transacoes(id)',
+  );
+  static const VerificationMeta _lancamentoOrigemIdMeta =
+      const VerificationMeta('lancamentoOrigemId');
+  late final GeneratedColumn<String> lancamentoOrigemId =
+      GeneratedColumn<String>(
+        'lancamento_origem_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        $customConstraints: 'UNIQUE REFERENCES lancamentos(id)',
+      );
+  static const VerificationMeta _exclusividadeDeclaradaEmMeta =
+      const VerificationMeta('exclusividadeDeclaradaEm');
+  late final GeneratedColumn<int> exclusividadeDeclaradaEm =
+      GeneratedColumn<int>(
+        'exclusividade_declarada_em',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        $customConstraints: '',
+      );
   static const VerificationMeta _apuracaoIdMeta = const VerificationMeta(
     'apuracaoId',
   );
@@ -10108,11 +7684,15 @@ class DespesasLivroCaixa extends Table
     rubricaCodigo,
     competencia,
     dataPagamento,
+    formaPagamento,
     valorCentavos,
     valorDedutivelCentavos,
     descricao,
     homeOffice,
     anexoPath,
+    transacaoId,
+    lancamentoOrigemId,
+    exclusividadeDeclaradaEm,
     apuracaoId,
     criadoEm,
   ];
@@ -10166,6 +7746,15 @@ class DespesasLivroCaixa extends Table
     } else if (isInserting) {
       context.missing(_dataPagamentoMeta);
     }
+    if (data.containsKey('forma_pagamento')) {
+      context.handle(
+        _formaPagamentoMeta,
+        formaPagamento.isAcceptableOrUnknown(
+          data['forma_pagamento']!,
+          _formaPagamentoMeta,
+        ),
+      );
+    }
     if (data.containsKey('valor_centavos')) {
       context.handle(
         _valorCentavosMeta,
@@ -10204,6 +7793,33 @@ class DespesasLivroCaixa extends Table
       context.handle(
         _anexoPathMeta,
         anexoPath.isAcceptableOrUnknown(data['anexo_path']!, _anexoPathMeta),
+      );
+    }
+    if (data.containsKey('transacao_id')) {
+      context.handle(
+        _transacaoIdMeta,
+        transacaoId.isAcceptableOrUnknown(
+          data['transacao_id']!,
+          _transacaoIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('lancamento_origem_id')) {
+      context.handle(
+        _lancamentoOrigemIdMeta,
+        lancamentoOrigemId.isAcceptableOrUnknown(
+          data['lancamento_origem_id']!,
+          _lancamentoOrigemIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exclusividade_declarada_em')) {
+      context.handle(
+        _exclusividadeDeclaradaEmMeta,
+        exclusividadeDeclaradaEm.isAcceptableOrUnknown(
+          data['exclusividade_declarada_em']!,
+          _exclusividadeDeclaradaEmMeta,
+        ),
       );
     }
     if (data.containsKey('apuracao_id')) {
@@ -10245,6 +7861,10 @@ class DespesasLivroCaixa extends Table
         DriftSqlType.string,
         data['${effectivePrefix}data_pagamento'],
       )!,
+      formaPagamento: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}forma_pagamento'],
+      )!,
       valorCentavos: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}valor_centavos'],
@@ -10265,6 +7885,18 @@ class DespesasLivroCaixa extends Table
         DriftSqlType.string,
         data['${effectivePrefix}anexo_path'],
       ),
+      transacaoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transacao_id'],
+      ),
+      lancamentoOrigemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lancamento_origem_id'],
+      ),
+      exclusividadeDeclaradaEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}exclusividade_declarada_em'],
+      ),
       apuracaoId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}apuracao_id'],
@@ -10282,6 +7914,10 @@ class DespesasLivroCaixa extends Table
   }
 
   @override
+  List<String> get customConstraints => const [
+    'CHECK((forma_pagamento = \'extrato\')=(transacao_id IS NOT NULL))',
+  ];
+  @override
   bool get dontWriteConstraints => true;
 }
 
@@ -10289,10 +7925,14 @@ class DespesaLivroCaixa extends DataClass
     implements Insertable<DespesaLivroCaixa> {
   final String id;
   final String rubricaCodigo;
-  final String competencia;
-  final String dataPagamento;
 
-  /// regime de caixa
+  /// id de `rubrica` no catálogo
+  final String competencia;
+
+  /// Regime de caixa: data do PAGAMENTO; no cartão de crédito, data da
+  /// COMPRA (rodada 4b, P5) — a data da fatura não entra no cálculo.
+  final String dataPagamento;
+  final String formaPagamento;
   final int valorCentavos;
   final int valorDedutivelCentavos;
 
@@ -10302,6 +7942,14 @@ class DespesaLivroCaixa extends DataClass
   final String? anexoPath;
 
   /// caminho local; Fase 2
+  /// Débito do extrato que virou despesa (decisão 5).
+  final String? transacaoId;
+
+  /// Despesa nascida de reembolso/repasse `receitaComDespesa` (P2/P3).
+  final String? lancamentoOrigemId;
+
+  /// Linha exclusiva da atividade (rodada 4b): quando a pessoa declarou.
+  final int? exclusividadeDeclaradaEm;
   final String? apuracaoId;
   final int criadoEm;
   const DespesaLivroCaixa({
@@ -10309,11 +7957,15 @@ class DespesaLivroCaixa extends DataClass
     required this.rubricaCodigo,
     required this.competencia,
     required this.dataPagamento,
+    required this.formaPagamento,
     required this.valorCentavos,
     required this.valorDedutivelCentavos,
     this.descricao,
     required this.homeOffice,
     this.anexoPath,
+    this.transacaoId,
+    this.lancamentoOrigemId,
+    this.exclusividadeDeclaradaEm,
     this.apuracaoId,
     required this.criadoEm,
   });
@@ -10324,6 +7976,7 @@ class DespesaLivroCaixa extends DataClass
     map['rubrica_codigo'] = Variable<String>(rubricaCodigo);
     map['competencia'] = Variable<String>(competencia);
     map['data_pagamento'] = Variable<String>(dataPagamento);
+    map['forma_pagamento'] = Variable<String>(formaPagamento);
     map['valor_centavos'] = Variable<int>(valorCentavos);
     map['valor_dedutivel_centavos'] = Variable<int>(valorDedutivelCentavos);
     if (!nullToAbsent || descricao != null) {
@@ -10332,6 +7985,17 @@ class DespesaLivroCaixa extends DataClass
     map['home_office'] = Variable<int>(homeOffice);
     if (!nullToAbsent || anexoPath != null) {
       map['anexo_path'] = Variable<String>(anexoPath);
+    }
+    if (!nullToAbsent || transacaoId != null) {
+      map['transacao_id'] = Variable<String>(transacaoId);
+    }
+    if (!nullToAbsent || lancamentoOrigemId != null) {
+      map['lancamento_origem_id'] = Variable<String>(lancamentoOrigemId);
+    }
+    if (!nullToAbsent || exclusividadeDeclaradaEm != null) {
+      map['exclusividade_declarada_em'] = Variable<int>(
+        exclusividadeDeclaradaEm,
+      );
     }
     if (!nullToAbsent || apuracaoId != null) {
       map['apuracao_id'] = Variable<String>(apuracaoId);
@@ -10346,6 +8010,7 @@ class DespesaLivroCaixa extends DataClass
       rubricaCodigo: Value(rubricaCodigo),
       competencia: Value(competencia),
       dataPagamento: Value(dataPagamento),
+      formaPagamento: Value(formaPagamento),
       valorCentavos: Value(valorCentavos),
       valorDedutivelCentavos: Value(valorDedutivelCentavos),
       descricao: descricao == null && nullToAbsent
@@ -10355,6 +8020,15 @@ class DespesaLivroCaixa extends DataClass
       anexoPath: anexoPath == null && nullToAbsent
           ? const Value.absent()
           : Value(anexoPath),
+      transacaoId: transacaoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(transacaoId),
+      lancamentoOrigemId: lancamentoOrigemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lancamentoOrigemId),
+      exclusividadeDeclaradaEm: exclusividadeDeclaradaEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exclusividadeDeclaradaEm),
       apuracaoId: apuracaoId == null && nullToAbsent
           ? const Value.absent()
           : Value(apuracaoId),
@@ -10372,6 +8046,7 @@ class DespesaLivroCaixa extends DataClass
       rubricaCodigo: serializer.fromJson<String>(json['rubrica_codigo']),
       competencia: serializer.fromJson<String>(json['competencia']),
       dataPagamento: serializer.fromJson<String>(json['data_pagamento']),
+      formaPagamento: serializer.fromJson<String>(json['forma_pagamento']),
       valorCentavos: serializer.fromJson<int>(json['valor_centavos']),
       valorDedutivelCentavos: serializer.fromJson<int>(
         json['valor_dedutivel_centavos'],
@@ -10379,6 +8054,13 @@ class DespesaLivroCaixa extends DataClass
       descricao: serializer.fromJson<String?>(json['descricao']),
       homeOffice: serializer.fromJson<int>(json['home_office']),
       anexoPath: serializer.fromJson<String?>(json['anexo_path']),
+      transacaoId: serializer.fromJson<String?>(json['transacao_id']),
+      lancamentoOrigemId: serializer.fromJson<String?>(
+        json['lancamento_origem_id'],
+      ),
+      exclusividadeDeclaradaEm: serializer.fromJson<int?>(
+        json['exclusividade_declarada_em'],
+      ),
       apuracaoId: serializer.fromJson<String?>(json['apuracao_id']),
       criadoEm: serializer.fromJson<int>(json['criado_em']),
     );
@@ -10391,6 +8073,7 @@ class DespesaLivroCaixa extends DataClass
       'rubrica_codigo': serializer.toJson<String>(rubricaCodigo),
       'competencia': serializer.toJson<String>(competencia),
       'data_pagamento': serializer.toJson<String>(dataPagamento),
+      'forma_pagamento': serializer.toJson<String>(formaPagamento),
       'valor_centavos': serializer.toJson<int>(valorCentavos),
       'valor_dedutivel_centavos': serializer.toJson<int>(
         valorDedutivelCentavos,
@@ -10398,6 +8081,11 @@ class DespesaLivroCaixa extends DataClass
       'descricao': serializer.toJson<String?>(descricao),
       'home_office': serializer.toJson<int>(homeOffice),
       'anexo_path': serializer.toJson<String?>(anexoPath),
+      'transacao_id': serializer.toJson<String?>(transacaoId),
+      'lancamento_origem_id': serializer.toJson<String?>(lancamentoOrigemId),
+      'exclusividade_declarada_em': serializer.toJson<int?>(
+        exclusividadeDeclaradaEm,
+      ),
       'apuracao_id': serializer.toJson<String?>(apuracaoId),
       'criado_em': serializer.toJson<int>(criadoEm),
     };
@@ -10408,11 +8096,15 @@ class DespesaLivroCaixa extends DataClass
     String? rubricaCodigo,
     String? competencia,
     String? dataPagamento,
+    String? formaPagamento,
     int? valorCentavos,
     int? valorDedutivelCentavos,
     Value<String?> descricao = const Value.absent(),
     int? homeOffice,
     Value<String?> anexoPath = const Value.absent(),
+    Value<String?> transacaoId = const Value.absent(),
+    Value<String?> lancamentoOrigemId = const Value.absent(),
+    Value<int?> exclusividadeDeclaradaEm = const Value.absent(),
     Value<String?> apuracaoId = const Value.absent(),
     int? criadoEm,
   }) => DespesaLivroCaixa(
@@ -10420,12 +8112,20 @@ class DespesaLivroCaixa extends DataClass
     rubricaCodigo: rubricaCodigo ?? this.rubricaCodigo,
     competencia: competencia ?? this.competencia,
     dataPagamento: dataPagamento ?? this.dataPagamento,
+    formaPagamento: formaPagamento ?? this.formaPagamento,
     valorCentavos: valorCentavos ?? this.valorCentavos,
     valorDedutivelCentavos:
         valorDedutivelCentavos ?? this.valorDedutivelCentavos,
     descricao: descricao.present ? descricao.value : this.descricao,
     homeOffice: homeOffice ?? this.homeOffice,
     anexoPath: anexoPath.present ? anexoPath.value : this.anexoPath,
+    transacaoId: transacaoId.present ? transacaoId.value : this.transacaoId,
+    lancamentoOrigemId: lancamentoOrigemId.present
+        ? lancamentoOrigemId.value
+        : this.lancamentoOrigemId,
+    exclusividadeDeclaradaEm: exclusividadeDeclaradaEm.present
+        ? exclusividadeDeclaradaEm.value
+        : this.exclusividadeDeclaradaEm,
     apuracaoId: apuracaoId.present ? apuracaoId.value : this.apuracaoId,
     criadoEm: criadoEm ?? this.criadoEm,
   );
@@ -10441,6 +8141,9 @@ class DespesaLivroCaixa extends DataClass
       dataPagamento: data.dataPagamento.present
           ? data.dataPagamento.value
           : this.dataPagamento,
+      formaPagamento: data.formaPagamento.present
+          ? data.formaPagamento.value
+          : this.formaPagamento,
       valorCentavos: data.valorCentavos.present
           ? data.valorCentavos.value
           : this.valorCentavos,
@@ -10452,6 +8155,15 @@ class DespesaLivroCaixa extends DataClass
           ? data.homeOffice.value
           : this.homeOffice,
       anexoPath: data.anexoPath.present ? data.anexoPath.value : this.anexoPath,
+      transacaoId: data.transacaoId.present
+          ? data.transacaoId.value
+          : this.transacaoId,
+      lancamentoOrigemId: data.lancamentoOrigemId.present
+          ? data.lancamentoOrigemId.value
+          : this.lancamentoOrigemId,
+      exclusividadeDeclaradaEm: data.exclusividadeDeclaradaEm.present
+          ? data.exclusividadeDeclaradaEm.value
+          : this.exclusividadeDeclaradaEm,
       apuracaoId: data.apuracaoId.present
           ? data.apuracaoId.value
           : this.apuracaoId,
@@ -10466,11 +8178,15 @@ class DespesaLivroCaixa extends DataClass
           ..write('rubricaCodigo: $rubricaCodigo, ')
           ..write('competencia: $competencia, ')
           ..write('dataPagamento: $dataPagamento, ')
+          ..write('formaPagamento: $formaPagamento, ')
           ..write('valorCentavos: $valorCentavos, ')
           ..write('valorDedutivelCentavos: $valorDedutivelCentavos, ')
           ..write('descricao: $descricao, ')
           ..write('homeOffice: $homeOffice, ')
           ..write('anexoPath: $anexoPath, ')
+          ..write('transacaoId: $transacaoId, ')
+          ..write('lancamentoOrigemId: $lancamentoOrigemId, ')
+          ..write('exclusividadeDeclaradaEm: $exclusividadeDeclaradaEm, ')
           ..write('apuracaoId: $apuracaoId, ')
           ..write('criadoEm: $criadoEm')
           ..write(')'))
@@ -10483,11 +8199,15 @@ class DespesaLivroCaixa extends DataClass
     rubricaCodigo,
     competencia,
     dataPagamento,
+    formaPagamento,
     valorCentavos,
     valorDedutivelCentavos,
     descricao,
     homeOffice,
     anexoPath,
+    transacaoId,
+    lancamentoOrigemId,
+    exclusividadeDeclaradaEm,
     apuracaoId,
     criadoEm,
   );
@@ -10499,11 +8219,15 @@ class DespesaLivroCaixa extends DataClass
           other.rubricaCodigo == this.rubricaCodigo &&
           other.competencia == this.competencia &&
           other.dataPagamento == this.dataPagamento &&
+          other.formaPagamento == this.formaPagamento &&
           other.valorCentavos == this.valorCentavos &&
           other.valorDedutivelCentavos == this.valorDedutivelCentavos &&
           other.descricao == this.descricao &&
           other.homeOffice == this.homeOffice &&
           other.anexoPath == this.anexoPath &&
+          other.transacaoId == this.transacaoId &&
+          other.lancamentoOrigemId == this.lancamentoOrigemId &&
+          other.exclusividadeDeclaradaEm == this.exclusividadeDeclaradaEm &&
           other.apuracaoId == this.apuracaoId &&
           other.criadoEm == this.criadoEm);
 }
@@ -10513,11 +8237,15 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
   final Value<String> rubricaCodigo;
   final Value<String> competencia;
   final Value<String> dataPagamento;
+  final Value<String> formaPagamento;
   final Value<int> valorCentavos;
   final Value<int> valorDedutivelCentavos;
   final Value<String?> descricao;
   final Value<int> homeOffice;
   final Value<String?> anexoPath;
+  final Value<String?> transacaoId;
+  final Value<String?> lancamentoOrigemId;
+  final Value<int?> exclusividadeDeclaradaEm;
   final Value<String?> apuracaoId;
   final Value<int> criadoEm;
   final Value<int> rowid;
@@ -10526,11 +8254,15 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
     this.rubricaCodigo = const Value.absent(),
     this.competencia = const Value.absent(),
     this.dataPagamento = const Value.absent(),
+    this.formaPagamento = const Value.absent(),
     this.valorCentavos = const Value.absent(),
     this.valorDedutivelCentavos = const Value.absent(),
     this.descricao = const Value.absent(),
     this.homeOffice = const Value.absent(),
     this.anexoPath = const Value.absent(),
+    this.transacaoId = const Value.absent(),
+    this.lancamentoOrigemId = const Value.absent(),
+    this.exclusividadeDeclaradaEm = const Value.absent(),
     this.apuracaoId = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -10540,11 +8272,15 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
     required String rubricaCodigo,
     required String competencia,
     required String dataPagamento,
+    this.formaPagamento = const Value.absent(),
     required int valorCentavos,
     required int valorDedutivelCentavos,
     this.descricao = const Value.absent(),
     this.homeOffice = const Value.absent(),
     this.anexoPath = const Value.absent(),
+    this.transacaoId = const Value.absent(),
+    this.lancamentoOrigemId = const Value.absent(),
+    this.exclusividadeDeclaradaEm = const Value.absent(),
     this.apuracaoId = const Value.absent(),
     required int criadoEm,
     this.rowid = const Value.absent(),
@@ -10560,11 +8296,15 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
     Expression<String>? rubricaCodigo,
     Expression<String>? competencia,
     Expression<String>? dataPagamento,
+    Expression<String>? formaPagamento,
     Expression<int>? valorCentavos,
     Expression<int>? valorDedutivelCentavos,
     Expression<String>? descricao,
     Expression<int>? homeOffice,
     Expression<String>? anexoPath,
+    Expression<String>? transacaoId,
+    Expression<String>? lancamentoOrigemId,
+    Expression<int>? exclusividadeDeclaradaEm,
     Expression<String>? apuracaoId,
     Expression<int>? criadoEm,
     Expression<int>? rowid,
@@ -10574,12 +8314,18 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
       if (rubricaCodigo != null) 'rubrica_codigo': rubricaCodigo,
       if (competencia != null) 'competencia': competencia,
       if (dataPagamento != null) 'data_pagamento': dataPagamento,
+      if (formaPagamento != null) 'forma_pagamento': formaPagamento,
       if (valorCentavos != null) 'valor_centavos': valorCentavos,
       if (valorDedutivelCentavos != null)
         'valor_dedutivel_centavos': valorDedutivelCentavos,
       if (descricao != null) 'descricao': descricao,
       if (homeOffice != null) 'home_office': homeOffice,
       if (anexoPath != null) 'anexo_path': anexoPath,
+      if (transacaoId != null) 'transacao_id': transacaoId,
+      if (lancamentoOrigemId != null)
+        'lancamento_origem_id': lancamentoOrigemId,
+      if (exclusividadeDeclaradaEm != null)
+        'exclusividade_declarada_em': exclusividadeDeclaradaEm,
       if (apuracaoId != null) 'apuracao_id': apuracaoId,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (rowid != null) 'rowid': rowid,
@@ -10591,11 +8337,15 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
     Value<String>? rubricaCodigo,
     Value<String>? competencia,
     Value<String>? dataPagamento,
+    Value<String>? formaPagamento,
     Value<int>? valorCentavos,
     Value<int>? valorDedutivelCentavos,
     Value<String?>? descricao,
     Value<int>? homeOffice,
     Value<String?>? anexoPath,
+    Value<String?>? transacaoId,
+    Value<String?>? lancamentoOrigemId,
+    Value<int?>? exclusividadeDeclaradaEm,
     Value<String?>? apuracaoId,
     Value<int>? criadoEm,
     Value<int>? rowid,
@@ -10605,12 +8355,17 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
       rubricaCodigo: rubricaCodigo ?? this.rubricaCodigo,
       competencia: competencia ?? this.competencia,
       dataPagamento: dataPagamento ?? this.dataPagamento,
+      formaPagamento: formaPagamento ?? this.formaPagamento,
       valorCentavos: valorCentavos ?? this.valorCentavos,
       valorDedutivelCentavos:
           valorDedutivelCentavos ?? this.valorDedutivelCentavos,
       descricao: descricao ?? this.descricao,
       homeOffice: homeOffice ?? this.homeOffice,
       anexoPath: anexoPath ?? this.anexoPath,
+      transacaoId: transacaoId ?? this.transacaoId,
+      lancamentoOrigemId: lancamentoOrigemId ?? this.lancamentoOrigemId,
+      exclusividadeDeclaradaEm:
+          exclusividadeDeclaradaEm ?? this.exclusividadeDeclaradaEm,
       apuracaoId: apuracaoId ?? this.apuracaoId,
       criadoEm: criadoEm ?? this.criadoEm,
       rowid: rowid ?? this.rowid,
@@ -10632,6 +8387,9 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
     if (dataPagamento.present) {
       map['data_pagamento'] = Variable<String>(dataPagamento.value);
     }
+    if (formaPagamento.present) {
+      map['forma_pagamento'] = Variable<String>(formaPagamento.value);
+    }
     if (valorCentavos.present) {
       map['valor_centavos'] = Variable<int>(valorCentavos.value);
     }
@@ -10648,6 +8406,17 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
     }
     if (anexoPath.present) {
       map['anexo_path'] = Variable<String>(anexoPath.value);
+    }
+    if (transacaoId.present) {
+      map['transacao_id'] = Variable<String>(transacaoId.value);
+    }
+    if (lancamentoOrigemId.present) {
+      map['lancamento_origem_id'] = Variable<String>(lancamentoOrigemId.value);
+    }
+    if (exclusividadeDeclaradaEm.present) {
+      map['exclusividade_declarada_em'] = Variable<int>(
+        exclusividadeDeclaradaEm.value,
+      );
     }
     if (apuracaoId.present) {
       map['apuracao_id'] = Variable<String>(apuracaoId.value);
@@ -10668,11 +8437,15 @@ class DespesasLivroCaixaCompanion extends UpdateCompanion<DespesaLivroCaixa> {
           ..write('rubricaCodigo: $rubricaCodigo, ')
           ..write('competencia: $competencia, ')
           ..write('dataPagamento: $dataPagamento, ')
+          ..write('formaPagamento: $formaPagamento, ')
           ..write('valorCentavos: $valorCentavos, ')
           ..write('valorDedutivelCentavos: $valorDedutivelCentavos, ')
           ..write('descricao: $descricao, ')
           ..write('homeOffice: $homeOffice, ')
           ..write('anexoPath: $anexoPath, ')
+          ..write('transacaoId: $transacaoId, ')
+          ..write('lancamentoOrigemId: $lancamentoOrigemId, ')
+          ..write('exclusividadeDeclaradaEm: $exclusividadeDeclaradaEm, ')
           ..write('apuracaoId: $apuracaoId, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('rowid: $rowid')
@@ -10707,6 +8480,19 @@ class PagamentosInss extends Table
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
+  static const VerificationMeta _situacaoMeta = const VerificationMeta(
+    'situacao',
+  );
+  late final GeneratedColumn<String> situacao = GeneratedColumn<String>(
+    'situacao',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT \'pago\' CHECK (situacao IN (\'pago\', \'naoPago\'))',
+    defaultValue: const CustomExpression('\'pago\''),
+  );
   static const VerificationMeta _valorCentavosMeta = const VerificationMeta(
     'valorCentavos',
   );
@@ -10716,7 +8502,18 @@ class PagamentosInss extends Table
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL CHECK (valor_centavos > 0)',
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _acrescimosCentavosMeta =
+      const VerificationMeta('acrescimosCentavos');
+  late final GeneratedColumn<int> acrescimosCentavos = GeneratedColumn<int>(
+    'acrescimos_centavos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0 CHECK (acrescimos_centavos >= 0)',
+    defaultValue: const CustomExpression('0'),
   );
   static const VerificationMeta _observacaoMeta = const VerificationMeta(
     'observacao',
@@ -10744,7 +8541,9 @@ class PagamentosInss extends Table
   List<GeneratedColumn> get $columns => [
     id,
     competencia,
+    situacao,
     valorCentavos,
+    acrescimosCentavos,
     observacao,
     criadoEm,
   ];
@@ -10776,6 +8575,12 @@ class PagamentosInss extends Table
     } else if (isInserting) {
       context.missing(_competenciaMeta);
     }
+    if (data.containsKey('situacao')) {
+      context.handle(
+        _situacaoMeta,
+        situacao.isAcceptableOrUnknown(data['situacao']!, _situacaoMeta),
+      );
+    }
     if (data.containsKey('valor_centavos')) {
       context.handle(
         _valorCentavosMeta,
@@ -10786,6 +8591,15 @@ class PagamentosInss extends Table
       );
     } else if (isInserting) {
       context.missing(_valorCentavosMeta);
+    }
+    if (data.containsKey('acrescimos_centavos')) {
+      context.handle(
+        _acrescimosCentavosMeta,
+        acrescimosCentavos.isAcceptableOrUnknown(
+          data['acrescimos_centavos']!,
+          _acrescimosCentavosMeta,
+        ),
+      );
     }
     if (data.containsKey('observacao')) {
       context.handle(
@@ -10818,9 +8632,17 @@ class PagamentosInss extends Table
         DriftSqlType.string,
         data['${effectivePrefix}competencia'],
       )!,
+      situacao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}situacao'],
+      )!,
       valorCentavos: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}valor_centavos'],
+      )!,
+      acrescimosCentavos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}acrescimos_centavos'],
       )!,
       observacao: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -10839,6 +8661,10 @@ class PagamentosInss extends Table
   }
 
   @override
+  List<String> get customConstraints => const [
+    'CHECK((situacao = \'pago\' AND valor_centavos > 0)OR(situacao = \'naoPago\' AND valor_centavos = 0 AND acrescimos_centavos = 0))',
+  ];
+  @override
   bool get dontWriteConstraints => true;
 }
 
@@ -10847,13 +8673,19 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
   final String competencia;
 
   /// mês do PAGAMENTO efetivo
+  final String situacao;
   final int valorCentavos;
+
+  /// principal
+  final int acrescimosCentavos;
   final String? observacao;
   final int criadoEm;
   const PagamentoInss({
     required this.id,
     required this.competencia,
+    required this.situacao,
     required this.valorCentavos,
+    required this.acrescimosCentavos,
     this.observacao,
     required this.criadoEm,
   });
@@ -10862,7 +8694,9 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['competencia'] = Variable<String>(competencia);
+    map['situacao'] = Variable<String>(situacao);
     map['valor_centavos'] = Variable<int>(valorCentavos);
+    map['acrescimos_centavos'] = Variable<int>(acrescimosCentavos);
     if (!nullToAbsent || observacao != null) {
       map['observacao'] = Variable<String>(observacao);
     }
@@ -10874,7 +8708,9 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
     return PagamentosInssCompanion(
       id: Value(id),
       competencia: Value(competencia),
+      situacao: Value(situacao),
       valorCentavos: Value(valorCentavos),
+      acrescimosCentavos: Value(acrescimosCentavos),
       observacao: observacao == null && nullToAbsent
           ? const Value.absent()
           : Value(observacao),
@@ -10890,7 +8726,9 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
     return PagamentoInss(
       id: serializer.fromJson<String>(json['id']),
       competencia: serializer.fromJson<String>(json['competencia']),
+      situacao: serializer.fromJson<String>(json['situacao']),
       valorCentavos: serializer.fromJson<int>(json['valor_centavos']),
+      acrescimosCentavos: serializer.fromJson<int>(json['acrescimos_centavos']),
       observacao: serializer.fromJson<String?>(json['observacao']),
       criadoEm: serializer.fromJson<int>(json['criado_em']),
     );
@@ -10901,7 +8739,9 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'competencia': serializer.toJson<String>(competencia),
+      'situacao': serializer.toJson<String>(situacao),
       'valor_centavos': serializer.toJson<int>(valorCentavos),
+      'acrescimos_centavos': serializer.toJson<int>(acrescimosCentavos),
       'observacao': serializer.toJson<String?>(observacao),
       'criado_em': serializer.toJson<int>(criadoEm),
     };
@@ -10910,13 +8750,17 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
   PagamentoInss copyWith({
     String? id,
     String? competencia,
+    String? situacao,
     int? valorCentavos,
+    int? acrescimosCentavos,
     Value<String?> observacao = const Value.absent(),
     int? criadoEm,
   }) => PagamentoInss(
     id: id ?? this.id,
     competencia: competencia ?? this.competencia,
+    situacao: situacao ?? this.situacao,
     valorCentavos: valorCentavos ?? this.valorCentavos,
+    acrescimosCentavos: acrescimosCentavos ?? this.acrescimosCentavos,
     observacao: observacao.present ? observacao.value : this.observacao,
     criadoEm: criadoEm ?? this.criadoEm,
   );
@@ -10926,9 +8770,13 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
       competencia: data.competencia.present
           ? data.competencia.value
           : this.competencia,
+      situacao: data.situacao.present ? data.situacao.value : this.situacao,
       valorCentavos: data.valorCentavos.present
           ? data.valorCentavos.value
           : this.valorCentavos,
+      acrescimosCentavos: data.acrescimosCentavos.present
+          ? data.acrescimosCentavos.value
+          : this.acrescimosCentavos,
       observacao: data.observacao.present
           ? data.observacao.value
           : this.observacao,
@@ -10941,7 +8789,9 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
     return (StringBuffer('PagamentoInss(')
           ..write('id: $id, ')
           ..write('competencia: $competencia, ')
+          ..write('situacao: $situacao, ')
           ..write('valorCentavos: $valorCentavos, ')
+          ..write('acrescimosCentavos: $acrescimosCentavos, ')
           ..write('observacao: $observacao, ')
           ..write('criadoEm: $criadoEm')
           ..write(')'))
@@ -10949,15 +8799,24 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, competencia, valorCentavos, observacao, criadoEm);
+  int get hashCode => Object.hash(
+    id,
+    competencia,
+    situacao,
+    valorCentavos,
+    acrescimosCentavos,
+    observacao,
+    criadoEm,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PagamentoInss &&
           other.id == this.id &&
           other.competencia == this.competencia &&
+          other.situacao == this.situacao &&
           other.valorCentavos == this.valorCentavos &&
+          other.acrescimosCentavos == this.acrescimosCentavos &&
           other.observacao == this.observacao &&
           other.criadoEm == this.criadoEm);
 }
@@ -10965,14 +8824,18 @@ class PagamentoInss extends DataClass implements Insertable<PagamentoInss> {
 class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
   final Value<String> id;
   final Value<String> competencia;
+  final Value<String> situacao;
   final Value<int> valorCentavos;
+  final Value<int> acrescimosCentavos;
   final Value<String?> observacao;
   final Value<int> criadoEm;
   final Value<int> rowid;
   const PagamentosInssCompanion({
     this.id = const Value.absent(),
     this.competencia = const Value.absent(),
+    this.situacao = const Value.absent(),
     this.valorCentavos = const Value.absent(),
+    this.acrescimosCentavos = const Value.absent(),
     this.observacao = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -10980,7 +8843,9 @@ class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
   PagamentosInssCompanion.insert({
     required String id,
     required String competencia,
+    this.situacao = const Value.absent(),
     required int valorCentavos,
+    this.acrescimosCentavos = const Value.absent(),
     this.observacao = const Value.absent(),
     required int criadoEm,
     this.rowid = const Value.absent(),
@@ -10991,7 +8856,9 @@ class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
   static Insertable<PagamentoInss> custom({
     Expression<String>? id,
     Expression<String>? competencia,
+    Expression<String>? situacao,
     Expression<int>? valorCentavos,
+    Expression<int>? acrescimosCentavos,
     Expression<String>? observacao,
     Expression<int>? criadoEm,
     Expression<int>? rowid,
@@ -10999,7 +8866,9 @@ class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (competencia != null) 'competencia': competencia,
+      if (situacao != null) 'situacao': situacao,
       if (valorCentavos != null) 'valor_centavos': valorCentavos,
+      if (acrescimosCentavos != null) 'acrescimos_centavos': acrescimosCentavos,
       if (observacao != null) 'observacao': observacao,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (rowid != null) 'rowid': rowid,
@@ -11009,7 +8878,9 @@ class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
   PagamentosInssCompanion copyWith({
     Value<String>? id,
     Value<String>? competencia,
+    Value<String>? situacao,
     Value<int>? valorCentavos,
+    Value<int>? acrescimosCentavos,
     Value<String?>? observacao,
     Value<int>? criadoEm,
     Value<int>? rowid,
@@ -11017,7 +8888,9 @@ class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
     return PagamentosInssCompanion(
       id: id ?? this.id,
       competencia: competencia ?? this.competencia,
+      situacao: situacao ?? this.situacao,
       valorCentavos: valorCentavos ?? this.valorCentavos,
+      acrescimosCentavos: acrescimosCentavos ?? this.acrescimosCentavos,
       observacao: observacao ?? this.observacao,
       criadoEm: criadoEm ?? this.criadoEm,
       rowid: rowid ?? this.rowid,
@@ -11033,8 +8906,14 @@ class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
     if (competencia.present) {
       map['competencia'] = Variable<String>(competencia.value);
     }
+    if (situacao.present) {
+      map['situacao'] = Variable<String>(situacao.value);
+    }
     if (valorCentavos.present) {
       map['valor_centavos'] = Variable<int>(valorCentavos.value);
+    }
+    if (acrescimosCentavos.present) {
+      map['acrescimos_centavos'] = Variable<int>(acrescimosCentavos.value);
     }
     if (observacao.present) {
       map['observacao'] = Variable<String>(observacao.value);
@@ -11053,7 +8932,9 @@ class PagamentosInssCompanion extends UpdateCompanion<PagamentoInss> {
     return (StringBuffer('PagamentosInssCompanion(')
           ..write('id: $id, ')
           ..write('competencia: $competencia, ')
+          ..write('situacao: $situacao, ')
           ..write('valorCentavos: $valorCentavos, ')
+          ..write('acrescimosCentavos: $acrescimosCentavos, ')
           ..write('observacao: $observacao, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('rowid: $rowid')
@@ -11450,17 +9331,6 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL PRIMARY KEY',
   );
-  static const VerificationMeta _apuracaoIdMeta = const VerificationMeta(
-    'apuracaoId',
-  );
-  late final GeneratedColumn<String> apuracaoId = GeneratedColumn<String>(
-    'apuracao_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL REFERENCES apuracoes_mensais(id)',
-  );
   static const VerificationMeta _codigoReceitaMeta = const VerificationMeta(
     'codigoReceita',
   );
@@ -11536,8 +9406,8 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     $customConstraints:
-        'NOT NULL DEFAULT \'gerado\' CHECK (status IN (\'gerado\', \'pago\', \'vencido\', \'cancelado\'))',
-    defaultValue: const CustomExpression('\'gerado\''),
+        'NOT NULL DEFAULT \'gerada\' CHECK (status IN (\'gerada\', \'paga\', \'cancelada\'))',
+    defaultValue: const CustomExpression('\'gerada\''),
   );
   static const VerificationMeta _pagoEmMeta = const VerificationMeta('pagoEm');
   late final GeneratedColumn<String> pagoEm = GeneratedColumn<String>(
@@ -11559,6 +9429,18 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
     requiredDuringInsert: false,
     $customConstraints: '',
   );
+  static const VerificationMeta _acrescimosPagosCentavosMeta =
+      const VerificationMeta('acrescimosPagosCentavos');
+  late final GeneratedColumn<int> acrescimosPagosCentavos =
+      GeneratedColumn<int>(
+        'acrescimos_pagos_centavos',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        $customConstraints: 'NOT NULL DEFAULT 0',
+        defaultValue: const CustomExpression('0'),
+      );
   static const VerificationMeta _criadoEmMeta = const VerificationMeta(
     'criadoEm',
   );
@@ -11573,7 +9455,6 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    apuracaoId,
     codigoReceita,
     competencia,
     valorCentavos,
@@ -11583,6 +9464,7 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
     status,
     pagoEm,
     valorPagoCentavos,
+    acrescimosPagosCentavos,
     criadoEm,
   ];
   @override
@@ -11601,14 +9483,6 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
-    }
-    if (data.containsKey('apuracao_id')) {
-      context.handle(
-        _apuracaoIdMeta,
-        apuracaoId.isAcceptableOrUnknown(data['apuracao_id']!, _apuracaoIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_apuracaoIdMeta);
     }
     if (data.containsKey('codigo_receita')) {
       context.handle(
@@ -11688,6 +9562,15 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
         ),
       );
     }
+    if (data.containsKey('acrescimos_pagos_centavos')) {
+      context.handle(
+        _acrescimosPagosCentavosMeta,
+        acrescimosPagosCentavos.isAcceptableOrUnknown(
+          data['acrescimos_pagos_centavos']!,
+          _acrescimosPagosCentavosMeta,
+        ),
+      );
+    }
     if (data.containsKey('criado_em')) {
       context.handle(
         _criadoEmMeta,
@@ -11708,10 +9591,6 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
-      )!,
-      apuracaoId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}apuracao_id'],
       )!,
       codigoReceita: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -11749,6 +9628,10 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
         DriftSqlType.int,
         data['${effectivePrefix}valor_pago_centavos'],
       ),
+      acrescimosPagosCentavos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}acrescimos_pagos_centavos'],
+      )!,
       criadoEm: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}criado_em'],
@@ -11767,10 +9650,11 @@ class Darfs extends Table with TableInfo<Darfs, DarfLocal> {
 
 class DarfLocal extends DataClass implements Insertable<DarfLocal> {
   final String id;
-  final String apuracaoId;
   final String codigoReceita;
   final String competencia;
   final int valorCentavos;
+
+  /// principal
   final String vencimento;
 
   /// último dia útil do mês seguinte, antecipado
@@ -11780,11 +9664,13 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
   final String? pagoEm;
   final int? valorPagoCentavos;
 
-  /// p/ o relatório anual fechar ao centavo
+  /// principal pago (P11)
+  final int acrescimosPagosCentavos;
+
+  /// multa e juros
   final int criadoEm;
   const DarfLocal({
     required this.id,
-    required this.apuracaoId,
     required this.codigoReceita,
     required this.competencia,
     required this.valorCentavos,
@@ -11794,13 +9680,13 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
     required this.status,
     this.pagoEm,
     this.valorPagoCentavos,
+    required this.acrescimosPagosCentavos,
     required this.criadoEm,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['apuracao_id'] = Variable<String>(apuracaoId);
     map['codigo_receita'] = Variable<String>(codigoReceita);
     map['competencia'] = Variable<String>(competencia);
     map['valor_centavos'] = Variable<int>(valorCentavos);
@@ -11816,6 +9702,7 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
     if (!nullToAbsent || valorPagoCentavos != null) {
       map['valor_pago_centavos'] = Variable<int>(valorPagoCentavos);
     }
+    map['acrescimos_pagos_centavos'] = Variable<int>(acrescimosPagosCentavos);
     map['criado_em'] = Variable<int>(criadoEm);
     return map;
   }
@@ -11823,7 +9710,6 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
   DarfsCompanion toCompanion(bool nullToAbsent) {
     return DarfsCompanion(
       id: Value(id),
-      apuracaoId: Value(apuracaoId),
       codigoReceita: Value(codigoReceita),
       competencia: Value(competencia),
       valorCentavos: Value(valorCentavos),
@@ -11839,6 +9725,7 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
       valorPagoCentavos: valorPagoCentavos == null && nullToAbsent
           ? const Value.absent()
           : Value(valorPagoCentavos),
+      acrescimosPagosCentavos: Value(acrescimosPagosCentavos),
       criadoEm: Value(criadoEm),
     );
   }
@@ -11850,7 +9737,6 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DarfLocal(
       id: serializer.fromJson<String>(json['id']),
-      apuracaoId: serializer.fromJson<String>(json['apuracao_id']),
       codigoReceita: serializer.fromJson<String>(json['codigo_receita']),
       competencia: serializer.fromJson<String>(json['competencia']),
       valorCentavos: serializer.fromJson<int>(json['valor_centavos']),
@@ -11862,6 +9748,9 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
       status: serializer.fromJson<String>(json['status']),
       pagoEm: serializer.fromJson<String?>(json['pago_em']),
       valorPagoCentavos: serializer.fromJson<int?>(json['valor_pago_centavos']),
+      acrescimosPagosCentavos: serializer.fromJson<int>(
+        json['acrescimos_pagos_centavos'],
+      ),
       criadoEm: serializer.fromJson<int>(json['criado_em']),
     );
   }
@@ -11870,7 +9759,6 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'apuracao_id': serializer.toJson<String>(apuracaoId),
       'codigo_receita': serializer.toJson<String>(codigoReceita),
       'competencia': serializer.toJson<String>(competencia),
       'valor_centavos': serializer.toJson<int>(valorCentavos),
@@ -11880,13 +9768,15 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
       'status': serializer.toJson<String>(status),
       'pago_em': serializer.toJson<String?>(pagoEm),
       'valor_pago_centavos': serializer.toJson<int?>(valorPagoCentavos),
+      'acrescimos_pagos_centavos': serializer.toJson<int>(
+        acrescimosPagosCentavos,
+      ),
       'criado_em': serializer.toJson<int>(criadoEm),
     };
   }
 
   DarfLocal copyWith({
     String? id,
-    String? apuracaoId,
     String? codigoReceita,
     String? competencia,
     int? valorCentavos,
@@ -11896,10 +9786,10 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
     String? status,
     Value<String?> pagoEm = const Value.absent(),
     Value<int?> valorPagoCentavos = const Value.absent(),
+    int? acrescimosPagosCentavos,
     int? criadoEm,
   }) => DarfLocal(
     id: id ?? this.id,
-    apuracaoId: apuracaoId ?? this.apuracaoId,
     codigoReceita: codigoReceita ?? this.codigoReceita,
     competencia: competencia ?? this.competencia,
     valorCentavos: valorCentavos ?? this.valorCentavos,
@@ -11911,14 +9801,13 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
     valorPagoCentavos: valorPagoCentavos.present
         ? valorPagoCentavos.value
         : this.valorPagoCentavos,
+    acrescimosPagosCentavos:
+        acrescimosPagosCentavos ?? this.acrescimosPagosCentavos,
     criadoEm: criadoEm ?? this.criadoEm,
   );
   DarfLocal copyWithCompanion(DarfsCompanion data) {
     return DarfLocal(
       id: data.id.present ? data.id.value : this.id,
-      apuracaoId: data.apuracaoId.present
-          ? data.apuracaoId.value
-          : this.apuracaoId,
       codigoReceita: data.codigoReceita.present
           ? data.codigoReceita.value
           : this.codigoReceita,
@@ -11942,6 +9831,9 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
       valorPagoCentavos: data.valorPagoCentavos.present
           ? data.valorPagoCentavos.value
           : this.valorPagoCentavos,
+      acrescimosPagosCentavos: data.acrescimosPagosCentavos.present
+          ? data.acrescimosPagosCentavos.value
+          : this.acrescimosPagosCentavos,
       criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
     );
   }
@@ -11950,7 +9842,6 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
   String toString() {
     return (StringBuffer('DarfLocal(')
           ..write('id: $id, ')
-          ..write('apuracaoId: $apuracaoId, ')
           ..write('codigoReceita: $codigoReceita, ')
           ..write('competencia: $competencia, ')
           ..write('valorCentavos: $valorCentavos, ')
@@ -11960,6 +9851,7 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
           ..write('status: $status, ')
           ..write('pagoEm: $pagoEm, ')
           ..write('valorPagoCentavos: $valorPagoCentavos, ')
+          ..write('acrescimosPagosCentavos: $acrescimosPagosCentavos, ')
           ..write('criadoEm: $criadoEm')
           ..write(')'))
         .toString();
@@ -11968,7 +9860,6 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
   @override
   int get hashCode => Object.hash(
     id,
-    apuracaoId,
     codigoReceita,
     competencia,
     valorCentavos,
@@ -11978,6 +9869,7 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
     status,
     pagoEm,
     valorPagoCentavos,
+    acrescimosPagosCentavos,
     criadoEm,
   );
   @override
@@ -11985,7 +9877,6 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
       identical(this, other) ||
       (other is DarfLocal &&
           other.id == this.id &&
-          other.apuracaoId == this.apuracaoId &&
           other.codigoReceita == this.codigoReceita &&
           other.competencia == this.competencia &&
           other.valorCentavos == this.valorCentavos &&
@@ -11995,12 +9886,12 @@ class DarfLocal extends DataClass implements Insertable<DarfLocal> {
           other.status == this.status &&
           other.pagoEm == this.pagoEm &&
           other.valorPagoCentavos == this.valorPagoCentavos &&
+          other.acrescimosPagosCentavos == this.acrescimosPagosCentavos &&
           other.criadoEm == this.criadoEm);
 }
 
 class DarfsCompanion extends UpdateCompanion<DarfLocal> {
   final Value<String> id;
-  final Value<String> apuracaoId;
   final Value<String> codigoReceita;
   final Value<String> competencia;
   final Value<int> valorCentavos;
@@ -12010,11 +9901,11 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
   final Value<String> status;
   final Value<String?> pagoEm;
   final Value<int?> valorPagoCentavos;
+  final Value<int> acrescimosPagosCentavos;
   final Value<int> criadoEm;
   final Value<int> rowid;
   const DarfsCompanion({
     this.id = const Value.absent(),
-    this.apuracaoId = const Value.absent(),
     this.codigoReceita = const Value.absent(),
     this.competencia = const Value.absent(),
     this.valorCentavos = const Value.absent(),
@@ -12024,12 +9915,12 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
     this.status = const Value.absent(),
     this.pagoEm = const Value.absent(),
     this.valorPagoCentavos = const Value.absent(),
+    this.acrescimosPagosCentavos = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DarfsCompanion.insert({
     required String id,
-    required String apuracaoId,
     this.codigoReceita = const Value.absent(),
     required String competencia,
     required int valorCentavos,
@@ -12039,17 +9930,16 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
     this.status = const Value.absent(),
     this.pagoEm = const Value.absent(),
     this.valorPagoCentavos = const Value.absent(),
+    this.acrescimosPagosCentavos = const Value.absent(),
     required int criadoEm,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       apuracaoId = Value(apuracaoId),
        competencia = Value(competencia),
        valorCentavos = Value(valorCentavos),
        vencimento = Value(vencimento),
        criadoEm = Value(criadoEm);
   static Insertable<DarfLocal> custom({
     Expression<String>? id,
-    Expression<String>? apuracaoId,
     Expression<String>? codigoReceita,
     Expression<String>? competencia,
     Expression<int>? valorCentavos,
@@ -12059,12 +9949,12 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
     Expression<String>? status,
     Expression<String>? pagoEm,
     Expression<int>? valorPagoCentavos,
+    Expression<int>? acrescimosPagosCentavos,
     Expression<int>? criadoEm,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (apuracaoId != null) 'apuracao_id': apuracaoId,
       if (codigoReceita != null) 'codigo_receita': codigoReceita,
       if (competencia != null) 'competencia': competencia,
       if (valorCentavos != null) 'valor_centavos': valorCentavos,
@@ -12075,6 +9965,8 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
       if (status != null) 'status': status,
       if (pagoEm != null) 'pago_em': pagoEm,
       if (valorPagoCentavos != null) 'valor_pago_centavos': valorPagoCentavos,
+      if (acrescimosPagosCentavos != null)
+        'acrescimos_pagos_centavos': acrescimosPagosCentavos,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (rowid != null) 'rowid': rowid,
     });
@@ -12082,7 +9974,6 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
 
   DarfsCompanion copyWith({
     Value<String>? id,
-    Value<String>? apuracaoId,
     Value<String>? codigoReceita,
     Value<String>? competencia,
     Value<int>? valorCentavos,
@@ -12092,12 +9983,12 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
     Value<String>? status,
     Value<String?>? pagoEm,
     Value<int?>? valorPagoCentavos,
+    Value<int>? acrescimosPagosCentavos,
     Value<int>? criadoEm,
     Value<int>? rowid,
   }) {
     return DarfsCompanion(
       id: id ?? this.id,
-      apuracaoId: apuracaoId ?? this.apuracaoId,
       codigoReceita: codigoReceita ?? this.codigoReceita,
       competencia: competencia ?? this.competencia,
       valorCentavos: valorCentavos ?? this.valorCentavos,
@@ -12107,6 +9998,8 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
       status: status ?? this.status,
       pagoEm: pagoEm ?? this.pagoEm,
       valorPagoCentavos: valorPagoCentavos ?? this.valorPagoCentavos,
+      acrescimosPagosCentavos:
+          acrescimosPagosCentavos ?? this.acrescimosPagosCentavos,
       criadoEm: criadoEm ?? this.criadoEm,
       rowid: rowid ?? this.rowid,
     );
@@ -12117,9 +10010,6 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
-    }
-    if (apuracaoId.present) {
-      map['apuracao_id'] = Variable<String>(apuracaoId.value);
     }
     if (codigoReceita.present) {
       map['codigo_receita'] = Variable<String>(codigoReceita.value);
@@ -12148,6 +10038,11 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
     if (valorPagoCentavos.present) {
       map['valor_pago_centavos'] = Variable<int>(valorPagoCentavos.value);
     }
+    if (acrescimosPagosCentavos.present) {
+      map['acrescimos_pagos_centavos'] = Variable<int>(
+        acrescimosPagosCentavos.value,
+      );
+    }
     if (criadoEm.present) {
       map['criado_em'] = Variable<int>(criadoEm.value);
     }
@@ -12161,7 +10056,6 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
   String toString() {
     return (StringBuffer('DarfsCompanion(')
           ..write('id: $id, ')
-          ..write('apuracaoId: $apuracaoId, ')
           ..write('codigoReceita: $codigoReceita, ')
           ..write('competencia: $competencia, ')
           ..write('valorCentavos: $valorCentavos, ')
@@ -12171,7 +10065,289 @@ class DarfsCompanion extends UpdateCompanion<DarfLocal> {
           ..write('status: $status, ')
           ..write('pagoEm: $pagoEm, ')
           ..write('valorPagoCentavos: $valorPagoCentavos, ')
+          ..write('acrescimosPagosCentavos: $acrescimosPagosCentavos, ')
           ..write('criadoEm: $criadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class DarfCompetencias extends Table
+    with TableInfo<DarfCompetencias, DarfCompetencia> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  DarfCompetencias(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _darfIdMeta = const VerificationMeta('darfId');
+  late final GeneratedColumn<String> darfId = GeneratedColumn<String>(
+    'darf_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL REFERENCES darfs(id)',
+  );
+  static const VerificationMeta _competenciaMeta = const VerificationMeta(
+    'competencia',
+  );
+  late final GeneratedColumn<String> competencia = GeneratedColumn<String>(
+    'competencia',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _apuracaoIdMeta = const VerificationMeta(
+    'apuracaoId',
+  );
+  late final GeneratedColumn<String> apuracaoId = GeneratedColumn<String>(
+    'apuracao_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL REFERENCES apuracoes_mensais(id)',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [darfId, competencia, apuracaoId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'darf_competencias';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DarfCompetencia> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('darf_id')) {
+      context.handle(
+        _darfIdMeta,
+        darfId.isAcceptableOrUnknown(data['darf_id']!, _darfIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_darfIdMeta);
+    }
+    if (data.containsKey('competencia')) {
+      context.handle(
+        _competenciaMeta,
+        competencia.isAcceptableOrUnknown(
+          data['competencia']!,
+          _competenciaMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_competenciaMeta);
+    }
+    if (data.containsKey('apuracao_id')) {
+      context.handle(
+        _apuracaoIdMeta,
+        apuracaoId.isAcceptableOrUnknown(data['apuracao_id']!, _apuracaoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_apuracaoIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {darfId, competencia};
+  @override
+  DarfCompetencia map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DarfCompetencia(
+      darfId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}darf_id'],
+      )!,
+      competencia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}competencia'],
+      )!,
+      apuracaoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}apuracao_id'],
+      )!,
+    );
+  }
+
+  @override
+  DarfCompetencias createAlias(String alias) {
+    return DarfCompetencias(attachedDatabase, alias);
+  }
+
+  @override
+  List<String> get customConstraints => const [
+    'PRIMARY KEY(darf_id, competencia)',
+  ];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class DarfCompetencia extends DataClass implements Insertable<DarfCompetencia> {
+  final String darfId;
+  final String competencia;
+  final String apuracaoId;
+  const DarfCompetencia({
+    required this.darfId,
+    required this.competencia,
+    required this.apuracaoId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['darf_id'] = Variable<String>(darfId);
+    map['competencia'] = Variable<String>(competencia);
+    map['apuracao_id'] = Variable<String>(apuracaoId);
+    return map;
+  }
+
+  DarfCompetenciasCompanion toCompanion(bool nullToAbsent) {
+    return DarfCompetenciasCompanion(
+      darfId: Value(darfId),
+      competencia: Value(competencia),
+      apuracaoId: Value(apuracaoId),
+    );
+  }
+
+  factory DarfCompetencia.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DarfCompetencia(
+      darfId: serializer.fromJson<String>(json['darf_id']),
+      competencia: serializer.fromJson<String>(json['competencia']),
+      apuracaoId: serializer.fromJson<String>(json['apuracao_id']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'darf_id': serializer.toJson<String>(darfId),
+      'competencia': serializer.toJson<String>(competencia),
+      'apuracao_id': serializer.toJson<String>(apuracaoId),
+    };
+  }
+
+  DarfCompetencia copyWith({
+    String? darfId,
+    String? competencia,
+    String? apuracaoId,
+  }) => DarfCompetencia(
+    darfId: darfId ?? this.darfId,
+    competencia: competencia ?? this.competencia,
+    apuracaoId: apuracaoId ?? this.apuracaoId,
+  );
+  DarfCompetencia copyWithCompanion(DarfCompetenciasCompanion data) {
+    return DarfCompetencia(
+      darfId: data.darfId.present ? data.darfId.value : this.darfId,
+      competencia: data.competencia.present
+          ? data.competencia.value
+          : this.competencia,
+      apuracaoId: data.apuracaoId.present
+          ? data.apuracaoId.value
+          : this.apuracaoId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DarfCompetencia(')
+          ..write('darfId: $darfId, ')
+          ..write('competencia: $competencia, ')
+          ..write('apuracaoId: $apuracaoId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(darfId, competencia, apuracaoId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DarfCompetencia &&
+          other.darfId == this.darfId &&
+          other.competencia == this.competencia &&
+          other.apuracaoId == this.apuracaoId);
+}
+
+class DarfCompetenciasCompanion extends UpdateCompanion<DarfCompetencia> {
+  final Value<String> darfId;
+  final Value<String> competencia;
+  final Value<String> apuracaoId;
+  final Value<int> rowid;
+  const DarfCompetenciasCompanion({
+    this.darfId = const Value.absent(),
+    this.competencia = const Value.absent(),
+    this.apuracaoId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DarfCompetenciasCompanion.insert({
+    required String darfId,
+    required String competencia,
+    required String apuracaoId,
+    this.rowid = const Value.absent(),
+  }) : darfId = Value(darfId),
+       competencia = Value(competencia),
+       apuracaoId = Value(apuracaoId);
+  static Insertable<DarfCompetencia> custom({
+    Expression<String>? darfId,
+    Expression<String>? competencia,
+    Expression<String>? apuracaoId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (darfId != null) 'darf_id': darfId,
+      if (competencia != null) 'competencia': competencia,
+      if (apuracaoId != null) 'apuracao_id': apuracaoId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DarfCompetenciasCompanion copyWith({
+    Value<String>? darfId,
+    Value<String>? competencia,
+    Value<String>? apuracaoId,
+    Value<int>? rowid,
+  }) {
+    return DarfCompetenciasCompanion(
+      darfId: darfId ?? this.darfId,
+      competencia: competencia ?? this.competencia,
+      apuracaoId: apuracaoId ?? this.apuracaoId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (darfId.present) {
+      map['darf_id'] = Variable<String>(darfId.value);
+    }
+    if (competencia.present) {
+      map['competencia'] = Variable<String>(competencia.value);
+    }
+    if (apuracaoId.present) {
+      map['apuracao_id'] = Variable<String>(apuracaoId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DarfCompetenciasCompanion(')
+          ..write('darfId: $darfId, ')
+          ..write('competencia: $competencia, ')
+          ..write('apuracaoId: $apuracaoId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -14071,18 +12247,6 @@ class AuditoriaCompanion extends UpdateCompanion<Auditoria> {
 abstract class _$BancoLocal extends GeneratedDatabase {
   _$BancoLocal(QueryExecutor e) : super(e);
   $BancoLocalManager get managers => $BancoLocalManager(this);
-  late final CatVersoes catVersoes = CatVersoes(this);
-  late final CatTabelasIrpf catTabelasIrpf = CatTabelasIrpf(this);
-  late final CatFaixasIrpf catFaixasIrpf = CatFaixasIrpf(this);
-  late final CatParametrosFiscais catParametrosFiscais = CatParametrosFiscais(
-    this,
-  );
-  late final CatFeriadosBancarios catFeriadosBancarios = CatFeriadosBancarios(
-    this,
-  );
-  late final CatRubricas catRubricas = CatRubricas(this);
-  late final CatProfissoes catProfissoes = CatProfissoes(this);
-  late final CatPerfisParser catPerfisParser = CatPerfisParser(this);
   late final Perfil perfil = Perfil(this);
   late final AceitesTermosLocal aceitesTermosLocal = AceitesTermosLocal(this);
   late final ContasBancarias contasBancarias = ContasBancarias(this);
@@ -14109,6 +12273,14 @@ abstract class _$BancoLocal extends GeneratedDatabase {
     'uq_remetentes_cpf',
     'CREATE UNIQUE INDEX uq_remetentes_cpf ON remetentes (cpf) WHERE cpf IS NOT NULL',
   );
+  late final Index uqRemetentesCnpj = Index(
+    'uq_remetentes_cnpj',
+    'CREATE UNIQUE INDEX uq_remetentes_cnpj ON remetentes (cnpj) WHERE cnpj IS NOT NULL',
+  );
+  late final Index uqRemetentesChaveNome = Index(
+    'uq_remetentes_chave_nome',
+    'CREATE UNIQUE INDEX uq_remetentes_chave_nome ON remetentes (chave_nome) WHERE cpf IS NULL AND cnpj IS NULL',
+  );
   late final ApuracoesMensais apuracoesMensais = ApuracoesMensais(this);
   late final Index uqApuracaoAtiva = Index(
     'uq_apuracao_ativa',
@@ -14127,11 +12299,20 @@ abstract class _$BancoLocal extends GeneratedDatabase {
     'CREATE INDEX idx_despesas_comp ON despesas_livro_caixa (competencia)',
   );
   late final PagamentosInss pagamentosInss = PagamentosInss(this);
+  late final Index uqInssNaoPago = Index(
+    'uq_inss_nao_pago',
+    'CREATE UNIQUE INDEX uq_inss_nao_pago ON pagamentos_inss (competencia) WHERE situacao = \'naoPago\'',
+  );
   late final Dependentes dependentes = Dependentes(this);
   late final Darfs darfs = Darfs(this);
   late final Index idxDarfsVenc = Index(
     'idx_darfs_venc',
-    'CREATE INDEX idx_darfs_venc ON darfs (vencimento) WHERE status = \'gerado\'',
+    'CREATE INDEX idx_darfs_venc ON darfs (vencimento) WHERE status = \'gerada\'',
+  );
+  late final DarfCompetencias darfCompetencias = DarfCompetencias(this);
+  late final Index idxDarfCompetenciasComp = Index(
+    'idx_darf_competencias_comp',
+    'CREATE INDEX idx_darf_competencias_comp ON darf_competencias (competencia)',
   );
   late final NotificacoesLocais notificacoesLocais = NotificacoesLocais(this);
   late final BackupEstadoTable backupEstado = BackupEstadoTable(this);
@@ -14142,14 +12323,6 @@ abstract class _$BancoLocal extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    catVersoes,
-    catTabelasIrpf,
-    catFaixasIrpf,
-    catParametrosFiscais,
-    catFeriadosBancarios,
-    catRubricas,
-    catProfissoes,
-    catPerfisParser,
     perfil,
     aceitesTermosLocal,
     contasBancarias,
@@ -14161,6 +12334,8 @@ abstract class _$BancoLocal extends GeneratedDatabase {
     trgTransacoesImutaveis,
     remetentes,
     uqRemetentesCpf,
+    uqRemetentesCnpj,
+    uqRemetentesChaveNome,
     apuracoesMensais,
     uqApuracaoAtiva,
     lancamentos,
@@ -14169,9 +12344,12 @@ abstract class _$BancoLocal extends GeneratedDatabase {
     despesasLivroCaixa,
     idxDespesasComp,
     pagamentosInss,
+    uqInssNaoPago,
     dependentes,
     darfs,
     idxDarfsVenc,
+    darfCompetencias,
+    idxDarfCompetenciasComp,
     notificacoesLocais,
     backupEstado,
     enviosSuporte,
@@ -14189,2196 +12367,6 @@ abstract class _$BancoLocal extends GeneratedDatabase {
   ]);
 }
 
-typedef $CatVersoesCreateCompanionBuilder =
-    CatVersoesCompanion Function({
-      required String catalogo,
-      required int versao,
-      required int publicadoEm,
-      required int baixadoEm,
-      required String hash,
-      Value<int> rowid,
-    });
-typedef $CatVersoesUpdateCompanionBuilder =
-    CatVersoesCompanion Function({
-      Value<String> catalogo,
-      Value<int> versao,
-      Value<int> publicadoEm,
-      Value<int> baixadoEm,
-      Value<String> hash,
-      Value<int> rowid,
-    });
-
-class $CatVersoesFilterComposer extends Composer<_$BancoLocal, CatVersoes> {
-  $CatVersoesFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get catalogo => $composableBuilder(
-    column: $table.catalogo,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get versao => $composableBuilder(
-    column: $table.versao,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get publicadoEm => $composableBuilder(
-    column: $table.publicadoEm,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get baixadoEm => $composableBuilder(
-    column: $table.baixadoEm,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get hash => $composableBuilder(
-    column: $table.hash,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $CatVersoesOrderingComposer extends Composer<_$BancoLocal, CatVersoes> {
-  $CatVersoesOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get catalogo => $composableBuilder(
-    column: $table.catalogo,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get versao => $composableBuilder(
-    column: $table.versao,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get publicadoEm => $composableBuilder(
-    column: $table.publicadoEm,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get baixadoEm => $composableBuilder(
-    column: $table.baixadoEm,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get hash => $composableBuilder(
-    column: $table.hash,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $CatVersoesAnnotationComposer extends Composer<_$BancoLocal, CatVersoes> {
-  $CatVersoesAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get catalogo =>
-      $composableBuilder(column: $table.catalogo, builder: (column) => column);
-
-  GeneratedColumn<int> get versao =>
-      $composableBuilder(column: $table.versao, builder: (column) => column);
-
-  GeneratedColumn<int> get publicadoEm => $composableBuilder(
-    column: $table.publicadoEm,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get baixadoEm =>
-      $composableBuilder(column: $table.baixadoEm, builder: (column) => column);
-
-  GeneratedColumn<String> get hash =>
-      $composableBuilder(column: $table.hash, builder: (column) => column);
-}
-
-class $CatVersoesTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatVersoes,
-          CatVersao,
-          $CatVersoesFilterComposer,
-          $CatVersoesOrderingComposer,
-          $CatVersoesAnnotationComposer,
-          $CatVersoesCreateCompanionBuilder,
-          $CatVersoesUpdateCompanionBuilder,
-          (CatVersao, BaseReferences<_$BancoLocal, CatVersoes, CatVersao>),
-          CatVersao,
-          PrefetchHooks Function()
-        > {
-  $CatVersoesTableManager(_$BancoLocal db, CatVersoes table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatVersoesFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatVersoesOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatVersoesAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> catalogo = const Value.absent(),
-                Value<int> versao = const Value.absent(),
-                Value<int> publicadoEm = const Value.absent(),
-                Value<int> baixadoEm = const Value.absent(),
-                Value<String> hash = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatVersoesCompanion(
-                catalogo: catalogo,
-                versao: versao,
-                publicadoEm: publicadoEm,
-                baixadoEm: baixadoEm,
-                hash: hash,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String catalogo,
-                required int versao,
-                required int publicadoEm,
-                required int baixadoEm,
-                required String hash,
-                Value<int> rowid = const Value.absent(),
-              }) => CatVersoesCompanion.insert(
-                catalogo: catalogo,
-                versao: versao,
-                publicadoEm: publicadoEm,
-                baixadoEm: baixadoEm,
-                hash: hash,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $CatVersoesProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatVersoes,
-      CatVersao,
-      $CatVersoesFilterComposer,
-      $CatVersoesOrderingComposer,
-      $CatVersoesAnnotationComposer,
-      $CatVersoesCreateCompanionBuilder,
-      $CatVersoesUpdateCompanionBuilder,
-      (CatVersao, BaseReferences<_$BancoLocal, CatVersoes, CatVersao>),
-      CatVersao,
-      PrefetchHooks Function()
-    >;
-typedef $CatTabelasIrpfCreateCompanionBuilder =
-    CatTabelasIrpfCompanion Function({
-      Value<int> id,
-      required String vigenciaInicio,
-      Value<String?> vigenciaFim,
-      required String fonteLegal,
-      required int deducaoDependenteCentavos,
-    });
-typedef $CatTabelasIrpfUpdateCompanionBuilder =
-    CatTabelasIrpfCompanion Function({
-      Value<int> id,
-      Value<String> vigenciaInicio,
-      Value<String?> vigenciaFim,
-      Value<String> fonteLegal,
-      Value<int> deducaoDependenteCentavos,
-    });
-
-final class $CatTabelasIrpfReferences
-    extends BaseReferences<_$BancoLocal, CatTabelasIrpf, CatTabelaIrpf> {
-  $CatTabelasIrpfReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<CatFaixasIrpf, List<CatFaixaIrpf>>
-  _catFaixasIrpfRefsTable(_$BancoLocal db) => MultiTypedResultKey.fromTable(
-    db.catFaixasIrpf,
-    aliasName: 'cat_tabelas_irpf__id__cat_faixas_irpf__tabela_id',
-  );
-
-  $CatFaixasIrpfProcessedTableManager get catFaixasIrpfRefs {
-    final manager = $CatFaixasIrpfTableManager(
-      $_db,
-      $_db.catFaixasIrpf,
-    ).filter((f) => f.tabelaId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_catFaixasIrpfRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<ApuracoesMensais, List<ApuracaoLocal>>
-  _apuracoesMensaisRefsTable(_$BancoLocal db) => MultiTypedResultKey.fromTable(
-    db.apuracoesMensais,
-    aliasName: 'cat_tabelas_irpf__id__apuracoes_mensais__tabela_irpf_id',
-  );
-
-  $ApuracoesMensaisProcessedTableManager get apuracoesMensaisRefs {
-    final manager = $ApuracoesMensaisTableManager(
-      $_db,
-      $_db.apuracoesMensais,
-    ).filter((f) => f.tabelaIrpfId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _apuracoesMensaisRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $CatTabelasIrpfFilterComposer
-    extends Composer<_$BancoLocal, CatTabelasIrpf> {
-  $CatTabelasIrpfFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get vigenciaInicio => $composableBuilder(
-    column: $table.vigenciaInicio,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get vigenciaFim => $composableBuilder(
-    column: $table.vigenciaFim,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get fonteLegal => $composableBuilder(
-    column: $table.fonteLegal,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get deducaoDependenteCentavos => $composableBuilder(
-    column: $table.deducaoDependenteCentavos,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> catFaixasIrpfRefs(
-    Expression<bool> Function($CatFaixasIrpfFilterComposer f) f,
-  ) {
-    final $CatFaixasIrpfFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.catFaixasIrpf,
-      getReferencedColumn: (t) => t.tabelaId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatFaixasIrpfFilterComposer(
-            $db: $db,
-            $table: $db.catFaixasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> apuracoesMensaisRefs(
-    Expression<bool> Function($ApuracoesMensaisFilterComposer f) f,
-  ) {
-    final $ApuracoesMensaisFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.apuracoesMensais,
-      getReferencedColumn: (t) => t.tabelaIrpfId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $ApuracoesMensaisFilterComposer(
-            $db: $db,
-            $table: $db.apuracoesMensais,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $CatTabelasIrpfOrderingComposer
-    extends Composer<_$BancoLocal, CatTabelasIrpf> {
-  $CatTabelasIrpfOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get vigenciaInicio => $composableBuilder(
-    column: $table.vigenciaInicio,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get vigenciaFim => $composableBuilder(
-    column: $table.vigenciaFim,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get fonteLegal => $composableBuilder(
-    column: $table.fonteLegal,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get deducaoDependenteCentavos => $composableBuilder(
-    column: $table.deducaoDependenteCentavos,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $CatTabelasIrpfAnnotationComposer
-    extends Composer<_$BancoLocal, CatTabelasIrpf> {
-  $CatTabelasIrpfAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get vigenciaInicio => $composableBuilder(
-    column: $table.vigenciaInicio,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get vigenciaFim => $composableBuilder(
-    column: $table.vigenciaFim,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get fonteLegal => $composableBuilder(
-    column: $table.fonteLegal,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get deducaoDependenteCentavos => $composableBuilder(
-    column: $table.deducaoDependenteCentavos,
-    builder: (column) => column,
-  );
-
-  Expression<T> catFaixasIrpfRefs<T extends Object>(
-    Expression<T> Function($CatFaixasIrpfAnnotationComposer a) f,
-  ) {
-    final $CatFaixasIrpfAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.catFaixasIrpf,
-      getReferencedColumn: (t) => t.tabelaId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatFaixasIrpfAnnotationComposer(
-            $db: $db,
-            $table: $db.catFaixasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> apuracoesMensaisRefs<T extends Object>(
-    Expression<T> Function($ApuracoesMensaisAnnotationComposer a) f,
-  ) {
-    final $ApuracoesMensaisAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.apuracoesMensais,
-      getReferencedColumn: (t) => t.tabelaIrpfId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $ApuracoesMensaisAnnotationComposer(
-            $db: $db,
-            $table: $db.apuracoesMensais,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $CatTabelasIrpfTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatTabelasIrpf,
-          CatTabelaIrpf,
-          $CatTabelasIrpfFilterComposer,
-          $CatTabelasIrpfOrderingComposer,
-          $CatTabelasIrpfAnnotationComposer,
-          $CatTabelasIrpfCreateCompanionBuilder,
-          $CatTabelasIrpfUpdateCompanionBuilder,
-          (CatTabelaIrpf, $CatTabelasIrpfReferences),
-          CatTabelaIrpf,
-          PrefetchHooks Function({
-            bool catFaixasIrpfRefs,
-            bool apuracoesMensaisRefs,
-          })
-        > {
-  $CatTabelasIrpfTableManager(_$BancoLocal db, CatTabelasIrpf table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatTabelasIrpfFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatTabelasIrpfOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatTabelasIrpfAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> vigenciaInicio = const Value.absent(),
-                Value<String?> vigenciaFim = const Value.absent(),
-                Value<String> fonteLegal = const Value.absent(),
-                Value<int> deducaoDependenteCentavos = const Value.absent(),
-              }) => CatTabelasIrpfCompanion(
-                id: id,
-                vigenciaInicio: vigenciaInicio,
-                vigenciaFim: vigenciaFim,
-                fonteLegal: fonteLegal,
-                deducaoDependenteCentavos: deducaoDependenteCentavos,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String vigenciaInicio,
-                Value<String?> vigenciaFim = const Value.absent(),
-                required String fonteLegal,
-                required int deducaoDependenteCentavos,
-              }) => CatTabelasIrpfCompanion.insert(
-                id: id,
-                vigenciaInicio: vigenciaInicio,
-                vigenciaFim: vigenciaFim,
-                fonteLegal: fonteLegal,
-                deducaoDependenteCentavos: deducaoDependenteCentavos,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $CatTabelasIrpfReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback:
-              ({catFaixasIrpfRefs = false, apuracoesMensaisRefs = false}) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (catFaixasIrpfRefs) db.catFaixasIrpf,
-                    if (apuracoesMensaisRefs) db.apuracoesMensais,
-                  ],
-                  addJoins: null,
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (catFaixasIrpfRefs)
-                        await $_getPrefetchedData<
-                          CatTabelaIrpf,
-                          CatTabelasIrpf,
-                          CatFaixaIrpf
-                        >(
-                          currentTable: table,
-                          referencedTable: $CatTabelasIrpfReferences
-                              ._catFaixasIrpfRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $CatTabelasIrpfReferences(
-                                db,
-                                table,
-                                p0,
-                              ).catFaixasIrpfRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.tabelaId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (apuracoesMensaisRefs)
-                        await $_getPrefetchedData<
-                          CatTabelaIrpf,
-                          CatTabelasIrpf,
-                          ApuracaoLocal
-                        >(
-                          currentTable: table,
-                          referencedTable: $CatTabelasIrpfReferences
-                              ._apuracoesMensaisRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $CatTabelasIrpfReferences(
-                                db,
-                                table,
-                                p0,
-                              ).apuracoesMensaisRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.tabelaIrpfId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $CatTabelasIrpfProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatTabelasIrpf,
-      CatTabelaIrpf,
-      $CatTabelasIrpfFilterComposer,
-      $CatTabelasIrpfOrderingComposer,
-      $CatTabelasIrpfAnnotationComposer,
-      $CatTabelasIrpfCreateCompanionBuilder,
-      $CatTabelasIrpfUpdateCompanionBuilder,
-      (CatTabelaIrpf, $CatTabelasIrpfReferences),
-      CatTabelaIrpf,
-      PrefetchHooks Function({
-        bool catFaixasIrpfRefs,
-        bool apuracoesMensaisRefs,
-      })
-    >;
-typedef $CatFaixasIrpfCreateCompanionBuilder =
-    CatFaixasIrpfCompanion Function({
-      required int tabelaId,
-      required int ordem,
-      Value<int?> limiteSuperiorCentavos,
-      required int aliquotaBp,
-      required int parcelaDeduzirCentavos,
-      Value<int> rowid,
-    });
-typedef $CatFaixasIrpfUpdateCompanionBuilder =
-    CatFaixasIrpfCompanion Function({
-      Value<int> tabelaId,
-      Value<int> ordem,
-      Value<int?> limiteSuperiorCentavos,
-      Value<int> aliquotaBp,
-      Value<int> parcelaDeduzirCentavos,
-      Value<int> rowid,
-    });
-
-final class $CatFaixasIrpfReferences
-    extends BaseReferences<_$BancoLocal, CatFaixasIrpf, CatFaixaIrpf> {
-  $CatFaixasIrpfReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static CatTabelasIrpf _tabelaIdTable(_$BancoLocal db) => db.catTabelasIrpf
-      .createAlias('cat_faixas_irpf__tabela_id__cat_tabelas_irpf__id');
-
-  $CatTabelasIrpfProcessedTableManager get tabelaId {
-    final $_column = $_itemColumn<int>('tabela_id')!;
-
-    final manager = $CatTabelasIrpfTableManager(
-      $_db,
-      $_db.catTabelasIrpf,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_tabelaIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $CatFaixasIrpfFilterComposer
-    extends Composer<_$BancoLocal, CatFaixasIrpf> {
-  $CatFaixasIrpfFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get ordem => $composableBuilder(
-    column: $table.ordem,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get limiteSuperiorCentavos => $composableBuilder(
-    column: $table.limiteSuperiorCentavos,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get aliquotaBp => $composableBuilder(
-    column: $table.aliquotaBp,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get parcelaDeduzirCentavos => $composableBuilder(
-    column: $table.parcelaDeduzirCentavos,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $CatTabelasIrpfFilterComposer get tabelaId {
-    final $CatTabelasIrpfFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tabelaId,
-      referencedTable: $db.catTabelasIrpf,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatTabelasIrpfFilterComposer(
-            $db: $db,
-            $table: $db.catTabelasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $CatFaixasIrpfOrderingComposer
-    extends Composer<_$BancoLocal, CatFaixasIrpf> {
-  $CatFaixasIrpfOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get ordem => $composableBuilder(
-    column: $table.ordem,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get limiteSuperiorCentavos => $composableBuilder(
-    column: $table.limiteSuperiorCentavos,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get aliquotaBp => $composableBuilder(
-    column: $table.aliquotaBp,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get parcelaDeduzirCentavos => $composableBuilder(
-    column: $table.parcelaDeduzirCentavos,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $CatTabelasIrpfOrderingComposer get tabelaId {
-    final $CatTabelasIrpfOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tabelaId,
-      referencedTable: $db.catTabelasIrpf,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatTabelasIrpfOrderingComposer(
-            $db: $db,
-            $table: $db.catTabelasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $CatFaixasIrpfAnnotationComposer
-    extends Composer<_$BancoLocal, CatFaixasIrpf> {
-  $CatFaixasIrpfAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get ordem =>
-      $composableBuilder(column: $table.ordem, builder: (column) => column);
-
-  GeneratedColumn<int> get limiteSuperiorCentavos => $composableBuilder(
-    column: $table.limiteSuperiorCentavos,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get aliquotaBp => $composableBuilder(
-    column: $table.aliquotaBp,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get parcelaDeduzirCentavos => $composableBuilder(
-    column: $table.parcelaDeduzirCentavos,
-    builder: (column) => column,
-  );
-
-  $CatTabelasIrpfAnnotationComposer get tabelaId {
-    final $CatTabelasIrpfAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tabelaId,
-      referencedTable: $db.catTabelasIrpf,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatTabelasIrpfAnnotationComposer(
-            $db: $db,
-            $table: $db.catTabelasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $CatFaixasIrpfTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatFaixasIrpf,
-          CatFaixaIrpf,
-          $CatFaixasIrpfFilterComposer,
-          $CatFaixasIrpfOrderingComposer,
-          $CatFaixasIrpfAnnotationComposer,
-          $CatFaixasIrpfCreateCompanionBuilder,
-          $CatFaixasIrpfUpdateCompanionBuilder,
-          (CatFaixaIrpf, $CatFaixasIrpfReferences),
-          CatFaixaIrpf,
-          PrefetchHooks Function({bool tabelaId})
-        > {
-  $CatFaixasIrpfTableManager(_$BancoLocal db, CatFaixasIrpf table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatFaixasIrpfFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatFaixasIrpfOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatFaixasIrpfAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> tabelaId = const Value.absent(),
-                Value<int> ordem = const Value.absent(),
-                Value<int?> limiteSuperiorCentavos = const Value.absent(),
-                Value<int> aliquotaBp = const Value.absent(),
-                Value<int> parcelaDeduzirCentavos = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatFaixasIrpfCompanion(
-                tabelaId: tabelaId,
-                ordem: ordem,
-                limiteSuperiorCentavos: limiteSuperiorCentavos,
-                aliquotaBp: aliquotaBp,
-                parcelaDeduzirCentavos: parcelaDeduzirCentavos,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required int tabelaId,
-                required int ordem,
-                Value<int?> limiteSuperiorCentavos = const Value.absent(),
-                required int aliquotaBp,
-                required int parcelaDeduzirCentavos,
-                Value<int> rowid = const Value.absent(),
-              }) => CatFaixasIrpfCompanion.insert(
-                tabelaId: tabelaId,
-                ordem: ordem,
-                limiteSuperiorCentavos: limiteSuperiorCentavos,
-                aliquotaBp: aliquotaBp,
-                parcelaDeduzirCentavos: parcelaDeduzirCentavos,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $CatFaixasIrpfReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({tabelaId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (tabelaId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.tabelaId,
-                                referencedTable: $CatFaixasIrpfReferences
-                                    ._tabelaIdTable(db),
-                                referencedColumn: $CatFaixasIrpfReferences
-                                    ._tabelaIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $CatFaixasIrpfProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatFaixasIrpf,
-      CatFaixaIrpf,
-      $CatFaixasIrpfFilterComposer,
-      $CatFaixasIrpfOrderingComposer,
-      $CatFaixasIrpfAnnotationComposer,
-      $CatFaixasIrpfCreateCompanionBuilder,
-      $CatFaixasIrpfUpdateCompanionBuilder,
-      (CatFaixaIrpf, $CatFaixasIrpfReferences),
-      CatFaixaIrpf,
-      PrefetchHooks Function({bool tabelaId})
-    >;
-typedef $CatParametrosFiscaisCreateCompanionBuilder =
-    CatParametrosFiscaisCompanion Function({
-      required String chave,
-      required String vigenciaInicio,
-      Value<String?> vigenciaFim,
-      required int valor,
-      required String unidade,
-      required String fonteLegal,
-      required String statusValidacao,
-      Value<int> rowid,
-    });
-typedef $CatParametrosFiscaisUpdateCompanionBuilder =
-    CatParametrosFiscaisCompanion Function({
-      Value<String> chave,
-      Value<String> vigenciaInicio,
-      Value<String?> vigenciaFim,
-      Value<int> valor,
-      Value<String> unidade,
-      Value<String> fonteLegal,
-      Value<String> statusValidacao,
-      Value<int> rowid,
-    });
-
-class $CatParametrosFiscaisFilterComposer
-    extends Composer<_$BancoLocal, CatParametrosFiscais> {
-  $CatParametrosFiscaisFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get chave => $composableBuilder(
-    column: $table.chave,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get vigenciaInicio => $composableBuilder(
-    column: $table.vigenciaInicio,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get vigenciaFim => $composableBuilder(
-    column: $table.vigenciaFim,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get valor => $composableBuilder(
-    column: $table.valor,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get unidade => $composableBuilder(
-    column: $table.unidade,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get fonteLegal => $composableBuilder(
-    column: $table.fonteLegal,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get statusValidacao => $composableBuilder(
-    column: $table.statusValidacao,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $CatParametrosFiscaisOrderingComposer
-    extends Composer<_$BancoLocal, CatParametrosFiscais> {
-  $CatParametrosFiscaisOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get chave => $composableBuilder(
-    column: $table.chave,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get vigenciaInicio => $composableBuilder(
-    column: $table.vigenciaInicio,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get vigenciaFim => $composableBuilder(
-    column: $table.vigenciaFim,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get valor => $composableBuilder(
-    column: $table.valor,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get unidade => $composableBuilder(
-    column: $table.unidade,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get fonteLegal => $composableBuilder(
-    column: $table.fonteLegal,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get statusValidacao => $composableBuilder(
-    column: $table.statusValidacao,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $CatParametrosFiscaisAnnotationComposer
-    extends Composer<_$BancoLocal, CatParametrosFiscais> {
-  $CatParametrosFiscaisAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get chave =>
-      $composableBuilder(column: $table.chave, builder: (column) => column);
-
-  GeneratedColumn<String> get vigenciaInicio => $composableBuilder(
-    column: $table.vigenciaInicio,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get vigenciaFim => $composableBuilder(
-    column: $table.vigenciaFim,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get valor =>
-      $composableBuilder(column: $table.valor, builder: (column) => column);
-
-  GeneratedColumn<String> get unidade =>
-      $composableBuilder(column: $table.unidade, builder: (column) => column);
-
-  GeneratedColumn<String> get fonteLegal => $composableBuilder(
-    column: $table.fonteLegal,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get statusValidacao => $composableBuilder(
-    column: $table.statusValidacao,
-    builder: (column) => column,
-  );
-}
-
-class $CatParametrosFiscaisTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatParametrosFiscais,
-          CatParametroFiscal,
-          $CatParametrosFiscaisFilterComposer,
-          $CatParametrosFiscaisOrderingComposer,
-          $CatParametrosFiscaisAnnotationComposer,
-          $CatParametrosFiscaisCreateCompanionBuilder,
-          $CatParametrosFiscaisUpdateCompanionBuilder,
-          (
-            CatParametroFiscal,
-            BaseReferences<
-              _$BancoLocal,
-              CatParametrosFiscais,
-              CatParametroFiscal
-            >,
-          ),
-          CatParametroFiscal,
-          PrefetchHooks Function()
-        > {
-  $CatParametrosFiscaisTableManager(_$BancoLocal db, CatParametrosFiscais table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatParametrosFiscaisFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatParametrosFiscaisOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatParametrosFiscaisAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> chave = const Value.absent(),
-                Value<String> vigenciaInicio = const Value.absent(),
-                Value<String?> vigenciaFim = const Value.absent(),
-                Value<int> valor = const Value.absent(),
-                Value<String> unidade = const Value.absent(),
-                Value<String> fonteLegal = const Value.absent(),
-                Value<String> statusValidacao = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatParametrosFiscaisCompanion(
-                chave: chave,
-                vigenciaInicio: vigenciaInicio,
-                vigenciaFim: vigenciaFim,
-                valor: valor,
-                unidade: unidade,
-                fonteLegal: fonteLegal,
-                statusValidacao: statusValidacao,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String chave,
-                required String vigenciaInicio,
-                Value<String?> vigenciaFim = const Value.absent(),
-                required int valor,
-                required String unidade,
-                required String fonteLegal,
-                required String statusValidacao,
-                Value<int> rowid = const Value.absent(),
-              }) => CatParametrosFiscaisCompanion.insert(
-                chave: chave,
-                vigenciaInicio: vigenciaInicio,
-                vigenciaFim: vigenciaFim,
-                valor: valor,
-                unidade: unidade,
-                fonteLegal: fonteLegal,
-                statusValidacao: statusValidacao,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $CatParametrosFiscaisProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatParametrosFiscais,
-      CatParametroFiscal,
-      $CatParametrosFiscaisFilterComposer,
-      $CatParametrosFiscaisOrderingComposer,
-      $CatParametrosFiscaisAnnotationComposer,
-      $CatParametrosFiscaisCreateCompanionBuilder,
-      $CatParametrosFiscaisUpdateCompanionBuilder,
-      (
-        CatParametroFiscal,
-        BaseReferences<_$BancoLocal, CatParametrosFiscais, CatParametroFiscal>,
-      ),
-      CatParametroFiscal,
-      PrefetchHooks Function()
-    >;
-typedef $CatFeriadosBancariosCreateCompanionBuilder =
-    CatFeriadosBancariosCompanion Function({
-      required String data,
-      required String nome,
-      Value<int> rowid,
-    });
-typedef $CatFeriadosBancariosUpdateCompanionBuilder =
-    CatFeriadosBancariosCompanion Function({
-      Value<String> data,
-      Value<String> nome,
-      Value<int> rowid,
-    });
-
-class $CatFeriadosBancariosFilterComposer
-    extends Composer<_$BancoLocal, CatFeriadosBancarios> {
-  $CatFeriadosBancariosFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get data => $composableBuilder(
-    column: $table.data,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $CatFeriadosBancariosOrderingComposer
-    extends Composer<_$BancoLocal, CatFeriadosBancarios> {
-  $CatFeriadosBancariosOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get data => $composableBuilder(
-    column: $table.data,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $CatFeriadosBancariosAnnotationComposer
-    extends Composer<_$BancoLocal, CatFeriadosBancarios> {
-  $CatFeriadosBancariosAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get data =>
-      $composableBuilder(column: $table.data, builder: (column) => column);
-
-  GeneratedColumn<String> get nome =>
-      $composableBuilder(column: $table.nome, builder: (column) => column);
-}
-
-class $CatFeriadosBancariosTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatFeriadosBancarios,
-          CatFeriadoBancario,
-          $CatFeriadosBancariosFilterComposer,
-          $CatFeriadosBancariosOrderingComposer,
-          $CatFeriadosBancariosAnnotationComposer,
-          $CatFeriadosBancariosCreateCompanionBuilder,
-          $CatFeriadosBancariosUpdateCompanionBuilder,
-          (
-            CatFeriadoBancario,
-            BaseReferences<
-              _$BancoLocal,
-              CatFeriadosBancarios,
-              CatFeriadoBancario
-            >,
-          ),
-          CatFeriadoBancario,
-          PrefetchHooks Function()
-        > {
-  $CatFeriadosBancariosTableManager(_$BancoLocal db, CatFeriadosBancarios table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatFeriadosBancariosFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatFeriadosBancariosOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatFeriadosBancariosAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> data = const Value.absent(),
-                Value<String> nome = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatFeriadosBancariosCompanion(
-                data: data,
-                nome: nome,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String data,
-                required String nome,
-                Value<int> rowid = const Value.absent(),
-              }) => CatFeriadosBancariosCompanion.insert(
-                data: data,
-                nome: nome,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $CatFeriadosBancariosProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatFeriadosBancarios,
-      CatFeriadoBancario,
-      $CatFeriadosBancariosFilterComposer,
-      $CatFeriadosBancariosOrderingComposer,
-      $CatFeriadosBancariosAnnotationComposer,
-      $CatFeriadosBancariosCreateCompanionBuilder,
-      $CatFeriadosBancariosUpdateCompanionBuilder,
-      (
-        CatFeriadoBancario,
-        BaseReferences<_$BancoLocal, CatFeriadosBancarios, CatFeriadoBancario>,
-      ),
-      CatFeriadoBancario,
-      PrefetchHooks Function()
-    >;
-typedef $CatRubricasCreateCompanionBuilder =
-    CatRubricasCompanion Function({
-      required String codigo,
-      required String nome,
-      required int dedutivel,
-      Value<int> travaHomeOffice,
-      Value<int> exigeValidacaoContador,
-      Value<int?> ordem,
-      Value<int> ativo,
-      Value<int> rowid,
-    });
-typedef $CatRubricasUpdateCompanionBuilder =
-    CatRubricasCompanion Function({
-      Value<String> codigo,
-      Value<String> nome,
-      Value<int> dedutivel,
-      Value<int> travaHomeOffice,
-      Value<int> exigeValidacaoContador,
-      Value<int?> ordem,
-      Value<int> ativo,
-      Value<int> rowid,
-    });
-
-final class $CatRubricasReferences
-    extends BaseReferences<_$BancoLocal, CatRubricas, CatRubrica> {
-  $CatRubricasReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<DespesasLivroCaixa, List<DespesaLivroCaixa>>
-  _despesasLivroCaixaRefsTable(_$BancoLocal db) =>
-      MultiTypedResultKey.fromTable(
-        db.despesasLivroCaixa,
-        aliasName: 'cat_rubricas__codigo__despesas_livro_caixa__rubrica_codigo',
-      );
-
-  $DespesasLivroCaixaProcessedTableManager get despesasLivroCaixaRefs {
-    final manager =
-        $DespesasLivroCaixaTableManager($_db, $_db.despesasLivroCaixa).filter(
-          (f) =>
-              f.rubricaCodigo.codigo.sqlEquals($_itemColumn<String>('codigo')!),
-        );
-
-    final cache = $_typedResult.readTableOrNull(
-      _despesasLivroCaixaRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $CatRubricasFilterComposer extends Composer<_$BancoLocal, CatRubricas> {
-  $CatRubricasFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get codigo => $composableBuilder(
-    column: $table.codigo,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get dedutivel => $composableBuilder(
-    column: $table.dedutivel,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get travaHomeOffice => $composableBuilder(
-    column: $table.travaHomeOffice,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get exigeValidacaoContador => $composableBuilder(
-    column: $table.exigeValidacaoContador,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get ordem => $composableBuilder(
-    column: $table.ordem,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get ativo => $composableBuilder(
-    column: $table.ativo,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> despesasLivroCaixaRefs(
-    Expression<bool> Function($DespesasLivroCaixaFilterComposer f) f,
-  ) {
-    final $DespesasLivroCaixaFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.codigo,
-      referencedTable: $db.despesasLivroCaixa,
-      getReferencedColumn: (t) => t.rubricaCodigo,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $DespesasLivroCaixaFilterComposer(
-            $db: $db,
-            $table: $db.despesasLivroCaixa,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $CatRubricasOrderingComposer extends Composer<_$BancoLocal, CatRubricas> {
-  $CatRubricasOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get codigo => $composableBuilder(
-    column: $table.codigo,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get dedutivel => $composableBuilder(
-    column: $table.dedutivel,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get travaHomeOffice => $composableBuilder(
-    column: $table.travaHomeOffice,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get exigeValidacaoContador => $composableBuilder(
-    column: $table.exigeValidacaoContador,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get ordem => $composableBuilder(
-    column: $table.ordem,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get ativo => $composableBuilder(
-    column: $table.ativo,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $CatRubricasAnnotationComposer
-    extends Composer<_$BancoLocal, CatRubricas> {
-  $CatRubricasAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get codigo =>
-      $composableBuilder(column: $table.codigo, builder: (column) => column);
-
-  GeneratedColumn<String> get nome =>
-      $composableBuilder(column: $table.nome, builder: (column) => column);
-
-  GeneratedColumn<int> get dedutivel =>
-      $composableBuilder(column: $table.dedutivel, builder: (column) => column);
-
-  GeneratedColumn<int> get travaHomeOffice => $composableBuilder(
-    column: $table.travaHomeOffice,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get exigeValidacaoContador => $composableBuilder(
-    column: $table.exigeValidacaoContador,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get ordem =>
-      $composableBuilder(column: $table.ordem, builder: (column) => column);
-
-  GeneratedColumn<int> get ativo =>
-      $composableBuilder(column: $table.ativo, builder: (column) => column);
-
-  Expression<T> despesasLivroCaixaRefs<T extends Object>(
-    Expression<T> Function($DespesasLivroCaixaAnnotationComposer a) f,
-  ) {
-    final $DespesasLivroCaixaAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.codigo,
-      referencedTable: $db.despesasLivroCaixa,
-      getReferencedColumn: (t) => t.rubricaCodigo,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $DespesasLivroCaixaAnnotationComposer(
-            $db: $db,
-            $table: $db.despesasLivroCaixa,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $CatRubricasTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatRubricas,
-          CatRubrica,
-          $CatRubricasFilterComposer,
-          $CatRubricasOrderingComposer,
-          $CatRubricasAnnotationComposer,
-          $CatRubricasCreateCompanionBuilder,
-          $CatRubricasUpdateCompanionBuilder,
-          (CatRubrica, $CatRubricasReferences),
-          CatRubrica,
-          PrefetchHooks Function({bool despesasLivroCaixaRefs})
-        > {
-  $CatRubricasTableManager(_$BancoLocal db, CatRubricas table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatRubricasFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatRubricasOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatRubricasAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> codigo = const Value.absent(),
-                Value<String> nome = const Value.absent(),
-                Value<int> dedutivel = const Value.absent(),
-                Value<int> travaHomeOffice = const Value.absent(),
-                Value<int> exigeValidacaoContador = const Value.absent(),
-                Value<int?> ordem = const Value.absent(),
-                Value<int> ativo = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatRubricasCompanion(
-                codigo: codigo,
-                nome: nome,
-                dedutivel: dedutivel,
-                travaHomeOffice: travaHomeOffice,
-                exigeValidacaoContador: exigeValidacaoContador,
-                ordem: ordem,
-                ativo: ativo,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String codigo,
-                required String nome,
-                required int dedutivel,
-                Value<int> travaHomeOffice = const Value.absent(),
-                Value<int> exigeValidacaoContador = const Value.absent(),
-                Value<int?> ordem = const Value.absent(),
-                Value<int> ativo = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatRubricasCompanion.insert(
-                codigo: codigo,
-                nome: nome,
-                dedutivel: dedutivel,
-                travaHomeOffice: travaHomeOffice,
-                exigeValidacaoContador: exigeValidacaoContador,
-                ordem: ordem,
-                ativo: ativo,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) =>
-                    (e.readTable(table), $CatRubricasReferences(db, table, e)),
-              )
-              .toList(),
-          prefetchHooksCallback: ({despesasLivroCaixaRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (despesasLivroCaixaRefs) db.despesasLivroCaixa,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (despesasLivroCaixaRefs)
-                    await $_getPrefetchedData<
-                      CatRubrica,
-                      CatRubricas,
-                      DespesaLivroCaixa
-                    >(
-                      currentTable: table,
-                      referencedTable: $CatRubricasReferences
-                          ._despesasLivroCaixaRefsTable(db),
-                      managerFromTypedResult: (p0) => $CatRubricasReferences(
-                        db,
-                        table,
-                        p0,
-                      ).despesasLivroCaixaRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.rubricaCodigo == item.codigo,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $CatRubricasProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatRubricas,
-      CatRubrica,
-      $CatRubricasFilterComposer,
-      $CatRubricasOrderingComposer,
-      $CatRubricasAnnotationComposer,
-      $CatRubricasCreateCompanionBuilder,
-      $CatRubricasUpdateCompanionBuilder,
-      (CatRubrica, $CatRubricasReferences),
-      CatRubrica,
-      PrefetchHooks Function({bool despesasLivroCaixaRefs})
-    >;
-typedef $CatProfissoesCreateCompanionBuilder =
-    CatProfissoesCompanion Function({
-      required String codigo,
-      required String nome,
-      required int regulamentada,
-      Value<String?> conselho,
-      Value<int?> meiPermitido,
-      Value<int> ativo,
-      Value<int> rowid,
-    });
-typedef $CatProfissoesUpdateCompanionBuilder =
-    CatProfissoesCompanion Function({
-      Value<String> codigo,
-      Value<String> nome,
-      Value<int> regulamentada,
-      Value<String?> conselho,
-      Value<int?> meiPermitido,
-      Value<int> ativo,
-      Value<int> rowid,
-    });
-
-final class $CatProfissoesReferences
-    extends BaseReferences<_$BancoLocal, CatProfissoes, CatProfissao> {
-  $CatProfissoesReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<Perfil, List<PerfilLocal>> _perfilRefsTable(
-    _$BancoLocal db,
-  ) => MultiTypedResultKey.fromTable(
-    db.perfil,
-    aliasName: 'cat_profissoes__codigo__perfil__profissao_codigo',
-  );
-
-  $PerfilProcessedTableManager get perfilRefs {
-    final manager = $PerfilTableManager($_db, $_db.perfil).filter(
-      (f) =>
-          f.profissaoCodigo.codigo.sqlEquals($_itemColumn<String>('codigo')!),
-    );
-
-    final cache = $_typedResult.readTableOrNull(_perfilRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $CatProfissoesFilterComposer
-    extends Composer<_$BancoLocal, CatProfissoes> {
-  $CatProfissoesFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get codigo => $composableBuilder(
-    column: $table.codigo,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get regulamentada => $composableBuilder(
-    column: $table.regulamentada,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get conselho => $composableBuilder(
-    column: $table.conselho,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get meiPermitido => $composableBuilder(
-    column: $table.meiPermitido,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get ativo => $composableBuilder(
-    column: $table.ativo,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> perfilRefs(
-    Expression<bool> Function($PerfilFilterComposer f) f,
-  ) {
-    final $PerfilFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.codigo,
-      referencedTable: $db.perfil,
-      getReferencedColumn: (t) => t.profissaoCodigo,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $PerfilFilterComposer(
-            $db: $db,
-            $table: $db.perfil,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $CatProfissoesOrderingComposer
-    extends Composer<_$BancoLocal, CatProfissoes> {
-  $CatProfissoesOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get codigo => $composableBuilder(
-    column: $table.codigo,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get regulamentada => $composableBuilder(
-    column: $table.regulamentada,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get conselho => $composableBuilder(
-    column: $table.conselho,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get meiPermitido => $composableBuilder(
-    column: $table.meiPermitido,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get ativo => $composableBuilder(
-    column: $table.ativo,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $CatProfissoesAnnotationComposer
-    extends Composer<_$BancoLocal, CatProfissoes> {
-  $CatProfissoesAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get codigo =>
-      $composableBuilder(column: $table.codigo, builder: (column) => column);
-
-  GeneratedColumn<String> get nome =>
-      $composableBuilder(column: $table.nome, builder: (column) => column);
-
-  GeneratedColumn<int> get regulamentada => $composableBuilder(
-    column: $table.regulamentada,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get conselho =>
-      $composableBuilder(column: $table.conselho, builder: (column) => column);
-
-  GeneratedColumn<int> get meiPermitido => $composableBuilder(
-    column: $table.meiPermitido,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get ativo =>
-      $composableBuilder(column: $table.ativo, builder: (column) => column);
-
-  Expression<T> perfilRefs<T extends Object>(
-    Expression<T> Function($PerfilAnnotationComposer a) f,
-  ) {
-    final $PerfilAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.codigo,
-      referencedTable: $db.perfil,
-      getReferencedColumn: (t) => t.profissaoCodigo,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $PerfilAnnotationComposer(
-            $db: $db,
-            $table: $db.perfil,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $CatProfissoesTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatProfissoes,
-          CatProfissao,
-          $CatProfissoesFilterComposer,
-          $CatProfissoesOrderingComposer,
-          $CatProfissoesAnnotationComposer,
-          $CatProfissoesCreateCompanionBuilder,
-          $CatProfissoesUpdateCompanionBuilder,
-          (CatProfissao, $CatProfissoesReferences),
-          CatProfissao,
-          PrefetchHooks Function({bool perfilRefs})
-        > {
-  $CatProfissoesTableManager(_$BancoLocal db, CatProfissoes table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatProfissoesFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatProfissoesOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatProfissoesAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> codigo = const Value.absent(),
-                Value<String> nome = const Value.absent(),
-                Value<int> regulamentada = const Value.absent(),
-                Value<String?> conselho = const Value.absent(),
-                Value<int?> meiPermitido = const Value.absent(),
-                Value<int> ativo = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatProfissoesCompanion(
-                codigo: codigo,
-                nome: nome,
-                regulamentada: regulamentada,
-                conselho: conselho,
-                meiPermitido: meiPermitido,
-                ativo: ativo,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String codigo,
-                required String nome,
-                required int regulamentada,
-                Value<String?> conselho = const Value.absent(),
-                Value<int?> meiPermitido = const Value.absent(),
-                Value<int> ativo = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatProfissoesCompanion.insert(
-                codigo: codigo,
-                nome: nome,
-                regulamentada: regulamentada,
-                conselho: conselho,
-                meiPermitido: meiPermitido,
-                ativo: ativo,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $CatProfissoesReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({perfilRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (perfilRefs) db.perfil],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (perfilRefs)
-                    await $_getPrefetchedData<
-                      CatProfissao,
-                      CatProfissoes,
-                      PerfilLocal
-                    >(
-                      currentTable: table,
-                      referencedTable: $CatProfissoesReferences
-                          ._perfilRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $CatProfissoesReferences(db, table, p0).perfilRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.profissaoCodigo == item.codigo,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $CatProfissoesProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatProfissoes,
-      CatProfissao,
-      $CatProfissoesFilterComposer,
-      $CatProfissoesOrderingComposer,
-      $CatProfissoesAnnotationComposer,
-      $CatProfissoesCreateCompanionBuilder,
-      $CatProfissoesUpdateCompanionBuilder,
-      (CatProfissao, $CatProfissoesReferences),
-      CatProfissao,
-      PrefetchHooks Function({bool perfilRefs})
-    >;
-typedef $CatPerfisParserCreateCompanionBuilder =
-    CatPerfisParserCompanion Function({
-      required String codigo,
-      required String bancoNome,
-      required String formato,
-      required String definicaoJson,
-      required int versao,
-      Value<int> rowid,
-    });
-typedef $CatPerfisParserUpdateCompanionBuilder =
-    CatPerfisParserCompanion Function({
-      Value<String> codigo,
-      Value<String> bancoNome,
-      Value<String> formato,
-      Value<String> definicaoJson,
-      Value<int> versao,
-      Value<int> rowid,
-    });
-
-class $CatPerfisParserFilterComposer
-    extends Composer<_$BancoLocal, CatPerfisParser> {
-  $CatPerfisParserFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get codigo => $composableBuilder(
-    column: $table.codigo,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get bancoNome => $composableBuilder(
-    column: $table.bancoNome,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get formato => $composableBuilder(
-    column: $table.formato,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get definicaoJson => $composableBuilder(
-    column: $table.definicaoJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get versao => $composableBuilder(
-    column: $table.versao,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $CatPerfisParserOrderingComposer
-    extends Composer<_$BancoLocal, CatPerfisParser> {
-  $CatPerfisParserOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get codigo => $composableBuilder(
-    column: $table.codigo,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get bancoNome => $composableBuilder(
-    column: $table.bancoNome,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get formato => $composableBuilder(
-    column: $table.formato,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get definicaoJson => $composableBuilder(
-    column: $table.definicaoJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get versao => $composableBuilder(
-    column: $table.versao,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $CatPerfisParserAnnotationComposer
-    extends Composer<_$BancoLocal, CatPerfisParser> {
-  $CatPerfisParserAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get codigo =>
-      $composableBuilder(column: $table.codigo, builder: (column) => column);
-
-  GeneratedColumn<String> get bancoNome =>
-      $composableBuilder(column: $table.bancoNome, builder: (column) => column);
-
-  GeneratedColumn<String> get formato =>
-      $composableBuilder(column: $table.formato, builder: (column) => column);
-
-  GeneratedColumn<String> get definicaoJson => $composableBuilder(
-    column: $table.definicaoJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get versao =>
-      $composableBuilder(column: $table.versao, builder: (column) => column);
-}
-
-class $CatPerfisParserTableManager
-    extends
-        RootTableManager<
-          _$BancoLocal,
-          CatPerfisParser,
-          CatPerfilParser,
-          $CatPerfisParserFilterComposer,
-          $CatPerfisParserOrderingComposer,
-          $CatPerfisParserAnnotationComposer,
-          $CatPerfisParserCreateCompanionBuilder,
-          $CatPerfisParserUpdateCompanionBuilder,
-          (
-            CatPerfilParser,
-            BaseReferences<_$BancoLocal, CatPerfisParser, CatPerfilParser>,
-          ),
-          CatPerfilParser,
-          PrefetchHooks Function()
-        > {
-  $CatPerfisParserTableManager(_$BancoLocal db, CatPerfisParser table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $CatPerfisParserFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $CatPerfisParserOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $CatPerfisParserAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> codigo = const Value.absent(),
-                Value<String> bancoNome = const Value.absent(),
-                Value<String> formato = const Value.absent(),
-                Value<String> definicaoJson = const Value.absent(),
-                Value<int> versao = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CatPerfisParserCompanion(
-                codigo: codigo,
-                bancoNome: bancoNome,
-                formato: formato,
-                definicaoJson: definicaoJson,
-                versao: versao,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String codigo,
-                required String bancoNome,
-                required String formato,
-                required String definicaoJson,
-                required int versao,
-                Value<int> rowid = const Value.absent(),
-              }) => CatPerfisParserCompanion.insert(
-                codigo: codigo,
-                bancoNome: bancoNome,
-                formato: formato,
-                definicaoJson: definicaoJson,
-                versao: versao,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $CatPerfisParserProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoLocal,
-      CatPerfisParser,
-      CatPerfilParser,
-      $CatPerfisParserFilterComposer,
-      $CatPerfisParserOrderingComposer,
-      $CatPerfisParserAnnotationComposer,
-      $CatPerfisParserCreateCompanionBuilder,
-      $CatPerfisParserUpdateCompanionBuilder,
-      (
-        CatPerfilParser,
-        BaseReferences<_$BancoLocal, CatPerfisParser, CatPerfilParser>,
-      ),
-      CatPerfilParser,
-      PrefetchHooks Function()
-    >;
 typedef $PerfilCreateCompanionBuilder =
     PerfilCompanion Function({
       Value<int> id,
@@ -16405,29 +12393,6 @@ typedef $PerfilUpdateCompanionBuilder =
       Value<int> criadoEm,
       Value<int> atualizadoEm,
     });
-
-final class $PerfilReferences
-    extends BaseReferences<_$BancoLocal, Perfil, PerfilLocal> {
-  $PerfilReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static CatProfissoes _profissaoCodigoTable(_$BancoLocal db) => db
-      .catProfissoes
-      .createAlias('perfil__profissao_codigo__cat_profissoes__codigo');
-
-  $CatProfissoesProcessedTableManager? get profissaoCodigo {
-    final $_column = $_itemColumn<String>('profissao_codigo');
-    if ($_column == null) return null;
-    final manager = $CatProfissoesTableManager(
-      $_db,
-      $_db.catProfissoes,
-    ).filter((f) => f.codigo.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_profissaoCodigoTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
 
 class $PerfilFilterComposer extends Composer<_$BancoLocal, Perfil> {
   $PerfilFilterComposer({
@@ -16457,6 +12422,11 @@ class $PerfilFilterComposer extends Composer<_$BancoLocal, Perfil> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get profissaoCodigo => $composableBuilder(
+    column: $table.profissaoCodigo,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get exigeCpfPagador => $composableBuilder(
     column: $table.exigeCpfPagador,
     builder: (column) => ColumnFilters(column),
@@ -16481,29 +12451,6 @@ class $PerfilFilterComposer extends Composer<_$BancoLocal, Perfil> {
     column: $table.atualizadoEm,
     builder: (column) => ColumnFilters(column),
   );
-
-  $CatProfissoesFilterComposer get profissaoCodigo {
-    final $CatProfissoesFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.profissaoCodigo,
-      referencedTable: $db.catProfissoes,
-      getReferencedColumn: (t) => t.codigo,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatProfissoesFilterComposer(
-            $db: $db,
-            $table: $db.catProfissoes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $PerfilOrderingComposer extends Composer<_$BancoLocal, Perfil> {
@@ -16534,6 +12481,11 @@ class $PerfilOrderingComposer extends Composer<_$BancoLocal, Perfil> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get profissaoCodigo => $composableBuilder(
+    column: $table.profissaoCodigo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get exigeCpfPagador => $composableBuilder(
     column: $table.exigeCpfPagador,
     builder: (column) => ColumnOrderings(column),
@@ -16558,29 +12510,6 @@ class $PerfilOrderingComposer extends Composer<_$BancoLocal, Perfil> {
     column: $table.atualizadoEm,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $CatProfissoesOrderingComposer get profissaoCodigo {
-    final $CatProfissoesOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.profissaoCodigo,
-      referencedTable: $db.catProfissoes,
-      getReferencedColumn: (t) => t.codigo,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatProfissoesOrderingComposer(
-            $db: $db,
-            $table: $db.catProfissoes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $PerfilAnnotationComposer extends Composer<_$BancoLocal, Perfil> {
@@ -16605,6 +12534,11 @@ class $PerfilAnnotationComposer extends Composer<_$BancoLocal, Perfil> {
   GeneratedColumn<String> get cpf =>
       $composableBuilder(column: $table.cpf, builder: (column) => column);
 
+  GeneratedColumn<String> get profissaoCodigo => $composableBuilder(
+    column: $table.profissaoCodigo,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get exigeCpfPagador => $composableBuilder(
     column: $table.exigeCpfPagador,
     builder: (column) => column,
@@ -16627,29 +12561,6 @@ class $PerfilAnnotationComposer extends Composer<_$BancoLocal, Perfil> {
     column: $table.atualizadoEm,
     builder: (column) => column,
   );
-
-  $CatProfissoesAnnotationComposer get profissaoCodigo {
-    final $CatProfissoesAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.profissaoCodigo,
-      referencedTable: $db.catProfissoes,
-      getReferencedColumn: (t) => t.codigo,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatProfissoesAnnotationComposer(
-            $db: $db,
-            $table: $db.catProfissoes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $PerfilTableManager
@@ -16663,9 +12574,9 @@ class $PerfilTableManager
           $PerfilAnnotationComposer,
           $PerfilCreateCompanionBuilder,
           $PerfilUpdateCompanionBuilder,
-          (PerfilLocal, $PerfilReferences),
+          (PerfilLocal, BaseReferences<_$BancoLocal, Perfil, PerfilLocal>),
           PerfilLocal,
-          PrefetchHooks Function({bool profissaoCodigo})
+          PrefetchHooks Function()
         > {
   $PerfilTableManager(_$BancoLocal db, Perfil table)
     : super(
@@ -16729,49 +12640,9 @@ class $PerfilTableManager
                 atualizadoEm: atualizadoEm,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), $PerfilReferences(db, table, e)))
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({profissaoCodigo = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (profissaoCodigo) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.profissaoCodigo,
-                                referencedTable: $PerfilReferences
-                                    ._profissaoCodigoTable(db),
-                                referencedColumn: $PerfilReferences
-                                    ._profissaoCodigoTable(db)
-                                    .codigo,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -16786,9 +12657,9 @@ typedef $PerfilProcessedTableManager =
       $PerfilAnnotationComposer,
       $PerfilCreateCompanionBuilder,
       $PerfilUpdateCompanionBuilder,
-      (PerfilLocal, $PerfilReferences),
+      (PerfilLocal, BaseReferences<_$BancoLocal, Perfil, PerfilLocal>),
       PerfilLocal,
-      PrefetchHooks Function({bool profissaoCodigo})
+      PrefetchHooks Function()
     >;
 typedef $AceitesTermosLocalCreateCompanionBuilder =
     AceitesTermosLocalCompanion Function({
@@ -18129,6 +14000,27 @@ final class $TransacoesReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<DespesasLivroCaixa, List<DespesaLivroCaixa>>
+  _despesasLivroCaixaRefsTable(_$BancoLocal db) =>
+      MultiTypedResultKey.fromTable(
+        db.despesasLivroCaixa,
+        aliasName: 'transacoes__id__despesas_livro_caixa__transacao_id',
+      );
+
+  $DespesasLivroCaixaProcessedTableManager get despesasLivroCaixaRefs {
+    final manager = $DespesasLivroCaixaTableManager(
+      $_db,
+      $_db.despesasLivroCaixa,
+    ).filter((f) => f.transacaoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _despesasLivroCaixaRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $TransacoesFilterComposer extends Composer<_$BancoLocal, Transacoes> {
@@ -18246,6 +14138,31 @@ class $TransacoesFilterComposer extends Composer<_$BancoLocal, Transacoes> {
           }) => $LancamentosFilterComposer(
             $db: $db,
             $table: $db.lancamentos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> despesasLivroCaixaRefs(
+    Expression<bool> Function($DespesasLivroCaixaFilterComposer f) f,
+  ) {
+    final $DespesasLivroCaixaFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.despesasLivroCaixa,
+      getReferencedColumn: (t) => t.transacaoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DespesasLivroCaixaFilterComposer(
+            $db: $db,
+            $table: $db.despesasLivroCaixa,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -18471,6 +14388,31 @@ class $TransacoesAnnotationComposer extends Composer<_$BancoLocal, Transacoes> {
     );
     return f(composer);
   }
+
+  Expression<T> despesasLivroCaixaRefs<T extends Object>(
+    Expression<T> Function($DespesasLivroCaixaAnnotationComposer a) f,
+  ) {
+    final $DespesasLivroCaixaAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.despesasLivroCaixa,
+      getReferencedColumn: (t) => t.transacaoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DespesasLivroCaixaAnnotationComposer(
+            $db: $db,
+            $table: $db.despesasLivroCaixa,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $TransacoesTableManager
@@ -18490,6 +14432,7 @@ class $TransacoesTableManager
             bool contaId,
             bool importacaoId,
             bool lancamentosRefs,
+            bool despesasLivroCaixaRefs,
           })
         > {
   $TransacoesTableManager(_$BancoLocal db, Transacoes table)
@@ -18570,11 +14513,13 @@ class $TransacoesTableManager
                 contaId = false,
                 importacaoId = false,
                 lancamentosRefs = false,
+                despesasLivroCaixaRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (lancamentosRefs) db.lancamentos,
+                    if (despesasLivroCaixaRefs) db.despesasLivroCaixa,
                   ],
                   addJoins:
                       <
@@ -18643,6 +14588,26 @@ class $TransacoesTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (despesasLivroCaixaRefs)
+                        await $_getPrefetchedData<
+                          Transacao,
+                          Transacoes,
+                          DespesaLivroCaixa
+                        >(
+                          currentTable: table,
+                          referencedTable: $TransacoesReferences
+                              ._despesasLivroCaixaRefsTable(db),
+                          managerFromTypedResult: (p0) => $TransacoesReferences(
+                            db,
+                            table,
+                            p0,
+                          ).despesasLivroCaixaRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transacaoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -18667,14 +14632,18 @@ typedef $TransacoesProcessedTableManager =
         bool contaId,
         bool importacaoId,
         bool lancamentosRefs,
+        bool despesasLivroCaixaRefs,
       })
     >;
 typedef $RemetentesCreateCompanionBuilder =
     RemetentesCompanion Function({
       required String id,
       required String nome,
+      required String chaveNome,
       Value<String?> cpf,
-      Value<String?> classificacaoPadrao,
+      Value<String?> cnpj,
+      Value<String?> regraClassificacao,
+      Value<int?> regraConfirmadaEm,
       Value<String?> titularRemetenteId,
       Value<String?> observacoes,
       required int criadoEm,
@@ -18684,8 +14653,11 @@ typedef $RemetentesUpdateCompanionBuilder =
     RemetentesCompanion Function({
       Value<String> id,
       Value<String> nome,
+      Value<String> chaveNome,
       Value<String?> cpf,
-      Value<String?> classificacaoPadrao,
+      Value<String?> cnpj,
+      Value<String?> regraClassificacao,
+      Value<int?> regraConfirmadaEm,
       Value<String?> titularRemetenteId,
       Value<String?> observacoes,
       Value<int> criadoEm,
@@ -18750,13 +14722,28 @@ class $RemetentesFilterComposer extends Composer<_$BancoLocal, Remetentes> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get chaveNome => $composableBuilder(
+    column: $table.chaveNome,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get cpf => $composableBuilder(
     column: $table.cpf,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get classificacaoPadrao => $composableBuilder(
-    column: $table.classificacaoPadrao,
+  ColumnFilters<String> get cnpj => $composableBuilder(
+    column: $table.cnpj,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get regraClassificacao => $composableBuilder(
+    column: $table.regraClassificacao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get regraConfirmadaEm => $composableBuilder(
+    column: $table.regraConfirmadaEm,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18837,13 +14824,28 @@ class $RemetentesOrderingComposer extends Composer<_$BancoLocal, Remetentes> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get chaveNome => $composableBuilder(
+    column: $table.chaveNome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get cpf => $composableBuilder(
     column: $table.cpf,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get classificacaoPadrao => $composableBuilder(
-    column: $table.classificacaoPadrao,
+  ColumnOrderings<String> get cnpj => $composableBuilder(
+    column: $table.cnpj,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get regraClassificacao => $composableBuilder(
+    column: $table.regraClassificacao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get regraConfirmadaEm => $composableBuilder(
+    column: $table.regraConfirmadaEm,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -18895,11 +14897,22 @@ class $RemetentesAnnotationComposer extends Composer<_$BancoLocal, Remetentes> {
   GeneratedColumn<String> get nome =>
       $composableBuilder(column: $table.nome, builder: (column) => column);
 
+  GeneratedColumn<String> get chaveNome =>
+      $composableBuilder(column: $table.chaveNome, builder: (column) => column);
+
   GeneratedColumn<String> get cpf =>
       $composableBuilder(column: $table.cpf, builder: (column) => column);
 
-  GeneratedColumn<String> get classificacaoPadrao => $composableBuilder(
-    column: $table.classificacaoPadrao,
+  GeneratedColumn<String> get cnpj =>
+      $composableBuilder(column: $table.cnpj, builder: (column) => column);
+
+  GeneratedColumn<String> get regraClassificacao => $composableBuilder(
+    column: $table.regraClassificacao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get regraConfirmadaEm => $composableBuilder(
+    column: $table.regraConfirmadaEm,
     builder: (column) => column,
   );
 
@@ -18993,8 +15006,11 @@ class $RemetentesTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> nome = const Value.absent(),
+                Value<String> chaveNome = const Value.absent(),
                 Value<String?> cpf = const Value.absent(),
-                Value<String?> classificacaoPadrao = const Value.absent(),
+                Value<String?> cnpj = const Value.absent(),
+                Value<String?> regraClassificacao = const Value.absent(),
+                Value<int?> regraConfirmadaEm = const Value.absent(),
                 Value<String?> titularRemetenteId = const Value.absent(),
                 Value<String?> observacoes = const Value.absent(),
                 Value<int> criadoEm = const Value.absent(),
@@ -19002,8 +15018,11 @@ class $RemetentesTableManager
               }) => RemetentesCompanion(
                 id: id,
                 nome: nome,
+                chaveNome: chaveNome,
                 cpf: cpf,
-                classificacaoPadrao: classificacaoPadrao,
+                cnpj: cnpj,
+                regraClassificacao: regraClassificacao,
+                regraConfirmadaEm: regraConfirmadaEm,
                 titularRemetenteId: titularRemetenteId,
                 observacoes: observacoes,
                 criadoEm: criadoEm,
@@ -19013,8 +15032,11 @@ class $RemetentesTableManager
               ({
                 required String id,
                 required String nome,
+                required String chaveNome,
                 Value<String?> cpf = const Value.absent(),
-                Value<String?> classificacaoPadrao = const Value.absent(),
+                Value<String?> cnpj = const Value.absent(),
+                Value<String?> regraClassificacao = const Value.absent(),
+                Value<int?> regraConfirmadaEm = const Value.absent(),
                 Value<String?> titularRemetenteId = const Value.absent(),
                 Value<String?> observacoes = const Value.absent(),
                 required int criadoEm,
@@ -19022,8 +15044,11 @@ class $RemetentesTableManager
               }) => RemetentesCompanion.insert(
                 id: id,
                 nome: nome,
+                chaveNome: chaveNome,
                 cpf: cpf,
-                classificacaoPadrao: classificacaoPadrao,
+                cnpj: cnpj,
+                regraClassificacao: regraClassificacao,
+                regraConfirmadaEm: regraConfirmadaEm,
                 titularRemetenteId: titularRemetenteId,
                 observacoes: observacoes,
                 criadoEm: criadoEm,
@@ -19144,8 +15169,10 @@ typedef $ApuracoesMensaisCreateCompanionBuilder =
       required int impostoDevidoCentavos,
       Value<int> impostoDiferidoAnteriorCentavos,
       Value<int> impostoDiferidoCentavos,
+      Value<int> totalParaDarfCentavos,
+      required String statusDarf,
       Value<int> isento,
-      required int tabelaIrpfId,
+      required String tabelaIrpfId,
       required String catalogoVersoesSnapshot,
       required String parametrosSnapshot,
       required String motorVersao,
@@ -19180,8 +15207,10 @@ typedef $ApuracoesMensaisUpdateCompanionBuilder =
       Value<int> impostoDevidoCentavos,
       Value<int> impostoDiferidoAnteriorCentavos,
       Value<int> impostoDiferidoCentavos,
+      Value<int> totalParaDarfCentavos,
+      Value<String> statusDarf,
       Value<int> isento,
-      Value<int> tabelaIrpfId,
+      Value<String> tabelaIrpfId,
       Value<String> catalogoVersoesSnapshot,
       Value<String> parametrosSnapshot,
       Value<String> motorVersao,
@@ -19194,23 +15223,6 @@ typedef $ApuracoesMensaisUpdateCompanionBuilder =
 final class $ApuracoesMensaisReferences
     extends BaseReferences<_$BancoLocal, ApuracoesMensais, ApuracaoLocal> {
   $ApuracoesMensaisReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static CatTabelasIrpf _tabelaIrpfIdTable(_$BancoLocal db) => db.catTabelasIrpf
-      .createAlias('apuracoes_mensais__tabela_irpf_id__cat_tabelas_irpf__id');
-
-  $CatTabelasIrpfProcessedTableManager get tabelaIrpfId {
-    final $_column = $_itemColumn<int>('tabela_irpf_id')!;
-
-    final manager = $CatTabelasIrpfTableManager(
-      $_db,
-      $_db.catTabelasIrpf,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_tabelaIrpfIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
 
   static MultiTypedResultKey<Lancamentos, List<Lancamento>>
   _lancamentosRefsTable(_$BancoLocal db) => MultiTypedResultKey.fromTable(
@@ -19251,20 +15263,21 @@ final class $ApuracoesMensaisReferences
     );
   }
 
-  static MultiTypedResultKey<Darfs, List<DarfLocal>> _darfsRefsTable(
-    _$BancoLocal db,
-  ) => MultiTypedResultKey.fromTable(
-    db.darfs,
-    aliasName: 'apuracoes_mensais__id__darfs__apuracao_id',
+  static MultiTypedResultKey<DarfCompetencias, List<DarfCompetencia>>
+  _darfCompetenciasRefsTable(_$BancoLocal db) => MultiTypedResultKey.fromTable(
+    db.darfCompetencias,
+    aliasName: 'apuracoes_mensais__id__darf_competencias__apuracao_id',
   );
 
-  $DarfsProcessedTableManager get darfsRefs {
-    final manager = $DarfsTableManager(
+  $DarfCompetenciasProcessedTableManager get darfCompetenciasRefs {
+    final manager = $DarfCompetenciasTableManager(
       $_db,
-      $_db.darfs,
+      $_db.darfCompetencias,
     ).filter((f) => f.apuracaoId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_darfsRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(
+      _darfCompetenciasRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -19402,8 +15415,23 @@ class $ApuracoesMensaisFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get totalParaDarfCentavos => $composableBuilder(
+    column: $table.totalParaDarfCentavos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get statusDarf => $composableBuilder(
+    column: $table.statusDarf,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get isento => $composableBuilder(
     column: $table.isento,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tabelaIrpfId => $composableBuilder(
+    column: $table.tabelaIrpfId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -19436,29 +15464,6 @@ class $ApuracoesMensaisFilterComposer
     column: $table.fechadaEm,
     builder: (column) => ColumnFilters(column),
   );
-
-  $CatTabelasIrpfFilterComposer get tabelaIrpfId {
-    final $CatTabelasIrpfFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tabelaIrpfId,
-      referencedTable: $db.catTabelasIrpf,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatTabelasIrpfFilterComposer(
-            $db: $db,
-            $table: $db.catTabelasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 
   Expression<bool> lancamentosRefs(
     Expression<bool> Function($LancamentosFilterComposer f) f,
@@ -19510,22 +15515,22 @@ class $ApuracoesMensaisFilterComposer
     return f(composer);
   }
 
-  Expression<bool> darfsRefs(
-    Expression<bool> Function($DarfsFilterComposer f) f,
+  Expression<bool> darfCompetenciasRefs(
+    Expression<bool> Function($DarfCompetenciasFilterComposer f) f,
   ) {
-    final $DarfsFilterComposer composer = $composerBuilder(
+    final $DarfCompetenciasFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.darfs,
+      referencedTable: $db.darfCompetencias,
       getReferencedColumn: (t) => t.apuracaoId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $DarfsFilterComposer(
+          }) => $DarfCompetenciasFilterComposer(
             $db: $db,
-            $table: $db.darfs,
+            $table: $db.darfCompetencias,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -19668,8 +15673,23 @@ class $ApuracoesMensaisOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get totalParaDarfCentavos => $composableBuilder(
+    column: $table.totalParaDarfCentavos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get statusDarf => $composableBuilder(
+    column: $table.statusDarf,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get isento => $composableBuilder(
     column: $table.isento,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tabelaIrpfId => $composableBuilder(
+    column: $table.tabelaIrpfId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -19702,29 +15722,6 @@ class $ApuracoesMensaisOrderingComposer
     column: $table.fechadaEm,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $CatTabelasIrpfOrderingComposer get tabelaIrpfId {
-    final $CatTabelasIrpfOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tabelaIrpfId,
-      referencedTable: $db.catTabelasIrpf,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatTabelasIrpfOrderingComposer(
-            $db: $db,
-            $table: $db.catTabelasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $ApuracoesMensaisAnnotationComposer
@@ -19853,8 +15850,23 @@ class $ApuracoesMensaisAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get totalParaDarfCentavos => $composableBuilder(
+    column: $table.totalParaDarfCentavos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get statusDarf => $composableBuilder(
+    column: $table.statusDarf,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get isento =>
       $composableBuilder(column: $table.isento, builder: (column) => column);
+
+  GeneratedColumn<String> get tabelaIrpfId => $composableBuilder(
+    column: $table.tabelaIrpfId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get catalogoVersoesSnapshot => $composableBuilder(
     column: $table.catalogoVersoesSnapshot,
@@ -19881,29 +15893,6 @@ class $ApuracoesMensaisAnnotationComposer
 
   GeneratedColumn<int> get fechadaEm =>
       $composableBuilder(column: $table.fechadaEm, builder: (column) => column);
-
-  $CatTabelasIrpfAnnotationComposer get tabelaIrpfId {
-    final $CatTabelasIrpfAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tabelaIrpfId,
-      referencedTable: $db.catTabelasIrpf,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $CatTabelasIrpfAnnotationComposer(
-            $db: $db,
-            $table: $db.catTabelasIrpf,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 
   Expression<T> lancamentosRefs<T extends Object>(
     Expression<T> Function($LancamentosAnnotationComposer a) f,
@@ -19955,22 +15944,22 @@ class $ApuracoesMensaisAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> darfsRefs<T extends Object>(
-    Expression<T> Function($DarfsAnnotationComposer a) f,
+  Expression<T> darfCompetenciasRefs<T extends Object>(
+    Expression<T> Function($DarfCompetenciasAnnotationComposer a) f,
   ) {
-    final $DarfsAnnotationComposer composer = $composerBuilder(
+    final $DarfCompetenciasAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.darfs,
+      referencedTable: $db.darfCompetencias,
       getReferencedColumn: (t) => t.apuracaoId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $DarfsAnnotationComposer(
+          }) => $DarfCompetenciasAnnotationComposer(
             $db: $db,
-            $table: $db.darfs,
+            $table: $db.darfCompetencias,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -19995,10 +15984,9 @@ class $ApuracoesMensaisTableManager
           (ApuracaoLocal, $ApuracoesMensaisReferences),
           ApuracaoLocal,
           PrefetchHooks Function({
-            bool tabelaIrpfId,
             bool lancamentosRefs,
             bool despesasLivroCaixaRefs,
-            bool darfsRefs,
+            bool darfCompetenciasRefs,
           })
         > {
   $ApuracoesMensaisTableManager(_$BancoLocal db, ApuracoesMensais table)
@@ -20042,8 +16030,10 @@ class $ApuracoesMensaisTableManager
                 Value<int> impostoDiferidoAnteriorCentavos =
                     const Value.absent(),
                 Value<int> impostoDiferidoCentavos = const Value.absent(),
+                Value<int> totalParaDarfCentavos = const Value.absent(),
+                Value<String> statusDarf = const Value.absent(),
                 Value<int> isento = const Value.absent(),
-                Value<int> tabelaIrpfId = const Value.absent(),
+                Value<String> tabelaIrpfId = const Value.absent(),
                 Value<String> catalogoVersoesSnapshot = const Value.absent(),
                 Value<String> parametrosSnapshot = const Value.absent(),
                 Value<String> motorVersao = const Value.absent(),
@@ -20079,6 +16069,8 @@ class $ApuracoesMensaisTableManager
                 impostoDiferidoAnteriorCentavos:
                     impostoDiferidoAnteriorCentavos,
                 impostoDiferidoCentavos: impostoDiferidoCentavos,
+                totalParaDarfCentavos: totalParaDarfCentavos,
+                statusDarf: statusDarf,
                 isento: isento,
                 tabelaIrpfId: tabelaIrpfId,
                 catalogoVersoesSnapshot: catalogoVersoesSnapshot,
@@ -20118,8 +16110,10 @@ class $ApuracoesMensaisTableManager
                 Value<int> impostoDiferidoAnteriorCentavos =
                     const Value.absent(),
                 Value<int> impostoDiferidoCentavos = const Value.absent(),
+                Value<int> totalParaDarfCentavos = const Value.absent(),
+                required String statusDarf,
                 Value<int> isento = const Value.absent(),
-                required int tabelaIrpfId,
+                required String tabelaIrpfId,
                 required String catalogoVersoesSnapshot,
                 required String parametrosSnapshot,
                 required String motorVersao,
@@ -20155,6 +16149,8 @@ class $ApuracoesMensaisTableManager
                 impostoDiferidoAnteriorCentavos:
                     impostoDiferidoAnteriorCentavos,
                 impostoDiferidoCentavos: impostoDiferidoCentavos,
+                totalParaDarfCentavos: totalParaDarfCentavos,
+                statusDarf: statusDarf,
                 isento: isento,
                 tabelaIrpfId: tabelaIrpfId,
                 catalogoVersoesSnapshot: catalogoVersoesSnapshot,
@@ -20175,51 +16171,18 @@ class $ApuracoesMensaisTableManager
               .toList(),
           prefetchHooksCallback:
               ({
-                tabelaIrpfId = false,
                 lancamentosRefs = false,
                 despesasLivroCaixaRefs = false,
-                darfsRefs = false,
+                darfCompetenciasRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (lancamentosRefs) db.lancamentos,
                     if (despesasLivroCaixaRefs) db.despesasLivroCaixa,
-                    if (darfsRefs) db.darfs,
+                    if (darfCompetenciasRefs) db.darfCompetencias,
                   ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (tabelaIrpfId) {
-                          state =
-                              state.withJoin(
-                                    currentTable: table,
-                                    currentColumn: table.tabelaIrpfId,
-                                    referencedTable: $ApuracoesMensaisReferences
-                                        ._tabelaIrpfIdTable(db),
-                                    referencedColumn:
-                                        $ApuracoesMensaisReferences
-                                            ._tabelaIrpfIdTable(db)
-                                            .id,
-                                  )
-                                  as T;
-                        }
-
-                        return state;
-                      },
+                  addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (lancamentosRefs)
@@ -20264,21 +16227,21 @@ class $ApuracoesMensaisTableManager
                               ),
                           typedResults: items,
                         ),
-                      if (darfsRefs)
+                      if (darfCompetenciasRefs)
                         await $_getPrefetchedData<
                           ApuracaoLocal,
                           ApuracoesMensais,
-                          DarfLocal
+                          DarfCompetencia
                         >(
                           currentTable: table,
                           referencedTable: $ApuracoesMensaisReferences
-                              ._darfsRefsTable(db),
+                              ._darfCompetenciasRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $ApuracoesMensaisReferences(
                                 db,
                                 table,
                                 p0,
-                              ).darfsRefs,
+                              ).darfCompetenciasRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.apuracaoId == item.id,
@@ -20306,10 +16269,9 @@ typedef $ApuracoesMensaisProcessedTableManager =
       (ApuracaoLocal, $ApuracoesMensaisReferences),
       ApuracaoLocal,
       PrefetchHooks Function({
-        bool tabelaIrpfId,
         bool lancamentosRefs,
         bool despesasLivroCaixaRefs,
-        bool darfsRefs,
+        bool darfCompetenciasRefs,
       })
     >;
 typedef $LancamentosCreateCompanionBuilder =
@@ -20320,10 +16282,17 @@ typedef $LancamentosCreateCompanionBuilder =
       required String dataRecebimento,
       required int valorCentavos,
       required String classificacao,
+      Value<String?> comprovanteTitular,
+      Value<int?> custoEssencial,
       Value<String?> remetenteId,
       Value<String?> cpfPagador,
+      Value<String?> cnpjPagador,
       Value<String?> nomePagador,
+      Value<String> statusDocumentoPagador,
+      Value<String?> cpfBeneficiario,
+      Value<String?> nomeBeneficiario,
       Value<String> origemClassificacao,
+      Value<int?> confirmadaEm,
       Value<String?> apuracaoId,
       required int criadoEm,
       required int atualizadoEm,
@@ -20337,10 +16306,17 @@ typedef $LancamentosUpdateCompanionBuilder =
       Value<String> dataRecebimento,
       Value<int> valorCentavos,
       Value<String> classificacao,
+      Value<String?> comprovanteTitular,
+      Value<int?> custoEssencial,
       Value<String?> remetenteId,
       Value<String?> cpfPagador,
+      Value<String?> cnpjPagador,
       Value<String?> nomePagador,
+      Value<String> statusDocumentoPagador,
+      Value<String?> cpfBeneficiario,
+      Value<String?> nomeBeneficiario,
       Value<String> origemClassificacao,
+      Value<int?> confirmadaEm,
       Value<String?> apuracaoId,
       Value<int> criadoEm,
       Value<int> atualizadoEm,
@@ -20427,6 +16403,28 @@ final class $LancamentosReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<DespesasLivroCaixa, List<DespesaLivroCaixa>>
+  _despesasLivroCaixaRefsTable(_$BancoLocal db) =>
+      MultiTypedResultKey.fromTable(
+        db.despesasLivroCaixa,
+        aliasName:
+            'lancamentos__id__despesas_livro_caixa__lancamento_origem_id',
+      );
+
+  $DespesasLivroCaixaProcessedTableManager get despesasLivroCaixaRefs {
+    final manager =
+        $DespesasLivroCaixaTableManager($_db, $_db.despesasLivroCaixa).filter(
+          (f) => f.lancamentoOrigemId.id.sqlEquals($_itemColumn<String>('id')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(
+      _despesasLivroCaixaRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $LancamentosFilterComposer extends Composer<_$BancoLocal, Lancamentos> {
@@ -20462,8 +16460,23 @@ class $LancamentosFilterComposer extends Composer<_$BancoLocal, Lancamentos> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get comprovanteTitular => $composableBuilder(
+    column: $table.comprovanteTitular,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get custoEssencial => $composableBuilder(
+    column: $table.custoEssencial,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get cpfPagador => $composableBuilder(
     column: $table.cpfPagador,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cnpjPagador => $composableBuilder(
+    column: $table.cnpjPagador,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20472,8 +16485,28 @@ class $LancamentosFilterComposer extends Composer<_$BancoLocal, Lancamentos> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get statusDocumentoPagador => $composableBuilder(
+    column: $table.statusDocumentoPagador,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cpfBeneficiario => $composableBuilder(
+    column: $table.cpfBeneficiario,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nomeBeneficiario => $composableBuilder(
+    column: $table.nomeBeneficiario,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get origemClassificacao => $composableBuilder(
     column: $table.origemClassificacao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get confirmadaEm => $composableBuilder(
+    column: $table.confirmadaEm,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20581,6 +16614,31 @@ class $LancamentosFilterComposer extends Composer<_$BancoLocal, Lancamentos> {
         );
     return f(composer);
   }
+
+  Expression<bool> despesasLivroCaixaRefs(
+    Expression<bool> Function($DespesasLivroCaixaFilterComposer f) f,
+  ) {
+    final $DespesasLivroCaixaFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.despesasLivroCaixa,
+      getReferencedColumn: (t) => t.lancamentoOrigemId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DespesasLivroCaixaFilterComposer(
+            $db: $db,
+            $table: $db.despesasLivroCaixa,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $LancamentosOrderingComposer extends Composer<_$BancoLocal, Lancamentos> {
@@ -20616,8 +16674,23 @@ class $LancamentosOrderingComposer extends Composer<_$BancoLocal, Lancamentos> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get comprovanteTitular => $composableBuilder(
+    column: $table.comprovanteTitular,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get custoEssencial => $composableBuilder(
+    column: $table.custoEssencial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get cpfPagador => $composableBuilder(
     column: $table.cpfPagador,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cnpjPagador => $composableBuilder(
+    column: $table.cnpjPagador,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -20626,8 +16699,28 @@ class $LancamentosOrderingComposer extends Composer<_$BancoLocal, Lancamentos> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get statusDocumentoPagador => $composableBuilder(
+    column: $table.statusDocumentoPagador,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cpfBeneficiario => $composableBuilder(
+    column: $table.cpfBeneficiario,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nomeBeneficiario => $composableBuilder(
+    column: $table.nomeBeneficiario,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get origemClassificacao => $composableBuilder(
     column: $table.origemClassificacao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get confirmadaEm => $composableBuilder(
+    column: $table.confirmadaEm,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -20743,8 +16836,23 @@ class $LancamentosAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get comprovanteTitular => $composableBuilder(
+    column: $table.comprovanteTitular,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get custoEssencial => $composableBuilder(
+    column: $table.custoEssencial,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get cpfPagador => $composableBuilder(
     column: $table.cpfPagador,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cnpjPagador => $composableBuilder(
+    column: $table.cnpjPagador,
     builder: (column) => column,
   );
 
@@ -20753,8 +16861,28 @@ class $LancamentosAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get statusDocumentoPagador => $composableBuilder(
+    column: $table.statusDocumentoPagador,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cpfBeneficiario => $composableBuilder(
+    column: $table.cpfBeneficiario,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nomeBeneficiario => $composableBuilder(
+    column: $table.nomeBeneficiario,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get origemClassificacao => $composableBuilder(
     column: $table.origemClassificacao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get confirmadaEm => $composableBuilder(
+    column: $table.confirmadaEm,
     builder: (column) => column,
   );
 
@@ -20860,6 +16988,31 @@ class $LancamentosAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> despesasLivroCaixaRefs<T extends Object>(
+    Expression<T> Function($DespesasLivroCaixaAnnotationComposer a) f,
+  ) {
+    final $DespesasLivroCaixaAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.despesasLivroCaixa,
+      getReferencedColumn: (t) => t.lancamentoOrigemId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DespesasLivroCaixaAnnotationComposer(
+            $db: $db,
+            $table: $db.despesasLivroCaixa,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $LancamentosTableManager
@@ -20880,6 +17033,7 @@ class $LancamentosTableManager
             bool remetenteId,
             bool apuracaoId,
             bool historicoClassificacaoRefs,
+            bool despesasLivroCaixaRefs,
           })
         > {
   $LancamentosTableManager(_$BancoLocal db, Lancamentos table)
@@ -20901,10 +17055,17 @@ class $LancamentosTableManager
                 Value<String> dataRecebimento = const Value.absent(),
                 Value<int> valorCentavos = const Value.absent(),
                 Value<String> classificacao = const Value.absent(),
+                Value<String?> comprovanteTitular = const Value.absent(),
+                Value<int?> custoEssencial = const Value.absent(),
                 Value<String?> remetenteId = const Value.absent(),
                 Value<String?> cpfPagador = const Value.absent(),
+                Value<String?> cnpjPagador = const Value.absent(),
                 Value<String?> nomePagador = const Value.absent(),
+                Value<String> statusDocumentoPagador = const Value.absent(),
+                Value<String?> cpfBeneficiario = const Value.absent(),
+                Value<String?> nomeBeneficiario = const Value.absent(),
                 Value<String> origemClassificacao = const Value.absent(),
+                Value<int?> confirmadaEm = const Value.absent(),
                 Value<String?> apuracaoId = const Value.absent(),
                 Value<int> criadoEm = const Value.absent(),
                 Value<int> atualizadoEm = const Value.absent(),
@@ -20916,10 +17077,17 @@ class $LancamentosTableManager
                 dataRecebimento: dataRecebimento,
                 valorCentavos: valorCentavos,
                 classificacao: classificacao,
+                comprovanteTitular: comprovanteTitular,
+                custoEssencial: custoEssencial,
                 remetenteId: remetenteId,
                 cpfPagador: cpfPagador,
+                cnpjPagador: cnpjPagador,
                 nomePagador: nomePagador,
+                statusDocumentoPagador: statusDocumentoPagador,
+                cpfBeneficiario: cpfBeneficiario,
+                nomeBeneficiario: nomeBeneficiario,
                 origemClassificacao: origemClassificacao,
+                confirmadaEm: confirmadaEm,
                 apuracaoId: apuracaoId,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
@@ -20933,10 +17101,17 @@ class $LancamentosTableManager
                 required String dataRecebimento,
                 required int valorCentavos,
                 required String classificacao,
+                Value<String?> comprovanteTitular = const Value.absent(),
+                Value<int?> custoEssencial = const Value.absent(),
                 Value<String?> remetenteId = const Value.absent(),
                 Value<String?> cpfPagador = const Value.absent(),
+                Value<String?> cnpjPagador = const Value.absent(),
                 Value<String?> nomePagador = const Value.absent(),
+                Value<String> statusDocumentoPagador = const Value.absent(),
+                Value<String?> cpfBeneficiario = const Value.absent(),
+                Value<String?> nomeBeneficiario = const Value.absent(),
                 Value<String> origemClassificacao = const Value.absent(),
+                Value<int?> confirmadaEm = const Value.absent(),
                 Value<String?> apuracaoId = const Value.absent(),
                 required int criadoEm,
                 required int atualizadoEm,
@@ -20948,10 +17123,17 @@ class $LancamentosTableManager
                 dataRecebimento: dataRecebimento,
                 valorCentavos: valorCentavos,
                 classificacao: classificacao,
+                comprovanteTitular: comprovanteTitular,
+                custoEssencial: custoEssencial,
                 remetenteId: remetenteId,
                 cpfPagador: cpfPagador,
+                cnpjPagador: cnpjPagador,
                 nomePagador: nomePagador,
+                statusDocumentoPagador: statusDocumentoPagador,
+                cpfBeneficiario: cpfBeneficiario,
+                nomeBeneficiario: nomeBeneficiario,
                 origemClassificacao: origemClassificacao,
+                confirmadaEm: confirmadaEm,
                 apuracaoId: apuracaoId,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
@@ -20969,11 +17151,13 @@ class $LancamentosTableManager
                 remetenteId = false,
                 apuracaoId = false,
                 historicoClassificacaoRefs = false,
+                despesasLivroCaixaRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (historicoClassificacaoRefs) db.historicoClassificacao,
+                    if (despesasLivroCaixaRefs) db.despesasLivroCaixa,
                   ],
                   addJoins:
                       <
@@ -21056,6 +17240,27 @@ class $LancamentosTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (despesasLivroCaixaRefs)
+                        await $_getPrefetchedData<
+                          Lancamento,
+                          Lancamentos,
+                          DespesaLivroCaixa
+                        >(
+                          currentTable: table,
+                          referencedTable: $LancamentosReferences
+                              ._despesasLivroCaixaRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $LancamentosReferences(
+                                db,
+                                table,
+                                p0,
+                              ).despesasLivroCaixaRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.lancamentoOrigemId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -21081,6 +17286,7 @@ typedef $LancamentosProcessedTableManager =
         bool remetenteId,
         bool apuracaoId,
         bool historicoClassificacaoRefs,
+        bool despesasLivroCaixaRefs,
       })
     >;
 typedef $HistoricoClassificacaoTableCreateCompanionBuilder =
@@ -21441,11 +17647,15 @@ typedef $DespesasLivroCaixaCreateCompanionBuilder =
       required String rubricaCodigo,
       required String competencia,
       required String dataPagamento,
+      Value<String> formaPagamento,
       required int valorCentavos,
       required int valorDedutivelCentavos,
       Value<String?> descricao,
       Value<int> homeOffice,
       Value<String?> anexoPath,
+      Value<String?> transacaoId,
+      Value<String?> lancamentoOrigemId,
+      Value<int?> exclusividadeDeclaradaEm,
       Value<String?> apuracaoId,
       required int criadoEm,
       Value<int> rowid,
@@ -21456,11 +17666,15 @@ typedef $DespesasLivroCaixaUpdateCompanionBuilder =
       Value<String> rubricaCodigo,
       Value<String> competencia,
       Value<String> dataPagamento,
+      Value<String> formaPagamento,
       Value<int> valorCentavos,
       Value<int> valorDedutivelCentavos,
       Value<String?> descricao,
       Value<int> homeOffice,
       Value<String?> anexoPath,
+      Value<String?> transacaoId,
+      Value<String?> lancamentoOrigemId,
+      Value<int?> exclusividadeDeclaradaEm,
       Value<String?> apuracaoId,
       Value<int> criadoEm,
       Value<int> rowid,
@@ -21471,19 +17685,36 @@ final class $DespesasLivroCaixaReferences
         BaseReferences<_$BancoLocal, DespesasLivroCaixa, DespesaLivroCaixa> {
   $DespesasLivroCaixaReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static CatRubricas _rubricaCodigoTable(_$BancoLocal db) =>
-      db.catRubricas.createAlias(
-        'despesas_livro_caixa__rubrica_codigo__cat_rubricas__codigo',
+  static Transacoes _transacaoIdTable(_$BancoLocal db) => db.transacoes
+      .createAlias('despesas_livro_caixa__transacao_id__transacoes__id');
+
+  $TransacoesProcessedTableManager? get transacaoId {
+    final $_column = $_itemColumn<String>('transacao_id');
+    if ($_column == null) return null;
+    final manager = $TransacoesTableManager(
+      $_db,
+      $_db.transacoes,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transacaoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static Lancamentos _lancamentoOrigemIdTable(_$BancoLocal db) =>
+      db.lancamentos.createAlias(
+        'despesas_livro_caixa__lancamento_origem_id__lancamentos__id',
       );
 
-  $CatRubricasProcessedTableManager get rubricaCodigo {
-    final $_column = $_itemColumn<String>('rubrica_codigo')!;
-
-    final manager = $CatRubricasTableManager(
+  $LancamentosProcessedTableManager? get lancamentoOrigemId {
+    final $_column = $_itemColumn<String>('lancamento_origem_id');
+    if ($_column == null) return null;
+    final manager = $LancamentosTableManager(
       $_db,
-      $_db.catRubricas,
-    ).filter((f) => f.codigo.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_rubricaCodigoTable($_db));
+      $_db.lancamentos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_lancamentoOrigemIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -21523,6 +17754,11 @@ class $DespesasLivroCaixaFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get rubricaCodigo => $composableBuilder(
+    column: $table.rubricaCodigo,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get competencia => $composableBuilder(
     column: $table.competencia,
     builder: (column) => ColumnFilters(column),
@@ -21530,6 +17766,11 @@ class $DespesasLivroCaixaFilterComposer
 
   ColumnFilters<String> get dataPagamento => $composableBuilder(
     column: $table.dataPagamento,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get formaPagamento => $composableBuilder(
+    column: $table.formaPagamento,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -21558,25 +17799,53 @@ class $DespesasLivroCaixaFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get exclusividadeDeclaradaEm => $composableBuilder(
+    column: $table.exclusividadeDeclaradaEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get criadoEm => $composableBuilder(
     column: $table.criadoEm,
     builder: (column) => ColumnFilters(column),
   );
 
-  $CatRubricasFilterComposer get rubricaCodigo {
-    final $CatRubricasFilterComposer composer = $composerBuilder(
+  $TransacoesFilterComposer get transacaoId {
+    final $TransacoesFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.rubricaCodigo,
-      referencedTable: $db.catRubricas,
-      getReferencedColumn: (t) => t.codigo,
+      getCurrentColumn: (t) => t.transacaoId,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $CatRubricasFilterComposer(
+          }) => $TransacoesFilterComposer(
             $db: $db,
-            $table: $db.catRubricas,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $LancamentosFilterComposer get lancamentoOrigemId {
+    final $LancamentosFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.lancamentoOrigemId,
+      referencedTable: $db.lancamentos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $LancamentosFilterComposer(
+            $db: $db,
+            $table: $db.lancamentos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -21624,6 +17893,11 @@ class $DespesasLivroCaixaOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get rubricaCodigo => $composableBuilder(
+    column: $table.rubricaCodigo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get competencia => $composableBuilder(
     column: $table.competencia,
     builder: (column) => ColumnOrderings(column),
@@ -21631,6 +17905,11 @@ class $DespesasLivroCaixaOrderingComposer
 
   ColumnOrderings<String> get dataPagamento => $composableBuilder(
     column: $table.dataPagamento,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get formaPagamento => $composableBuilder(
+    column: $table.formaPagamento,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -21659,25 +17938,53 @@ class $DespesasLivroCaixaOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get exclusividadeDeclaradaEm => $composableBuilder(
+    column: $table.exclusividadeDeclaradaEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get criadoEm => $composableBuilder(
     column: $table.criadoEm,
     builder: (column) => ColumnOrderings(column),
   );
 
-  $CatRubricasOrderingComposer get rubricaCodigo {
-    final $CatRubricasOrderingComposer composer = $composerBuilder(
+  $TransacoesOrderingComposer get transacaoId {
+    final $TransacoesOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.rubricaCodigo,
-      referencedTable: $db.catRubricas,
-      getReferencedColumn: (t) => t.codigo,
+      getCurrentColumn: (t) => t.transacaoId,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $CatRubricasOrderingComposer(
+          }) => $TransacoesOrderingComposer(
             $db: $db,
-            $table: $db.catRubricas,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $LancamentosOrderingComposer get lancamentoOrigemId {
+    final $LancamentosOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.lancamentoOrigemId,
+      referencedTable: $db.lancamentos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $LancamentosOrderingComposer(
+            $db: $db,
+            $table: $db.lancamentos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -21723,6 +18030,11 @@ class $DespesasLivroCaixaAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get rubricaCodigo => $composableBuilder(
+    column: $table.rubricaCodigo,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get competencia => $composableBuilder(
     column: $table.competencia,
     builder: (column) => column,
@@ -21730,6 +18042,11 @@ class $DespesasLivroCaixaAnnotationComposer
 
   GeneratedColumn<String> get dataPagamento => $composableBuilder(
     column: $table.dataPagamento,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get formaPagamento => $composableBuilder(
+    column: $table.formaPagamento,
     builder: (column) => column,
   );
 
@@ -21754,23 +18071,51 @@ class $DespesasLivroCaixaAnnotationComposer
   GeneratedColumn<String> get anexoPath =>
       $composableBuilder(column: $table.anexoPath, builder: (column) => column);
 
+  GeneratedColumn<int> get exclusividadeDeclaradaEm => $composableBuilder(
+    column: $table.exclusividadeDeclaradaEm,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get criadoEm =>
       $composableBuilder(column: $table.criadoEm, builder: (column) => column);
 
-  $CatRubricasAnnotationComposer get rubricaCodigo {
-    final $CatRubricasAnnotationComposer composer = $composerBuilder(
+  $TransacoesAnnotationComposer get transacaoId {
+    final $TransacoesAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.rubricaCodigo,
-      referencedTable: $db.catRubricas,
-      getReferencedColumn: (t) => t.codigo,
+      getCurrentColumn: (t) => t.transacaoId,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $CatRubricasAnnotationComposer(
+          }) => $TransacoesAnnotationComposer(
             $db: $db,
-            $table: $db.catRubricas,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $LancamentosAnnotationComposer get lancamentoOrigemId {
+    final $LancamentosAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.lancamentoOrigemId,
+      referencedTable: $db.lancamentos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $LancamentosAnnotationComposer(
+            $db: $db,
+            $table: $db.lancamentos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -21817,7 +18162,11 @@ class $DespesasLivroCaixaTableManager
           $DespesasLivroCaixaUpdateCompanionBuilder,
           (DespesaLivroCaixa, $DespesasLivroCaixaReferences),
           DespesaLivroCaixa,
-          PrefetchHooks Function({bool rubricaCodigo, bool apuracaoId})
+          PrefetchHooks Function({
+            bool transacaoId,
+            bool lancamentoOrigemId,
+            bool apuracaoId,
+          })
         > {
   $DespesasLivroCaixaTableManager(_$BancoLocal db, DespesasLivroCaixa table)
     : super(
@@ -21836,11 +18185,15 @@ class $DespesasLivroCaixaTableManager
                 Value<String> rubricaCodigo = const Value.absent(),
                 Value<String> competencia = const Value.absent(),
                 Value<String> dataPagamento = const Value.absent(),
+                Value<String> formaPagamento = const Value.absent(),
                 Value<int> valorCentavos = const Value.absent(),
                 Value<int> valorDedutivelCentavos = const Value.absent(),
                 Value<String?> descricao = const Value.absent(),
                 Value<int> homeOffice = const Value.absent(),
                 Value<String?> anexoPath = const Value.absent(),
+                Value<String?> transacaoId = const Value.absent(),
+                Value<String?> lancamentoOrigemId = const Value.absent(),
+                Value<int?> exclusividadeDeclaradaEm = const Value.absent(),
                 Value<String?> apuracaoId = const Value.absent(),
                 Value<int> criadoEm = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -21849,11 +18202,15 @@ class $DespesasLivroCaixaTableManager
                 rubricaCodigo: rubricaCodigo,
                 competencia: competencia,
                 dataPagamento: dataPagamento,
+                formaPagamento: formaPagamento,
                 valorCentavos: valorCentavos,
                 valorDedutivelCentavos: valorDedutivelCentavos,
                 descricao: descricao,
                 homeOffice: homeOffice,
                 anexoPath: anexoPath,
+                transacaoId: transacaoId,
+                lancamentoOrigemId: lancamentoOrigemId,
+                exclusividadeDeclaradaEm: exclusividadeDeclaradaEm,
                 apuracaoId: apuracaoId,
                 criadoEm: criadoEm,
                 rowid: rowid,
@@ -21864,11 +18221,15 @@ class $DespesasLivroCaixaTableManager
                 required String rubricaCodigo,
                 required String competencia,
                 required String dataPagamento,
+                Value<String> formaPagamento = const Value.absent(),
                 required int valorCentavos,
                 required int valorDedutivelCentavos,
                 Value<String?> descricao = const Value.absent(),
                 Value<int> homeOffice = const Value.absent(),
                 Value<String?> anexoPath = const Value.absent(),
+                Value<String?> transacaoId = const Value.absent(),
+                Value<String?> lancamentoOrigemId = const Value.absent(),
+                Value<int?> exclusividadeDeclaradaEm = const Value.absent(),
                 Value<String?> apuracaoId = const Value.absent(),
                 required int criadoEm,
                 Value<int> rowid = const Value.absent(),
@@ -21877,11 +18238,15 @@ class $DespesasLivroCaixaTableManager
                 rubricaCodigo: rubricaCodigo,
                 competencia: competencia,
                 dataPagamento: dataPagamento,
+                formaPagamento: formaPagamento,
                 valorCentavos: valorCentavos,
                 valorDedutivelCentavos: valorDedutivelCentavos,
                 descricao: descricao,
                 homeOffice: homeOffice,
                 anexoPath: anexoPath,
+                transacaoId: transacaoId,
+                lancamentoOrigemId: lancamentoOrigemId,
+                exclusividadeDeclaradaEm: exclusividadeDeclaradaEm,
                 apuracaoId: apuracaoId,
                 criadoEm: criadoEm,
                 rowid: rowid,
@@ -21894,60 +18259,84 @@ class $DespesasLivroCaixaTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({rubricaCodigo = false, apuracaoId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (rubricaCodigo) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.rubricaCodigo,
-                                referencedTable: $DespesasLivroCaixaReferences
-                                    ._rubricaCodigoTable(db),
-                                referencedColumn: $DespesasLivroCaixaReferences
-                                    ._rubricaCodigoTable(db)
-                                    .codigo,
-                              )
-                              as T;
-                    }
-                    if (apuracaoId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.apuracaoId,
-                                referencedTable: $DespesasLivroCaixaReferences
-                                    ._apuracaoIdTable(db),
-                                referencedColumn: $DespesasLivroCaixaReferences
-                                    ._apuracaoIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({
+                transacaoId = false,
+                lancamentoOrigemId = false,
+                apuracaoId = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (transacaoId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.transacaoId,
+                                    referencedTable:
+                                        $DespesasLivroCaixaReferences
+                                            ._transacaoIdTable(db),
+                                    referencedColumn:
+                                        $DespesasLivroCaixaReferences
+                                            ._transacaoIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (lancamentoOrigemId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.lancamentoOrigemId,
+                                    referencedTable:
+                                        $DespesasLivroCaixaReferences
+                                            ._lancamentoOrigemIdTable(db),
+                                    referencedColumn:
+                                        $DespesasLivroCaixaReferences
+                                            ._lancamentoOrigemIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (apuracaoId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.apuracaoId,
+                                    referencedTable:
+                                        $DespesasLivroCaixaReferences
+                                            ._apuracaoIdTable(db),
+                                    referencedColumn:
+                                        $DespesasLivroCaixaReferences
+                                            ._apuracaoIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -21964,13 +18353,19 @@ typedef $DespesasLivroCaixaProcessedTableManager =
       $DespesasLivroCaixaUpdateCompanionBuilder,
       (DespesaLivroCaixa, $DespesasLivroCaixaReferences),
       DespesaLivroCaixa,
-      PrefetchHooks Function({bool rubricaCodigo, bool apuracaoId})
+      PrefetchHooks Function({
+        bool transacaoId,
+        bool lancamentoOrigemId,
+        bool apuracaoId,
+      })
     >;
 typedef $PagamentosInssCreateCompanionBuilder =
     PagamentosInssCompanion Function({
       required String id,
       required String competencia,
+      Value<String> situacao,
       required int valorCentavos,
+      Value<int> acrescimosCentavos,
       Value<String?> observacao,
       required int criadoEm,
       Value<int> rowid,
@@ -21979,7 +18374,9 @@ typedef $PagamentosInssUpdateCompanionBuilder =
     PagamentosInssCompanion Function({
       Value<String> id,
       Value<String> competencia,
+      Value<String> situacao,
       Value<int> valorCentavos,
+      Value<int> acrescimosCentavos,
       Value<String?> observacao,
       Value<int> criadoEm,
       Value<int> rowid,
@@ -22004,8 +18401,18 @@ class $PagamentosInssFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get situacao => $composableBuilder(
+    column: $table.situacao,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get valorCentavos => $composableBuilder(
     column: $table.valorCentavos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get acrescimosCentavos => $composableBuilder(
+    column: $table.acrescimosCentavos,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -22039,8 +18446,18 @@ class $PagamentosInssOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get situacao => $composableBuilder(
+    column: $table.situacao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get valorCentavos => $composableBuilder(
     column: $table.valorCentavos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get acrescimosCentavos => $composableBuilder(
+    column: $table.acrescimosCentavos,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -22072,8 +18489,16 @@ class $PagamentosInssAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get situacao =>
+      $composableBuilder(column: $table.situacao, builder: (column) => column);
+
   GeneratedColumn<int> get valorCentavos => $composableBuilder(
     column: $table.valorCentavos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get acrescimosCentavos => $composableBuilder(
+    column: $table.acrescimosCentavos,
     builder: (column) => column,
   );
 
@@ -22119,14 +18544,18 @@ class $PagamentosInssTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> competencia = const Value.absent(),
+                Value<String> situacao = const Value.absent(),
                 Value<int> valorCentavos = const Value.absent(),
+                Value<int> acrescimosCentavos = const Value.absent(),
                 Value<String?> observacao = const Value.absent(),
                 Value<int> criadoEm = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PagamentosInssCompanion(
                 id: id,
                 competencia: competencia,
+                situacao: situacao,
                 valorCentavos: valorCentavos,
+                acrescimosCentavos: acrescimosCentavos,
                 observacao: observacao,
                 criadoEm: criadoEm,
                 rowid: rowid,
@@ -22135,14 +18564,18 @@ class $PagamentosInssTableManager
               ({
                 required String id,
                 required String competencia,
+                Value<String> situacao = const Value.absent(),
                 required int valorCentavos,
+                Value<int> acrescimosCentavos = const Value.absent(),
                 Value<String?> observacao = const Value.absent(),
                 required int criadoEm,
                 Value<int> rowid = const Value.absent(),
               }) => PagamentosInssCompanion.insert(
                 id: id,
                 competencia: competencia,
+                situacao: situacao,
                 valorCentavos: valorCentavos,
+                acrescimosCentavos: acrescimosCentavos,
                 observacao: observacao,
                 criadoEm: criadoEm,
                 rowid: rowid,
@@ -22371,7 +18804,6 @@ typedef $DependentesProcessedTableManager =
 typedef $DarfsCreateCompanionBuilder =
     DarfsCompanion Function({
       required String id,
-      required String apuracaoId,
       Value<String> codigoReceita,
       required String competencia,
       required int valorCentavos,
@@ -22381,13 +18813,13 @@ typedef $DarfsCreateCompanionBuilder =
       Value<String> status,
       Value<String?> pagoEm,
       Value<int?> valorPagoCentavos,
+      Value<int> acrescimosPagosCentavos,
       required int criadoEm,
       Value<int> rowid,
     });
 typedef $DarfsUpdateCompanionBuilder =
     DarfsCompanion Function({
       Value<String> id,
-      Value<String> apuracaoId,
       Value<String> codigoReceita,
       Value<String> competencia,
       Value<int> valorCentavos,
@@ -22397,6 +18829,7 @@ typedef $DarfsUpdateCompanionBuilder =
       Value<String> status,
       Value<String?> pagoEm,
       Value<int?> valorPagoCentavos,
+      Value<int> acrescimosPagosCentavos,
       Value<int> criadoEm,
       Value<int> rowid,
     });
@@ -22405,21 +18838,23 @@ final class $DarfsReferences
     extends BaseReferences<_$BancoLocal, Darfs, DarfLocal> {
   $DarfsReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static ApuracoesMensais _apuracaoIdTable(_$BancoLocal db) => db
-      .apuracoesMensais
-      .createAlias('darfs__apuracao_id__apuracoes_mensais__id');
+  static MultiTypedResultKey<DarfCompetencias, List<DarfCompetencia>>
+  _darfCompetenciasRefsTable(_$BancoLocal db) => MultiTypedResultKey.fromTable(
+    db.darfCompetencias,
+    aliasName: 'darfs__id__darf_competencias__darf_id',
+  );
 
-  $ApuracoesMensaisProcessedTableManager get apuracaoId {
-    final $_column = $_itemColumn<String>('apuracao_id')!;
-
-    final manager = $ApuracoesMensaisTableManager(
+  $DarfCompetenciasProcessedTableManager get darfCompetenciasRefs {
+    final manager = $DarfCompetenciasTableManager(
       $_db,
-      $_db.apuracoesMensais,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_apuracaoIdTable($_db));
-    if (item == null) return manager;
+      $_db.darfCompetencias,
+    ).filter((f) => f.darfId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _darfCompetenciasRefsTable($_db),
+    );
     return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -22482,32 +18917,39 @@ class $DarfsFilterComposer extends Composer<_$BancoLocal, Darfs> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get acrescimosPagosCentavos => $composableBuilder(
+    column: $table.acrescimosPagosCentavos,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get criadoEm => $composableBuilder(
     column: $table.criadoEm,
     builder: (column) => ColumnFilters(column),
   );
 
-  $ApuracoesMensaisFilterComposer get apuracaoId {
-    final $ApuracoesMensaisFilterComposer composer = $composerBuilder(
+  Expression<bool> darfCompetenciasRefs(
+    Expression<bool> Function($DarfCompetenciasFilterComposer f) f,
+  ) {
+    final $DarfCompetenciasFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.apuracaoId,
-      referencedTable: $db.apuracoesMensais,
-      getReferencedColumn: (t) => t.id,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.darfCompetencias,
+      getReferencedColumn: (t) => t.darfId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $ApuracoesMensaisFilterComposer(
+          }) => $DarfCompetenciasFilterComposer(
             $db: $db,
-            $table: $db.apuracoesMensais,
+            $table: $db.darfCompetencias,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
           ),
     );
-    return composer;
+    return f(composer);
   }
 }
 
@@ -22569,33 +19011,15 @@ class $DarfsOrderingComposer extends Composer<_$BancoLocal, Darfs> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get acrescimosPagosCentavos => $composableBuilder(
+    column: $table.acrescimosPagosCentavos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get criadoEm => $composableBuilder(
     column: $table.criadoEm,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $ApuracoesMensaisOrderingComposer get apuracaoId {
-    final $ApuracoesMensaisOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.apuracaoId,
-      referencedTable: $db.apuracoesMensais,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $ApuracoesMensaisOrderingComposer(
-            $db: $db,
-            $table: $db.apuracoesMensais,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $DarfsAnnotationComposer extends Composer<_$BancoLocal, Darfs> {
@@ -22650,8 +19074,388 @@ class $DarfsAnnotationComposer extends Composer<_$BancoLocal, Darfs> {
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get acrescimosPagosCentavos => $composableBuilder(
+    column: $table.acrescimosPagosCentavos,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get criadoEm =>
       $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  Expression<T> darfCompetenciasRefs<T extends Object>(
+    Expression<T> Function($DarfCompetenciasAnnotationComposer a) f,
+  ) {
+    final $DarfCompetenciasAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.darfCompetencias,
+      getReferencedColumn: (t) => t.darfId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DarfCompetenciasAnnotationComposer(
+            $db: $db,
+            $table: $db.darfCompetencias,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $DarfsTableManager
+    extends
+        RootTableManager<
+          _$BancoLocal,
+          Darfs,
+          DarfLocal,
+          $DarfsFilterComposer,
+          $DarfsOrderingComposer,
+          $DarfsAnnotationComposer,
+          $DarfsCreateCompanionBuilder,
+          $DarfsUpdateCompanionBuilder,
+          (DarfLocal, $DarfsReferences),
+          DarfLocal,
+          PrefetchHooks Function({bool darfCompetenciasRefs})
+        > {
+  $DarfsTableManager(_$BancoLocal db, Darfs table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $DarfsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $DarfsOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $DarfsAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> codigoReceita = const Value.absent(),
+                Value<String> competencia = const Value.absent(),
+                Value<int> valorCentavos = const Value.absent(),
+                Value<String> vencimento = const Value.absent(),
+                Value<int> vencimentoAntecipado = const Value.absent(),
+                Value<String?> codigoBarras = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> pagoEm = const Value.absent(),
+                Value<int?> valorPagoCentavos = const Value.absent(),
+                Value<int> acrescimosPagosCentavos = const Value.absent(),
+                Value<int> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DarfsCompanion(
+                id: id,
+                codigoReceita: codigoReceita,
+                competencia: competencia,
+                valorCentavos: valorCentavos,
+                vencimento: vencimento,
+                vencimentoAntecipado: vencimentoAntecipado,
+                codigoBarras: codigoBarras,
+                status: status,
+                pagoEm: pagoEm,
+                valorPagoCentavos: valorPagoCentavos,
+                acrescimosPagosCentavos: acrescimosPagosCentavos,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String> codigoReceita = const Value.absent(),
+                required String competencia,
+                required int valorCentavos,
+                required String vencimento,
+                Value<int> vencimentoAntecipado = const Value.absent(),
+                Value<String?> codigoBarras = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> pagoEm = const Value.absent(),
+                Value<int?> valorPagoCentavos = const Value.absent(),
+                Value<int> acrescimosPagosCentavos = const Value.absent(),
+                required int criadoEm,
+                Value<int> rowid = const Value.absent(),
+              }) => DarfsCompanion.insert(
+                id: id,
+                codigoReceita: codigoReceita,
+                competencia: competencia,
+                valorCentavos: valorCentavos,
+                vencimento: vencimento,
+                vencimentoAntecipado: vencimentoAntecipado,
+                codigoBarras: codigoBarras,
+                status: status,
+                pagoEm: pagoEm,
+                valorPagoCentavos: valorPagoCentavos,
+                acrescimosPagosCentavos: acrescimosPagosCentavos,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), $DarfsReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({darfCompetenciasRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (darfCompetenciasRefs) db.darfCompetencias,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (darfCompetenciasRefs)
+                    await $_getPrefetchedData<
+                      DarfLocal,
+                      Darfs,
+                      DarfCompetencia
+                    >(
+                      currentTable: table,
+                      referencedTable: $DarfsReferences
+                          ._darfCompetenciasRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $DarfsReferences(db, table, p0).darfCompetenciasRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.darfId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $DarfsProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoLocal,
+      Darfs,
+      DarfLocal,
+      $DarfsFilterComposer,
+      $DarfsOrderingComposer,
+      $DarfsAnnotationComposer,
+      $DarfsCreateCompanionBuilder,
+      $DarfsUpdateCompanionBuilder,
+      (DarfLocal, $DarfsReferences),
+      DarfLocal,
+      PrefetchHooks Function({bool darfCompetenciasRefs})
+    >;
+typedef $DarfCompetenciasCreateCompanionBuilder =
+    DarfCompetenciasCompanion Function({
+      required String darfId,
+      required String competencia,
+      required String apuracaoId,
+      Value<int> rowid,
+    });
+typedef $DarfCompetenciasUpdateCompanionBuilder =
+    DarfCompetenciasCompanion Function({
+      Value<String> darfId,
+      Value<String> competencia,
+      Value<String> apuracaoId,
+      Value<int> rowid,
+    });
+
+final class $DarfCompetenciasReferences
+    extends BaseReferences<_$BancoLocal, DarfCompetencias, DarfCompetencia> {
+  $DarfCompetenciasReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static Darfs _darfIdTable(_$BancoLocal db) =>
+      db.darfs.createAlias('darf_competencias__darf_id__darfs__id');
+
+  $DarfsProcessedTableManager get darfId {
+    final $_column = $_itemColumn<String>('darf_id')!;
+
+    final manager = $DarfsTableManager(
+      $_db,
+      $_db.darfs,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_darfIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static ApuracoesMensais _apuracaoIdTable(_$BancoLocal db) => db
+      .apuracoesMensais
+      .createAlias('darf_competencias__apuracao_id__apuracoes_mensais__id');
+
+  $ApuracoesMensaisProcessedTableManager get apuracaoId {
+    final $_column = $_itemColumn<String>('apuracao_id')!;
+
+    final manager = $ApuracoesMensaisTableManager(
+      $_db,
+      $_db.apuracoesMensais,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_apuracaoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $DarfCompetenciasFilterComposer
+    extends Composer<_$BancoLocal, DarfCompetencias> {
+  $DarfCompetenciasFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get competencia => $composableBuilder(
+    column: $table.competencia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $DarfsFilterComposer get darfId {
+    final $DarfsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.darfId,
+      referencedTable: $db.darfs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DarfsFilterComposer(
+            $db: $db,
+            $table: $db.darfs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $ApuracoesMensaisFilterComposer get apuracaoId {
+    final $ApuracoesMensaisFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.apuracaoId,
+      referencedTable: $db.apuracoesMensais,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $ApuracoesMensaisFilterComposer(
+            $db: $db,
+            $table: $db.apuracoesMensais,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $DarfCompetenciasOrderingComposer
+    extends Composer<_$BancoLocal, DarfCompetencias> {
+  $DarfCompetenciasOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get competencia => $composableBuilder(
+    column: $table.competencia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $DarfsOrderingComposer get darfId {
+    final $DarfsOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.darfId,
+      referencedTable: $db.darfs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DarfsOrderingComposer(
+            $db: $db,
+            $table: $db.darfs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $ApuracoesMensaisOrderingComposer get apuracaoId {
+    final $ApuracoesMensaisOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.apuracaoId,
+      referencedTable: $db.apuracoesMensais,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $ApuracoesMensaisOrderingComposer(
+            $db: $db,
+            $table: $db.apuracoesMensais,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $DarfCompetenciasAnnotationComposer
+    extends Composer<_$BancoLocal, DarfCompetencias> {
+  $DarfCompetenciasAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get competencia => $composableBuilder(
+    column: $table.competencia,
+    builder: (column) => column,
+  );
+
+  $DarfsAnnotationComposer get darfId {
+    final $DarfsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.darfId,
+      referencedTable: $db.darfs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $DarfsAnnotationComposer(
+            $db: $db,
+            $table: $db.darfs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $ApuracoesMensaisAnnotationComposer get apuracaoId {
     final $ApuracoesMensaisAnnotationComposer composer = $composerBuilder(
@@ -22677,96 +19481,65 @@ class $DarfsAnnotationComposer extends Composer<_$BancoLocal, Darfs> {
   }
 }
 
-class $DarfsTableManager
+class $DarfCompetenciasTableManager
     extends
         RootTableManager<
           _$BancoLocal,
-          Darfs,
-          DarfLocal,
-          $DarfsFilterComposer,
-          $DarfsOrderingComposer,
-          $DarfsAnnotationComposer,
-          $DarfsCreateCompanionBuilder,
-          $DarfsUpdateCompanionBuilder,
-          (DarfLocal, $DarfsReferences),
-          DarfLocal,
-          PrefetchHooks Function({bool apuracaoId})
+          DarfCompetencias,
+          DarfCompetencia,
+          $DarfCompetenciasFilterComposer,
+          $DarfCompetenciasOrderingComposer,
+          $DarfCompetenciasAnnotationComposer,
+          $DarfCompetenciasCreateCompanionBuilder,
+          $DarfCompetenciasUpdateCompanionBuilder,
+          (DarfCompetencia, $DarfCompetenciasReferences),
+          DarfCompetencia,
+          PrefetchHooks Function({bool darfId, bool apuracaoId})
         > {
-  $DarfsTableManager(_$BancoLocal db, Darfs table)
+  $DarfCompetenciasTableManager(_$BancoLocal db, DarfCompetencias table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $DarfsFilterComposer($db: db, $table: table),
+              $DarfCompetenciasFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $DarfsOrderingComposer($db: db, $table: table),
+              $DarfCompetenciasOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $DarfsAnnotationComposer($db: db, $table: table),
+              $DarfCompetenciasAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> id = const Value.absent(),
-                Value<String> apuracaoId = const Value.absent(),
-                Value<String> codigoReceita = const Value.absent(),
+                Value<String> darfId = const Value.absent(),
                 Value<String> competencia = const Value.absent(),
-                Value<int> valorCentavos = const Value.absent(),
-                Value<String> vencimento = const Value.absent(),
-                Value<int> vencimentoAntecipado = const Value.absent(),
-                Value<String?> codigoBarras = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<String?> pagoEm = const Value.absent(),
-                Value<int?> valorPagoCentavos = const Value.absent(),
-                Value<int> criadoEm = const Value.absent(),
+                Value<String> apuracaoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => DarfsCompanion(
-                id: id,
-                apuracaoId: apuracaoId,
-                codigoReceita: codigoReceita,
+              }) => DarfCompetenciasCompanion(
+                darfId: darfId,
                 competencia: competencia,
-                valorCentavos: valorCentavos,
-                vencimento: vencimento,
-                vencimentoAntecipado: vencimentoAntecipado,
-                codigoBarras: codigoBarras,
-                status: status,
-                pagoEm: pagoEm,
-                valorPagoCentavos: valorPagoCentavos,
-                criadoEm: criadoEm,
+                apuracaoId: apuracaoId,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                required String id,
-                required String apuracaoId,
-                Value<String> codigoReceita = const Value.absent(),
+                required String darfId,
                 required String competencia,
-                required int valorCentavos,
-                required String vencimento,
-                Value<int> vencimentoAntecipado = const Value.absent(),
-                Value<String?> codigoBarras = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<String?> pagoEm = const Value.absent(),
-                Value<int?> valorPagoCentavos = const Value.absent(),
-                required int criadoEm,
+                required String apuracaoId,
                 Value<int> rowid = const Value.absent(),
-              }) => DarfsCompanion.insert(
-                id: id,
-                apuracaoId: apuracaoId,
-                codigoReceita: codigoReceita,
+              }) => DarfCompetenciasCompanion.insert(
+                darfId: darfId,
                 competencia: competencia,
-                valorCentavos: valorCentavos,
-                vencimento: vencimento,
-                vencimentoAntecipado: vencimentoAntecipado,
-                codigoBarras: codigoBarras,
-                status: status,
-                pagoEm: pagoEm,
-                valorPagoCentavos: valorPagoCentavos,
-                criadoEm: criadoEm,
+                apuracaoId: apuracaoId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), $DarfsReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $DarfCompetenciasReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: ({apuracaoId = false}) {
+          prefetchHooksCallback: ({darfId = false, apuracaoId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -22786,14 +19559,27 @@ class $DarfsTableManager
                       dynamic
                     >
                   >(state) {
+                    if (darfId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.darfId,
+                                referencedTable: $DarfCompetenciasReferences
+                                    ._darfIdTable(db),
+                                referencedColumn: $DarfCompetenciasReferences
+                                    ._darfIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
                     if (apuracaoId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.apuracaoId,
-                                referencedTable: $DarfsReferences
+                                referencedTable: $DarfCompetenciasReferences
                                     ._apuracaoIdTable(db),
-                                referencedColumn: $DarfsReferences
+                                referencedColumn: $DarfCompetenciasReferences
                                     ._apuracaoIdTable(db)
                                     .id,
                               )
@@ -22811,19 +19597,19 @@ class $DarfsTableManager
       );
 }
 
-typedef $DarfsProcessedTableManager =
+typedef $DarfCompetenciasProcessedTableManager =
     ProcessedTableManager<
       _$BancoLocal,
-      Darfs,
-      DarfLocal,
-      $DarfsFilterComposer,
-      $DarfsOrderingComposer,
-      $DarfsAnnotationComposer,
-      $DarfsCreateCompanionBuilder,
-      $DarfsUpdateCompanionBuilder,
-      (DarfLocal, $DarfsReferences),
-      DarfLocal,
-      PrefetchHooks Function({bool apuracaoId})
+      DarfCompetencias,
+      DarfCompetencia,
+      $DarfCompetenciasFilterComposer,
+      $DarfCompetenciasOrderingComposer,
+      $DarfCompetenciasAnnotationComposer,
+      $DarfCompetenciasCreateCompanionBuilder,
+      $DarfCompetenciasUpdateCompanionBuilder,
+      (DarfCompetencia, $DarfCompetenciasReferences),
+      DarfCompetencia,
+      PrefetchHooks Function({bool darfId, bool apuracaoId})
     >;
 typedef $NotificacoesLocaisCreateCompanionBuilder =
     NotificacoesLocaisCompanion Function({
@@ -23780,22 +20566,6 @@ typedef $AuditoriaTableProcessedTableManager =
 class $BancoLocalManager {
   final _$BancoLocal _db;
   $BancoLocalManager(this._db);
-  $CatVersoesTableManager get catVersoes =>
-      $CatVersoesTableManager(_db, _db.catVersoes);
-  $CatTabelasIrpfTableManager get catTabelasIrpf =>
-      $CatTabelasIrpfTableManager(_db, _db.catTabelasIrpf);
-  $CatFaixasIrpfTableManager get catFaixasIrpf =>
-      $CatFaixasIrpfTableManager(_db, _db.catFaixasIrpf);
-  $CatParametrosFiscaisTableManager get catParametrosFiscais =>
-      $CatParametrosFiscaisTableManager(_db, _db.catParametrosFiscais);
-  $CatFeriadosBancariosTableManager get catFeriadosBancarios =>
-      $CatFeriadosBancariosTableManager(_db, _db.catFeriadosBancarios);
-  $CatRubricasTableManager get catRubricas =>
-      $CatRubricasTableManager(_db, _db.catRubricas);
-  $CatProfissoesTableManager get catProfissoes =>
-      $CatProfissoesTableManager(_db, _db.catProfissoes);
-  $CatPerfisParserTableManager get catPerfisParser =>
-      $CatPerfisParserTableManager(_db, _db.catPerfisParser);
   $PerfilTableManager get perfil => $PerfilTableManager(_db, _db.perfil);
   $AceitesTermosLocalTableManager get aceitesTermosLocal =>
       $AceitesTermosLocalTableManager(_db, _db.aceitesTermosLocal);
@@ -23820,6 +20590,8 @@ class $BancoLocalManager {
   $DependentesTableManager get dependentes =>
       $DependentesTableManager(_db, _db.dependentes);
   $DarfsTableManager get darfs => $DarfsTableManager(_db, _db.darfs);
+  $DarfCompetenciasTableManager get darfCompetencias =>
+      $DarfCompetenciasTableManager(_db, _db.darfCompetencias);
   $NotificacoesLocaisTableManager get notificacoesLocais =>
       $NotificacoesLocaisTableManager(_db, _db.notificacoesLocais);
   $BackupEstadoTableTableManager get backupEstado =>

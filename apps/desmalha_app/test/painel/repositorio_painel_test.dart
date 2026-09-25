@@ -34,8 +34,9 @@ void main() {
     String? transacaoId,
   }) => banco.customStatement(
     'INSERT INTO lancamentos (id, transacao_id, competencia, '
-    'data_recebimento, valor_centavos, classificacao, criado_em, '
-    "atualizado_em) VALUES (?, ?, ?, ?, ?, ?, 0, 0)",
+    'data_recebimento, valor_centavos, classificacao, comprovante_titular, '
+    'criado_em, atualizado_em, confirmada_em) VALUES (?, ?, ?, ?, ?, ?, ?, '
+    '0, 0, 0)',
     [
       'l${seq++}',
       transacaoId,
@@ -43,6 +44,9 @@ void main() {
       '$competencia-10',
       centavos,
       classificacao,
+      // Reembolso só existe com o titular do comprovante; no do cliente é
+      // neutro — fora da receita.
+      if (classificacao == 'reembolso') 'cliente' else null,
     ],
   );
 
@@ -53,8 +57,8 @@ void main() {
   test(
     'receita só dos tributáveis; contagem de todos os classificados',
     () async {
-      await lancamento('2026-08', 45000, 'tributavel');
-      await lancamento('2026-08', 30000, 'tributavel');
+      await lancamento('2026-08', 45000, 'rendimentoPf');
+      await lancamento('2026-08', 30000, 'rendimentoPf');
       await lancamento('2026-08', 99900, 'pessoal');
       await lancamento('2026-08', 12000, 'reembolso');
       final d = (await repo.dadosDoAno(2026))['2026-08']!;
@@ -74,7 +78,7 @@ void main() {
       await lancamento(
         '2026-08',
         45000,
-        'tributavel',
+        'rendimentoPf',
         transacaoId: classificada,
       );
       final d = (await repo.dadosDoAno(2026))['2026-08']!;
@@ -94,7 +98,7 @@ void main() {
   });
 
   test('outro ano fica de fora', () async {
-    await lancamento('2025-12', 45000, 'tributavel');
+    await lancamento('2025-12', 45000, 'rendimentoPf');
     await transacao('2027-01-02', 10000);
     expect(await repo.dadosDoAno(2026), isEmpty);
   });

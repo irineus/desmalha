@@ -117,6 +117,7 @@ void main() {
   });
 
   test('a ordem de restauração cobre exatamente as tabelas do backup', () {
-    expect(ordemDasTabelasDoBackup.toSet(), tabelasDoBackupV1);
+    expect(ordemDasTabelasDoBackup.toSet(),
+        tabelasDoBackupPorFormato[formatoBackupAtual]);
   });
 }

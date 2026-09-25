@@ -53,23 +53,22 @@ void main() {
     await sql(
       "INSERT INTO lancamentos (id, transacao_id, competencia, "
       "data_recebimento, valor_centavos, classificacao, criado_em, "
-      "atualizado_em) VALUES ('l', 't', '2026-08', '2026-08-03', 45000, "
-      "'tributavel', 0, 0)",
+      "atualizado_em, confirmada_em) VALUES ('l', 't', '2026-08', "
+      "'2026-08-03', 45000, 'rendimentoPf', 0, 0, 0)",
     );
     await sql(
       "INSERT INTO backup_estado (id, ultima_seq, resultado) VALUES (1, 3, 'ok')",
     );
-    // Do APARELHO, não da conta: o espelho do catálogo público fica.
-    await sql("INSERT INTO cat_versoes VALUES ('feriados', 1, 0, 0, 'h')");
   }
 
-  test('toda tabela do esquema fora cat_* está na lista da limpeza', () {
+  test('toda tabela do esquema está na lista da limpeza', () {
+    // Desde a v2 o banco não tem tabela do aparelho: o catálogo vive num
+    // cache JSON fora dele. Toda tabela é da conta.
     final esquema = File('lib/dados/esquema.drift').readAsStringSync();
-    final tabelas = {
+    final daConta = {
       for (final m in RegExp(r'CREATE TABLE (\w+)').allMatches(esquema))
         m.group(1)!,
     };
-    final daConta = tabelas.where((t) => !t.startsWith('cat_')).toSet();
     expect(daConta, isNotEmpty);
     expect(
       tabelasDaConta.toSet(),
@@ -79,7 +78,7 @@ void main() {
   });
 
   test(
-    'apaga os dados da conta e as chaves do backup; o catálogo fica',
+    'apaga os dados da conta e as chaves do backup; a chave do banco fica',
     () async {
       await popular();
       final cofre = CofreEmMemoria();
@@ -98,7 +97,6 @@ void main() {
       for (final tabela in tabelasDaConta) {
         expect(await linhas(tabela), 0, reason: tabela);
       }
-      expect(await linhas('cat_versoes'), 1, reason: 'catálogo é do aparelho');
       expect(
         cofre.valores.keys,
         [ChaveBanco.campoCofre],
