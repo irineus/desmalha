@@ -5,6 +5,8 @@ import 'package:desmalha_app/despesas/repositorio_despesas.dart';
 import 'package:desmalha_app/diagnostico/repositorio_diagnostico.dart';
 import 'package:desmalha_app/painel/repositorio_fechamento.dart';
 import 'package:desmalha_app/relatorio/repositorio_relatorio.dart';
+import 'package:desmalha_app/suporte/porta_suporte.dart';
+import 'package:desmalha_app/suporte/servico_suporte.dart';
 import 'package:desmalha_app/backup/chaves_backup.dart';
 import 'package:desmalha_app/backup/controlador_backup.dart';
 import 'package:desmalha_app/backup/estado_backup.dart';
@@ -110,6 +112,7 @@ ServicosDoApp servicosFalsos({
   RepositorioFechamento? fechamento,
   RepositorioRelatorio? relatorio,
   RepositorioDiagnostico? diagnostico,
+  ServicoSuporte? suporte,
   ValueNotifier<RecebimentoDeArquivo?>? arquivoRecebido,
 }) {
   final chaves =
@@ -147,6 +150,12 @@ ServicosDoApp servicosFalsos({
           _importacaoPadraoBanco,
           painel: painel ?? PainelFalso(),
           fechamento: fechamento ?? RepositorioFechamento(_importacaoPadraoBanco),
+        ),
+    suporte: suporte ??
+        ServicoSuporte(
+          _importacaoPadraoBanco,
+          porta: PortaSuporteFalsa(),
+          usuarioId: () => '00000000-0000-4000-8000-00000000000a',
         ),
     dadosAlterados: ValueNotifier(0),
     arquivoRecebido: arquivoRecebido ?? ValueNotifier(null),
@@ -255,4 +264,29 @@ ControladorOnboarding controladorOnboardingFalso({
     permiteSeguirSemTermos: permiteSeguirSemTermos,
     relogio: () => DateTime.utc(2026, 9, 24, 13),
   );
+}
+
+/// O servidor do suporte em memória: guarda o que chegou e carimba 30 dias.
+class PortaSuporteFalsa implements PortaSuporte {
+  final Map<String, Uint8List> recebidos = {};
+  final Map<String, String?> bancos = {};
+  final Map<String, String> motivos = {};
+  FalhaEnvioSuporte? falhar;
+
+  @override
+  Future<EnvioRegistrado> enviar({
+    required String path,
+    required Uint8List bytes,
+    required String motivo,
+    String? bancoInformado,
+  }) async {
+    if (falhar != null) throw falhar!;
+    recebidos[path] = bytes;
+    bancos[path] = bancoInformado;
+    motivos[path] = motivo;
+    return EnvioRegistrado(
+      path: path,
+      expiraEm: DateTime.utc(2026, 9, 25, 15).add(const Duration(days: 30)),
+    );
+  }
 }

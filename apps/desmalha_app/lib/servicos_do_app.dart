@@ -13,6 +13,7 @@ import 'despesas/repositorio_despesas.dart';
 import 'diagnostico/repositorio_diagnostico.dart';
 import 'painel/repositorio_fechamento.dart';
 import 'relatorio/repositorio_relatorio.dart';
+import 'suporte/servico_suporte.dart';
 import 'backup/controlador_backup.dart';
 import 'conta/porta_exclusao_conta.dart';
 import 'dados/repositorio_importacao.dart';
@@ -38,6 +39,7 @@ class ServicosDoApp {
     required this.fechamento,
     required this.relatorio,
     required this.diagnostico,
+    required this.suporte,
     required this.dadosAlterados,
     required this.arquivoRecebido,
   });
@@ -83,6 +85,9 @@ class ServicosDoApp {
 
   /// O resumo de diagnóstico para o suporte (sem dado pessoal).
   final RepositorioDiagnostico diagnostico;
+
+  /// Envio do extrato ao suporte quando o parse falha (com consentimento).
+  final ServicoSuporte suporte;
 
   /// Sobe a cada importação confirmada: a aba Mês recalcula.
   final ValueNotifier<int> dadosAlterados;
