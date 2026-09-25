@@ -22,11 +22,45 @@ import {
 
 const RAIZ = new URL("../../..", import.meta.url).pathname.replace(/\/$/, "");
 
-Deno.test("coleta o manifesto real: perfis + tabela IRPF + feriados", () => {
+Deno.test("coleta o manifesto real: feriados, profissões, rubricas, tabela IRPF e perfis", () => {
   const itens = coletarItens(RAIZ);
   const chaves = itens.map((i) => `${i.tipo}/${i.id}`);
   assertEquals(chaves, [
     "feriados_bancarios/feriados-bancarios-2026",
+    "profissao/advogado",
+    "profissao/dentista",
+    "profissao/fisioterapeuta",
+    "profissao/fonoaudiologo",
+    "profissao/fotografo",
+    "profissao/medico",
+    "profissao/nutricionista",
+    "profissao/professor-particular",
+    "profissao/psicologo",
+    "profissao/terapeuta-ocupacional",
+    "rubrica/agua-espaco-profissional",
+    "rubrica/agua-residencia",
+    "rubrica/aluguel-espaco-profissional",
+    "rubrica/aluguel-residencia",
+    "rubrica/anuidade-conselho",
+    "rubrica/condominio-espaco-profissional",
+    "rubrica/condominio-residencia",
+    "rubrica/custo-repassado-essencial",
+    "rubrica/energia-espaco-profissional",
+    "rubrica/energia-residencia",
+    "rubrica/equipamento-duravel",
+    "rubrica/formacao-graduacao-pos",
+    "rubrica/gas-residencia",
+    "rubrica/honorarios-contabeis",
+    "rubrica/internet-espaco-profissional",
+    "rubrica/internet-residencia",
+    "rubrica/iptu-residencia",
+    "rubrica/linha-exclusiva-atividade",
+    "rubrica/marketing-profissional",
+    "rubrica/material-consumo",
+    "rubrica/software-essencial",
+    "rubrica/taxas-municipais-residencia",
+    "rubrica/telefone-residencia",
+    "rubrica/transporte-combustivel",
     "tabela_irpf/irpf-mensal-2026-01",
     "perfil_csv/bb-conta-csv-v1",
     "perfil_csv/inter-conta-csv-v1",
