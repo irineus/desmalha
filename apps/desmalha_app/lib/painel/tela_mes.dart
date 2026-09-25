@@ -161,8 +161,7 @@ class _TelaMesState extends State<TelaMes> {
             '${recebimentosAClassificar == 1 ? '1 recebimento' : '$recebimentosAClassificar recebimentos'} '
             'de ${competenciaPorExtenso(painel.competencia)} ainda sem '
             'classificação. O imposto só é calculado sobre o que você '
-            'classificar — a classificação ainda não está disponível '
-            'nesta versão.',
+            'classificar. Separe cliente e pessoal na aba Lançamentos.',
       ),
     ],
     PainelSemTabela() => [

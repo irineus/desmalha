@@ -83,6 +83,30 @@ class RespostasClassificacao {
   final String? nomeBeneficiario;
 }
 
+/// Um lançamento classificado, como as abas "Falta CPF" e "Prontos" o
+/// mostram.
+class LancamentoDaLista {
+  const LancamentoDaLista({
+    required this.lancamentoId,
+    required this.transacaoId,
+    required this.data,
+    required this.valorCentavos,
+    required this.nome,
+    required this.classificacao,
+    required this.statusDocumento,
+    required this.origem,
+  });
+
+  final String lancamentoId;
+  final String? transacaoId;
+  final String data;
+  final int valorCentavos;
+  final String? nome;
+  final ClassificacaoLancamento classificacao;
+  final StatusDocumentoPagador statusDocumento;
+  final OrigemClassificacao origem;
+}
+
 class ResultadoClassificacao {
   const ResultadoClassificacao({
     required this.lancamentoId,
@@ -299,6 +323,54 @@ class RepositorioClassificacao {
         remetenteId: remetenteId,
         proposta: proposta,
       );
+    });
+  }
+
+  /// Lançamentos CONFIRMADOS, mais recentes primeiro. Com
+  /// [soPendentesDeDocumento], só os que esperam CPF/CNPJ (aba "Falta
+  /// CPF"); sem, todos (aba "Prontos" — os dois selos convivem).
+  Future<List<LancamentoDaLista>> classificados({
+    bool soPendentesDeDocumento = false,
+  }) async {
+    final linhas = await _banco.customSelect(
+      'SELECT id, transacao_id, data_recebimento, valor_centavos, nome_pagador, '
+      'classificacao, status_documento_pagador, origem_classificacao '
+      'FROM lancamentos WHERE confirmada_em IS NOT NULL '
+      '${soPendentesDeDocumento ? "AND status_documento_pagador = 'pendente' " : ''}'
+      'ORDER BY data_recebimento DESC, id',
+    ).get();
+    return [
+      for (final r in linhas)
+        LancamentoDaLista(
+          lancamentoId: r.read<String>('id'),
+          transacaoId: r.readNullable<String>('transacao_id'),
+          data: r.read<String>('data_recebimento'),
+          valorCentavos: r.read<int>('valor_centavos'),
+          nome: r.readNullable<String>('nome_pagador'),
+          classificacao: ClassificacaoLancamento.values
+              .byName(r.read<String>('classificacao')),
+          statusDocumento: StatusDocumentoPagador.values
+              .byName(r.read<String>('status_documento_pagador')),
+          origem: OrigemClassificacao.values
+              .byName(r.read<String>('origem_classificacao')),
+        ),
+    ];
+  }
+
+  /// Desfaz a PRIMEIRA classificação de um recebimento (o "Desfazer" que
+  /// aparece logo depois do toque): o lançamento, o histórico e a despesa
+  /// que ele gerou saem, e o crédito volta à fila.
+  Future<void> desfazerClassificacao(String lancamentoId) {
+    return _banco.transaction(() async {
+      await (_banco.delete(_banco.despesasLivroCaixa)
+            ..where((d) => d.lancamentoOrigemId.equals(lancamentoId)))
+          .go();
+      await (_banco.delete(_banco.historicoClassificacao)
+            ..where((h) => h.lancamentoId.equals(lancamentoId)))
+          .go();
+      await (_banco.delete(_banco.lancamentos)
+            ..where((l) => l.id.equals(lancamentoId)))
+          .go();
     });
   }
 

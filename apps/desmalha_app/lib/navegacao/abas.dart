@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';
 import '../backup/tela_backup.dart';
-import '../importacao/tela_importacao.dart';
+import '../classificacao/aba_lancamentos.dart';
 import '../painel/tela_mes.dart';
 import '../lembretes/controlador_lembretes.dart';
 import '../servicos_do_app.dart';
