@@ -17,7 +17,7 @@ class _ChavesRegistradoras extends ChavesBackup {
   @override
   Future<bool> codigoConfirmado() async => confirmados.isNotEmpty;
   @override
-  Future<void> confirmarCodigo(String codigoCanonico) async =>
+  Future<void> confirmarCodigo(String codigoCanonico, {DateTime? agora}) async =>
       confirmados.add(codigoCanonico);
 }
 

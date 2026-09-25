@@ -66,6 +66,14 @@ bool grupoConfere(String canonico, int indice, String digitado) {
   return _normalizarSimbolos(digitado) == grupos[indice];
 }
 
+/// Um grupo digitado no formato canônico (5 símbolos), ou `null` — mesma
+/// tolerância do código inteiro. Usado pelo lembrete de 90 dias, que
+/// confere grupos contra o verificador do aparelho.
+String? normalizarGrupoRecuperacao(String digitado) {
+  final s = _normalizarSimbolos(digitado);
+  return s == null || s.length != simbolosPorGrupo ? null : s;
+}
+
 String? _normalizarSimbolos(String entrada) {
   final buffer = StringBuffer();
   for (final c in entrada.toUpperCase().runes) {

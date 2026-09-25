@@ -16,6 +16,11 @@
 ///   pessoa restaurar com o código antigo ou confirmar que descarta os
 ///   antigos (decisão 10 do owner).
 ///
+/// - **Verificador de grupos**: SHA-256 salgado de cada grupo do código,
+///   para o lembrete de 90 dias conferir 2 grupos sem o código guardado.
+///   Fica só no cofre, onde a própria chave-mestra já mora: quem lê o cofre
+///   não ganha nada com ele. Nunca vai para o backup.
+///
 /// O código em si NUNCA é guardado: é mostrado uma vez e esquecido. Guardá-lo
 /// no aparelho não protegeria contra a perda do aparelho, que é exatamente o
 /// caso para o qual ele existe.
@@ -53,6 +58,8 @@ class ChavesBackup {
   static const campoCabecalho = 'desmalha_backup_cabecalho_chave_v1';
   static const campoImpressao = 'desmalha_backup_impressao_mestra_v1';
   static const campoVinculo = 'desmalha_backup_vinculo_v1';
+  static const campoGrupos = 'desmalha_codigo_grupos_v1';
+  static const campoConferidoEm = 'desmalha_codigo_conferido_em_v1';
 
   static final _hex64 = RegExp(r'^[0-9a-f]{64}$');
 
@@ -70,6 +77,8 @@ class ChavesBackup {
       campoCabecalho,
       campoImpressao,
       campoVinculo,
+      campoGrupos,
+      campoConferidoEm,
     ]) {
       await _cofre.apagar(campo);
       if (await _cofre.ler(campo) != null) {
@@ -102,6 +111,80 @@ class ChavesBackup {
     return Uint8List.fromList(nova);
   }
 
+  /// Grava o verificador dos grupos de [codigoCanonico] e marca a
+  /// conferência em [agora] — ao confirmar, ao restaurar e ao conferir o
+  /// código completo.
+  Future<void> registrarVerificador(
+    String codigoCanonico,
+    DateTime agora,
+  ) async {
+    final sal = List<int>.generate(16, (_) => _aleatorio.nextInt(256));
+    final grupos = codigoCanonico.split('-');
+    final json = jsonEncode({
+      'sal': base64.encode(sal),
+      'grupos': [for (final g in grupos) await _hashGrupo(sal, g)],
+    });
+    await _cofre.gravar(campoGrupos, json);
+    await registrarConferencia(agora);
+  }
+
+  /// A última conferência (ou dispensa) do lembrete, ou `null`.
+  Future<DateTime?> codigoConferidoEm() async {
+    final v = await _cofre.ler(campoConferidoEm);
+    final ms = v == null ? null : int.tryParse(v);
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  /// Conferiu, dispensou ("agora não") ou ganhou a data inicial: o
+  /// lembrete volta 90 dias depois de [agora].
+  Future<void> registrarConferencia(DateTime agora) =>
+      _cofre.gravar(campoConferidoEm, '${agora.millisecondsSinceEpoch}');
+
+  /// Confere os grupos digitados ([grupos]: índice 0..4 → texto). `null`
+  /// quando o aparelho não tem verificador (código confirmado antes desta
+  /// regra) — aí a conferência é pelo código completo.
+  Future<bool?> conferirGrupos(Map<int, String> grupos) async {
+    final json = await _cofre.ler(campoGrupos);
+    if (json == null) return null;
+    final dados = jsonDecode(json) as Map<String, Object?>;
+    final sal = base64.decode(dados['sal']! as String);
+    final esperados = (dados['grupos']! as List<Object?>).cast<String>();
+    for (final e in grupos.entries) {
+      final normal = normalizarGrupoRecuperacao(e.value);
+      if (normal == null ||
+          e.key < 0 ||
+          e.key >= esperados.length ||
+          await _hashGrupo(sal, normal) != esperados[e.key]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Conferência pelo código INTEIRO — para quem confirmou antes do
+  /// verificador de grupos existir. Abre o cabeçalho com ele (Argon2id) e
+  /// compara com a mestra; se confere, grava o verificador.
+  Future<bool> conferirCodigoCompleto(String codigo, DateTime agora) async {
+    final canonico = normalizarCodigoRecuperacao(codigo);
+    if (canonico == null) return false;
+    final paraSelar = await chavesParaSelar();
+    final Uint8List aberta;
+    try {
+      aberta = await paraSelar.cabecalho.chaveMestraPeloCodigo(canonico);
+    } on ChaveDeBackupIncorretaException {
+      return false;
+    }
+    if (await impressaoDaChaveMestra(aberta) !=
+        await impressaoDaChaveMestra(paraSelar.chaveMestra)) {
+      return false;
+    }
+    await registrarVerificador(canonico, agora);
+    return true;
+  }
+
+  static Future<String> _hashGrupo(List<int> sal, String grupo) =>
+      sha256Hex([...sal, ...utf8.encode(grupo)]);
+
   /// `true` quando há código de recuperação CONFIRMADO para a mestra atual.
   Future<bool> codigoConfirmado() async {
     try {
@@ -115,7 +198,10 @@ class ChavesBackup {
   /// Chamado depois que a pessoa redigitou os grupos sorteados: embrulha a
   /// mestra com o [codigoCanonico] (Argon2id — alguns segundos, em primeiro
   /// plano) e guarda o cabeçalho, conferindo a gravação.
-  Future<void> confirmarCodigo(String codigoCanonico) async {
+  Future<void> confirmarCodigo(
+    String codigoCanonico, {
+    DateTime? agora,
+  }) async {
     if (normalizarCodigoRecuperacao(codigoCanonico) != codigoCanonico) {
       throw ArgumentError('código fora do formato canônico');
     }
@@ -136,6 +222,7 @@ class ChavesBackup {
         'recuperação. Confirme o código de novo.',
       );
     }
+    await registrarVerificador(codigoCanonico, agora ?? DateTime.now());
   }
 
   /// Os backups do servidor foram feitos com a mestra deste aparelho (ou a

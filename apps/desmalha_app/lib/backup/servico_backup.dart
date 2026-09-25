@@ -285,6 +285,7 @@ class ServicoBackup {
         CabecalhoChave.deBytes(bytes),
       );
       await chaves.vincularAosBackups();
+      await chaves.registrarVerificador(canonico, _relogio());
     } on ChavesBackupException catch (e) {
       throw FalhaBackup(e.mensagem);
     }

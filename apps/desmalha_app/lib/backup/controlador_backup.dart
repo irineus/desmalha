@@ -38,6 +38,9 @@ class ControladorBackup extends ChangeNotifier {
   /// O último backup parou porque os da nuvem são de outro código
   /// ([FalhaBackupsAntigos]): a tela oferece restaurar ou descartar.
   bool backupsAntigos = false;
+
+  /// O lembrete de 90 dias do código de recuperação está devido.
+  bool lembreteCodigo = false;
   bool _carregado = false;
 
   bool get carregado => _carregado;
@@ -50,6 +53,17 @@ class ControladorBackup extends ChangeNotifier {
   Future<void> recarregar() async {
     estado = await estadoPersistido.ler();
     codigoConfirmado = await chaves.codigoConfirmado();
+    var conferidoEm = await chaves.codigoConferidoEm();
+    if (codigoConfirmado && conferidoEm == null) {
+      // Confirmado antes desta regra: a contagem começa agora.
+      conferidoEm = _relogio();
+      await chaves.registrarConferencia(conferidoEm);
+    }
+    lembreteCodigo = lembreteDoCodigoDevido(
+      agora: _relogio(),
+      codigoConfirmado: codigoConfirmado,
+      conferidoEm: conferidoEm,
+    );
     ultimaFalha = estado.resultado == 'falha' ? estado.erroDetalhe : null;
     _carregado = true;
     notifyListeners();
@@ -82,6 +96,29 @@ class ControladorBackup extends ChangeNotifier {
   /// versões guardadas. Lança se não conseguir conferir.
   Future<bool> existeBackupNaNuvem() async =>
       (await servico().porta.listarMetadados()).isNotEmpty;
+
+  /// Confere os grupos digitados no lembrete; `null` = aparelho sem
+  /// verificador (conferir pelo código inteiro).
+  Future<bool?> conferirGrupos(Map<int, String> grupos) async {
+    final ok = await chaves.conferirGrupos(grupos);
+    if (ok ?? false) {
+      await chaves.registrarConferencia(_relogio());
+      await recarregar();
+    }
+    return ok;
+  }
+
+  Future<bool> conferirCodigoCompleto(String codigo) async {
+    final ok = await chaves.conferirCodigoCompleto(codigo, _relogio());
+    if (ok) await recarregar();
+    return ok;
+  }
+
+  /// "Agora não": o lembrete volta daqui a 90 dias.
+  Future<void> adiarLembreteCodigo() async {
+    await chaves.registrarConferencia(_relogio());
+    await recarregar();
+  }
 
   /// "Descartar os backups antigos, que ninguém mais consegue abrir" — só
   /// depois da marcação explícita na tela. Liga o backup e já faz um.

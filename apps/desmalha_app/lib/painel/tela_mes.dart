@@ -10,6 +10,7 @@ import 'dart:async';
 import 'package:desmalha_core/desmalha_core.dart';
 import 'package:flutter/material.dart';
 
+import '../backup/lembrete_codigo.dart';
 import '../backup/tela_backup.dart';
 import '../importacao/tela_importacao.dart';
 import '../lembretes/controlador_lembretes.dart'
@@ -99,6 +100,7 @@ class _TelaMesState extends State<TelaMes> {
                   controlador: widget.servicos.backup,
                   aoTocar: () => abrirTelaBackup(widget.servicos),
                 ),
+                LembreteCodigo(controlador: widget.servicos.backup),
                 if (_c.competencia != null) _navegacao(context),
                 const SizedBox(height: EspacosDesmalha.s3),
                 if (_c.erro != null)
