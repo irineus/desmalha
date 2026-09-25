@@ -21,6 +21,7 @@ import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
 import 'controlador_painel.dart';
 import 'tela_darf.dart';
+import 'widgets_fechamento.dart';
 
 /// Texto do contador para o mês sem imposto (M11) — literal.
 const String textoMesIsento = 'Você está isento de recolhimento neste mês.';
@@ -44,6 +45,7 @@ class _TelaMesState extends State<TelaMes> {
   late final ControladorPainel _c = ControladorPainel(
     repositorio: widget.servicos.painel,
     carregarCatalogo: widget.servicos.catalogo,
+    fechamento: widget.servicos.fechamento,
     relogio: widget.relogio,
   );
 
@@ -176,8 +178,61 @@ class _TelaMesState extends State<TelaMes> {
     PainelApurado() => _apurado(context, painel),
   };
 
+  Future<void> _fecharMes(EstadoFechamento f, String competencia) async {
+    final m = f.meses[competencia];
+    if (m == null) return;
+    await widget.servicos.fechamento.fecharSemGuia(m);
+    widget.servicos.dadosAlterados.value++;
+  }
+
+  Future<void> _registrarCorrecao(EstadoFechamento f) async {
+    final regravadas = await widget.servicos.fechamento.registrarCorrecao(
+      f.meses,
+    );
+    widget.servicos.dadosAlterados.value++;
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Correção registrada: '
+          '${regravadas.map(competenciaPorExtenso).join(', ')}.',
+        ),
+      ),
+    );
+  }
+
+  /// O mês já tem guia paga: o que foi pago e o acerto de hoje.
+  List<Widget> _pago(BuildContext context, EstadoFechamento f) {
+    final texto = Theme.of(context).textTheme;
+    final fiscal = TipografiaFiscal.de(context);
+    final pagamento = f.pagamento!;
+    return [
+      Text(
+        f.guia!.competencias.length > 1
+            ? 'DARF pago (período ${competenciaPorExtenso(f.guia!.periodo)})'
+            : 'DARF pago',
+        style: texto.labelLarge,
+      ),
+      ValorEmReais(
+        f.guia!.principalPagoCentavos,
+        key: const Key('valor_pago'),
+        estilo: fiscal.valorDestaque,
+      ),
+      Text(
+        'Pago em ${dataCurta(pagamento.pagoEm)}.',
+        key: const Key('pago_em'),
+        style: texto.bodyMedium,
+      ),
+      if (f.acerto != null) ...[
+        const SizedBox(height: EspacosDesmalha.s2),
+        AcertoDaGuiaNaTela(acerto: f.acerto!, tocaDeclaracao: f.tocaDeclaracao),
+      ],
+    ];
+  }
+
   List<Widget> _apurado(BuildContext context, PainelApurado p) {
     final a = p.apuracao;
+    final f = _c.estado;
     final texto = Theme.of(context).textTheme;
     final fiscal = TipografiaFiscal.de(context);
     final emAndamento = p.competencia == _c.competenciaAtual;
@@ -192,6 +247,24 @@ class _TelaMesState extends State<TelaMes> {
     );
 
     final destaque = switch (a.statusDarf) {
+      _ when f?.pagamento != null => [
+        ..._pago(context, f!),
+        const SizedBox(height: EspacosDesmalha.s3),
+        OutlinedButton(
+          key: const Key('botao_ver_darf'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TelaDarf(
+                servicos: widget.servicos,
+                painel: p,
+                estado: f,
+                relogio: widget.relogio,
+              ),
+            ),
+          ),
+          child: const Text('Ver o DARF'),
+        ),
+      ],
       StatusDarf.emitido => [
         Text('DARF do mês', style: texto.labelLarge),
         ValorEmReais(
@@ -234,6 +307,7 @@ class _TelaMesState extends State<TelaMes> {
               builder: (_) => TelaDarf(
                 servicos: widget.servicos,
                 painel: p,
+                estado: _c.estado,
                 relogio: widget.relogio,
               ),
             ),
@@ -273,9 +347,21 @@ class _TelaMesState extends State<TelaMes> {
         ),
       ],
     };
+    // Mês sem guia (isento, resíduo de dezembro) fecha pelo botão.
+    final semGuia =
+        a.statusDarf == StatusDarf.semImposto ||
+        a.statusDarf == StatusDarf.residuoParaDirpf;
 
     return [
-      if (emAndamento)
+      if (f?.fechado ?? false)
+        const Padding(
+          padding: EdgeInsets.only(bottom: EspacosDesmalha.s2),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Selo('mês fechado', tipo: TipoSelo.ok),
+          ),
+        )
+      else if (emAndamento)
         const Padding(
           padding: EdgeInsets.only(bottom: EspacosDesmalha.s2),
           child: Align(
@@ -283,6 +369,21 @@ class _TelaMesState extends State<TelaMes> {
             child: Selo('mês em andamento', tipo: TipoSelo.neutro),
           ),
         ),
+      if (f?.correcaoPendente ?? false) ...[
+        BannerObrigacao(
+          key: const Key('correcao_pendente'),
+          titulo: 'Os dados de um mês fechado mudaram.',
+          texto:
+              'O cálculo abaixo já usa os valores novos. Registre a '
+              'correção para gravar a nova versão do mês.',
+        ),
+        FilledButton(
+          key: const Key('botao_registrar_correcao'),
+          onPressed: () => unawaited(_registrarCorrecao(f!)),
+          child: const Text('Registrar a correção'),
+        ),
+        const SizedBox(height: EspacosDesmalha.s3),
+      ],
       Card(
         child: Padding(
           padding: const EdgeInsets.all(EspacosDesmalha.s4),
@@ -292,6 +393,21 @@ class _TelaMesState extends State<TelaMes> {
           ),
         ),
       ),
+      if (f != null && semGuia && !f.fechado && !emAndamento) ...[
+        const SizedBox(height: EspacosDesmalha.s3),
+        if (f.motivosQueImpedem.isEmpty)
+          OutlinedButton(
+            key: const Key('botao_fechar_mes'),
+            onPressed: () => unawaited(_fecharMes(f, p.competencia)),
+            child: const Text('Fechar mês'),
+          )
+        else
+          Text(
+            f.motivosQueImpedem.join(' '),
+            key: const Key('motivos_nao_fecha'),
+            style: texto.bodySmall,
+          ),
+      ],
       if (p.recebimentosAClassificar > 0) ...[
         const SizedBox(height: EspacosDesmalha.s3),
         BannerObrigacao(

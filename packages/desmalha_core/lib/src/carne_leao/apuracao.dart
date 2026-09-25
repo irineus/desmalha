@@ -14,6 +14,11 @@ library;
 
 import 'tabela_irpf.dart';
 
+/// Versão do motor, gravada em cada apuração fechada: um valor gravado
+/// sempre diz qual regra o produziu. Sobe a cada mudança de regra de
+/// cálculo (1.1.0: guia paga zera o acumulado).
+const String versaoDoMotor = '1.1.0';
+
 /// Valor mínimo de DARF (Lei 9.430/1996, art. 68): abaixo de R$ 10,00 a guia
 /// não é emitida e o imposto acumula para o mês seguinte.
 const int darfMinimoCentavos = 1000;

@@ -5,6 +5,11 @@
 /// contra um DARF real, a guia sai SEM código de barras e o pagamento vai
 /// pelo e-CAC. E a tela sempre diz que pagar o DARF não registra o
 /// livro-caixa no e-CAC.
+///
+/// "Marquei como pago" fecha o mês e os meses que a guia absorveu (decisão
+/// 7 do owner); guia paga mostra o acerto contra o recálculo de hoje
+/// (P8/P9 da rodada 4; rodada 5 = cálculo pendente) e o histórico de
+/// pagamentos do ano.
 library;
 
 import 'dart:async';
@@ -21,9 +26,15 @@ import '../servicos_do_app.dart';
 import '../tema/componentes.dart';
 import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
+import 'controlador_painel.dart' show EstadoFechamento;
+import 'widgets_fechamento.dart';
 
 /// Porta de entrada do e-CAC, onde fica o Carnê-Leão Web.
 final Uri urlEcac = Uri.parse('https://cav.receita.fazenda.gov.br/');
+
+/// SicalcWeb, da Receita: guia em atraso e DARF complementar (P8).
+final Uri urlSicalc =
+    Uri.parse('https://sicalc.receita.economia.gov.br/sicalc/principal');
 
 /// Compartilhamento nativo de um arquivo (o teste troca por um falso).
 typedef CompartilharArquivo =
@@ -57,6 +68,7 @@ class TelaDarf extends StatefulWidget {
     super.key,
     required this.servicos,
     required this.painel,
+    this.estado,
     this.relogio,
     this.compartilhar = compartilharNoSistema,
     this.abrirUrl = abrirNoNavegador,
@@ -64,6 +76,10 @@ class TelaDarf extends StatefulWidget {
 
   final ServicosDoApp servicos;
   final PainelApurado painel;
+
+  /// Fechamento da competência (guia paga, acerto, histórico). `null` =
+  /// sem repositório de fechamento: a tela só mostra a guia.
+  final EstadoFechamento? estado;
   final DateTime Function()? relogio;
   final CompartilharArquivo compartilhar;
   final Future<void> Function(Uri) abrirUrl;
@@ -280,7 +296,128 @@ class _TelaDarfState extends State<TelaDarf> {
         ),
         child: const Text('Copiar os dados da guia'),
       ),
+      ..._fechamento(context, g),
     ];
+  }
+
+  List<Widget> _fechamento(BuildContext context, DocumentoDarf g) {
+    final estado = widget.estado;
+    if (estado == null) return const [];
+    final texto = Theme.of(context).textTheme;
+    final pagamento = estado.pagamento;
+    final acerto = estado.acerto;
+    return [
+      const SizedBox(height: EspacosDesmalha.s6),
+      if (pagamento == null)
+        OutlinedButton(
+          key: const Key('botao_marcar_pago'),
+          onPressed: () => unawaited(_marcarPago(g)),
+          child: const Text('Marquei como pago'),
+        )
+      else ...[
+        Text(
+          'Pago em ${dataBr(pagamento.pagoEm)}.',
+          key: const Key('darf_pago_em'),
+          style: texto.titleMedium,
+        ),
+        if (acerto != null) ...[
+          const SizedBox(height: EspacosDesmalha.s2),
+          AcertoDaGuiaNaTela(
+            acerto: acerto,
+            tocaDeclaracao: estado.tocaDeclaracao,
+          ),
+        ],
+        if (acerto is AcertoComplementar) ...[
+          const SizedBox(height: EspacosDesmalha.s2),
+          FilledButton(
+            key: const Key('botao_sicalc'),
+            onPressed: () => widget.abrirUrl(urlSicalc),
+            child: const Text('Abrir o SicalcWeb'),
+          ),
+          OutlinedButton(
+            key: const Key('botao_complementar'),
+            onPressed: () => unawaited(_complementar(g, acerto)),
+            child: const Text('Paguei o complementar'),
+          ),
+        ],
+      ],
+      if (estado.pagamentos.isNotEmpty) ...[
+        const SizedBox(height: EspacosDesmalha.s6),
+        HistoricoDePagamentos(pagamentos: estado.pagamentos),
+      ],
+    ];
+  }
+
+  Future<void> _marcarPago(DocumentoDarf g) async {
+    final estado = widget.estado!;
+    if (estado.motivosQueImpedem.isNotEmpty) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('O mês ainda não pode fechar'),
+          content: Text(
+            '${estado.motivosQueImpedem.join(' ')} O valor do DARF muda '
+            'com eles — classifique antes de marcar como pago.',
+            key: const Key('motivos_nao_fecha'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Entendi'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    final r = await showDialog<Pagamento>(
+      context: context,
+      builder: (_) => DialogoPagamento(
+        titulo: 'DARF de ${competenciaPorExtenso(g.competencia)}',
+        principalCentavos: g.valorTotalCentavos,
+        hoje: _hoje,
+        vencida: g.venceuAte(_hoje),
+      ),
+    );
+    if (r == null) return;
+    await widget.servicos.fechamento.marcarPago(
+      periodo: g.competencia,
+      competencias: {...g.competenciasAbrangidas, g.competencia}.toList(),
+      meses: estado.meses,
+      principalCentavos: r.principalCentavos,
+      acrescimosCentavos: r.acrescimosCentavos,
+      vencimento: g.dataVencimento,
+      pagoEm: r.pagoEm,
+    );
+    _depoisDeGravar('Mês fechado: DARF registrado como pago.');
+  }
+
+  Future<void> _complementar(DocumentoDarf g, AcertoComplementar a) async {
+    final r = await showDialog<Pagamento>(
+      context: context,
+      builder: (_) => DialogoPagamento(
+        titulo: 'Complementar de ${competenciaPorExtenso(a.competencia)}',
+        principalCentavos: a.diferencaCentavos,
+        hoje: _hoje,
+        vencida: true,
+      ),
+    );
+    if (r == null) return;
+    await widget.servicos.fechamento.registrarComplementar(
+      periodo: a.competencia,
+      principalCentavos: r.principalCentavos,
+      acrescimosCentavos: r.acrescimosCentavos,
+      vencimento: g.dataVencimento,
+      pagoEm: r.pagoEm,
+    );
+    _depoisDeGravar('Complementar registrado.');
+  }
+
+  void _depoisDeGravar(String aviso) {
+    widget.servicos.dadosAlterados.value++;
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(aviso)));
+    Navigator.of(context).pop();
   }
 
   Future<void> _copiar(String texto, String aviso) async {
