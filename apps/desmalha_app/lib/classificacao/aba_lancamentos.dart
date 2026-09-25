@@ -22,7 +22,10 @@ import '../tema/componentes.dart';
 import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
 import 'repositorio_classificacao.dart';
+import 'tela_detalhe.dart';
 import 'tela_fila.dart';
+import 'tela_remetentes.dart';
+import 'tela_repasse.dart';
 
 /// As classificações que um toque resolve (reembolso e repasse pedem as
 /// perguntas do detalhe).
@@ -189,7 +192,44 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
       isScrollControlled: true,
       builder: (context) => _EscolhaDeClassificacao(item: item),
     );
-    if (escolha != null) await _classificar(item, escolha);
+    if (escolha == null || !mounted) return;
+    if (escolha == ClassificacaoLancamento.repasse) {
+      // "Reembolso ou repasse": as perguntas do 2º passo (M6).
+      await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => TelaRepasse(
+            servicos: widget.servicos,
+            transacaoId: item.transacaoId,
+            data: item.data,
+            valorCentavos: item.valorCentavos,
+            nome: item.chaveRemetente,
+          ),
+        ),
+      );
+      return;
+    }
+    await _classificar(item, escolha);
+  }
+
+  Future<void> _abrirDetalhe(LancamentoDaLista l) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => TelaDetalhe(
+          servicos: widget.servicos,
+          lancamentoId: l.lancamentoId,
+        ),
+      ),
+    );
+    _mudou();
+  }
+
+  Future<void> _abrirRemetentes() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => TelaRemetentes(servicos: widget.servicos),
+      ),
+    );
+    _mudou();
   }
 
   Future<void> _abrirFila() async {
@@ -238,7 +278,20 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
                           EspacosDesmalha.s4,
                           0,
                         ),
-                        child: Text('Lançamentos', style: texto.headlineMedium),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text('Lançamentos',
+                                  style: texto.headlineMedium),
+                            ),
+                            IconButton(
+                              key: const Key('botao_remetentes'),
+                              tooltip: 'Remetentes',
+                              icon: const Icon(Icons.people_outline),
+                              onPressed: _abrirRemetentes,
+                            ),
+                          ],
+                        ),
                       ),
                       TabBar(
                         isScrollable: true,
@@ -351,7 +404,8 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
                   'já conta esses valores — só o registro está incompleto.',
             ),
             const SizedBox(height: EspacosDesmalha.s4),
-            for (final l in _faltaCpf) _ItemClassificado(lancamento: l),
+            for (final l in _faltaCpf)
+              _ItemClassificado(lancamento: l, aoTocar: () => _abrirDetalhe(l)),
           ],
         ],
       );
@@ -365,7 +419,8 @@ class _AbaLancamentosState extends State<AbaLancamentos> {
               mensagem: 'Os recebimentos classificados aparecem aqui.',
             )
           else
-            for (final l in _prontos) _ItemClassificado(lancamento: l),
+            for (final l in _prontos)
+              _ItemClassificado(lancamento: l, aoTocar: () => _abrirDetalhe(l)),
         ],
       );
 }
@@ -477,9 +532,10 @@ class _ItemDaFila extends StatelessWidget {
 }
 
 class _ItemClassificado extends StatelessWidget {
-  const _ItemClassificado({required this.lancamento});
+  const _ItemClassificado({required this.lancamento, required this.aoTocar});
 
   final LancamentoDaLista lancamento;
+  final VoidCallback aoTocar;
 
   @override
   Widget build(BuildContext context) {
@@ -488,6 +544,7 @@ class _ItemClassificado extends StatelessWidget {
     return Card(
       child: ListTile(
         key: Key('lancamento_${l.lancamentoId}'),
+        onTap: aoTocar,
         title: Text(l.nome ?? 'Recebimento'),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,6 +610,20 @@ class _EscolhaDeClassificacao extends StatelessWidget {
                   onTap: () => Navigator.of(context).pop(c),
                 ),
               ),
+            Card(
+              child: ListTile(
+                key: const Key('escolher_reembolso_repasse'),
+                title: const Text('Reembolso ou repasse'),
+                subtitle: const Text(
+                  'Você recebeu para cobrir um custo. Depende de em nome de '
+                  'quem está a nota — o app pergunta.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                // O M6 decide entre reembolso e repasse; aqui só abre o fluxo.
+                onTap: () =>
+                    Navigator.of(context).pop(ClassificacaoLancamento.repasse),
+              ),
+            ),
           ],
         ),
       ),

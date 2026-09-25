@@ -107,6 +107,58 @@ class LancamentoDaLista {
   final OrigemClassificacao origem;
 }
 
+/// Um remetente conhecido e a regra aprendida dele (M7).
+class RemetenteConhecido {
+  const RemetenteConhecido({
+    required this.id,
+    required this.nome,
+    required this.documento,
+    required this.regra,
+    required this.regraConfirmada,
+    required this.lancamentos,
+    required this.totalCentavos,
+  });
+
+  final String id;
+  final String nome;
+
+  /// CPF ou CNPJ (só dígitos), quando informado.
+  final String? documento;
+  final ClassificacaoLancamento? regra;
+  final bool regraConfirmada;
+  final int lancamentos;
+  final int totalCentavos;
+}
+
+/// O que o detalhe de um lançamento (M5) mostra e deixa corrigir.
+class DetalheLancamento {
+  const DetalheLancamento({
+    required this.lancamentoId,
+    required this.transacaoId,
+    required this.data,
+    required this.valorCentavos,
+    required this.descricao,
+    required this.nome,
+    required this.respostas,
+    required this.statusDocumento,
+    required this.profissao,
+  });
+
+  final String lancamentoId;
+  final String transacaoId;
+  final String data;
+  final int valorCentavos;
+  final String descricao;
+  final String? nome;
+
+  /// As respostas como estão gravadas — reclassificar parte delas.
+  final RespostasClassificacao respostas;
+  final StatusDocumentoPagador statusDocumento;
+
+  /// A profissão do perfil: decide se o CPF é exigido e se há beneficiário.
+  final Profissao? profissao;
+}
+
 class ResultadoClassificacao {
   const ResultadoClassificacao({
     required this.lancamentoId,
@@ -371,6 +423,97 @@ class RepositorioClassificacao {
       await (_banco.delete(_banco.lancamentos)
             ..where((l) => l.id.equals(lancamentoId)))
           .go();
+    });
+  }
+
+  /// O lançamento [lancamentoId] com as respostas gravadas.
+  Future<DetalheLancamento> detalhe(String lancamentoId) async {
+    final l = await (_banco.select(_banco.lancamentos)
+          ..where((l) => l.id.equals(lancamentoId)))
+        .getSingle();
+    final t = await _transacao(l.transacaoId!);
+    final despesa = await (_banco.select(_banco.despesasLivroCaixa)
+          ..where((d) => d.lancamentoOrigemId.equals(lancamentoId)))
+        .getSingleOrNull();
+    final catalogo = await _catalogo();
+    return DetalheLancamento(
+      lancamentoId: l.id,
+      transacaoId: t.id,
+      data: l.dataRecebimento,
+      valorCentavos: l.valorCentavos,
+      descricao: t.descricaoRaw,
+      nome: l.nomePagador,
+      statusDocumento:
+          StatusDocumentoPagador.values.byName(l.statusDocumentoPagador),
+      profissao: await _profissaoDoPerfil(catalogo),
+      respostas: RespostasClassificacao(
+        classificacao: ClassificacaoLancamento.values.byName(l.classificacao),
+        titular: switch (l.comprovanteTitular) {
+          null => null,
+          final v => TitularComprovante.values.byName(v),
+        },
+        custoEssencial: switch (l.custoEssencial) {
+          null => null,
+          final v => v == 1,
+        },
+        dataPagamentoCusto: despesa?.dataPagamento,
+        valorCustoCentavos: despesa?.valorCentavos,
+        documentoPagador: l.cpfPagador ?? l.cnpjPagador,
+        nomePagador: l.nomePagador,
+        cpfBeneficiario: l.cpfBeneficiario,
+        nomeBeneficiario: l.nomeBeneficiario,
+      ),
+    );
+  }
+
+  /// Os remetentes com lançamento, os de regra confirmada primeiro (M7).
+  Future<List<RemetenteConhecido>> remetentes() async {
+    final linhas = await _banco.customSelect(
+      'SELECT r.id, r.nome, r.cpf, r.cnpj, r.regra_classificacao, '
+      'r.regra_confirmada_em, COUNT(l.id) AS n, '
+      'COALESCE(SUM(l.valor_centavos), 0) AS total '
+      'FROM remetentes r LEFT JOIN lancamentos l ON l.remetente_id = r.id '
+      'GROUP BY r.id '
+      'ORDER BY (r.regra_confirmada_em IS NULL), r.nome',
+    ).get();
+    return [
+      for (final r in linhas)
+        RemetenteConhecido(
+          id: r.read<String>('id'),
+          nome: r.read<String>('nome'),
+          documento:
+              r.readNullable<String>('cpf') ?? r.readNullable<String>('cnpj'),
+          regra: switch (r.readNullable<String>('regra_classificacao')) {
+            null => null,
+            final c => ClassificacaoLancamento.values.byName(c),
+          },
+          regraConfirmada: r.readNullable<int>('regra_confirmada_em') != null,
+          lancamentos: r.read<int>('n'),
+          totalCentavos: r.read<int>('total'),
+        ),
+    ];
+  }
+
+  /// Para de aplicar a regra do remetente aos lançamentos novos. O que já
+  /// foi classificado fica como está; os "propostos pela regra" ainda sem
+  /// toque voltam à fila como a classificar.
+  Future<void> esquecerRegra(String remetenteId) {
+    return _banco.transaction(() async {
+      await (_banco.update(_banco.remetentes)
+            ..where((r) => r.id.equals(remetenteId)))
+          .write(const RemetentesCompanion(
+        regraClassificacao: Value(null),
+        regraConfirmadaEm: Value(null),
+      ));
+      final propostos = await (_banco.select(_banco.lancamentos)
+            ..where((l) =>
+                l.remetenteId.equals(remetenteId) & l.confirmadaEm.isNull()))
+          .get();
+      for (final l in propostos) {
+        await desfazerClassificacao(l.id);
+      }
+      await _auditar('remetentes', remetenteId, 'atualizar',
+          {'regra_esquecida': true, 'propostos_devolvidos': propostos.length});
     });
   }
 
