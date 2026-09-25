@@ -1,0 +1,10 @@
+{
+  "id": "iptu-residencia",
+  "nome": "IPTU da casa (atende em casa)",
+  "grupo": "residencia",
+  "dedutivel": true,
+  "travaResidencia": true,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 100,
+  "fonte": "Consulta ao contador, rodada 4 (25/09/2026), P4: trava de 20% da residência — aluguel, condomínio, energia, água, IPTU, gás e taxas municipais do imóvel"
+}

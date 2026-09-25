@@ -1,0 +1,11 @@
+{
+  "id": "material-consumo",
+  "nome": "Material de consumo e de escritório",
+  "grupo": "atividade",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "orientacao": "Só itens de consumo rápido ou ferramentas de baixo valor, com vida útil menor que um ano. Equipamento durável não entra no livro-caixa.",
+  "ordem": 160,
+  "fonte": "Consulta ao contador, rodada 2b (ago/2026): art. 6º, § 1º, 'a' da Lei nº 8.134/1990 e art. 104, § 1º, I da IN RFB nº 1.500/2014"
+}

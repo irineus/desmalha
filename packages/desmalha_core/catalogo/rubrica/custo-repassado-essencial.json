@@ -1,0 +1,11 @@
+{
+  "id": "custo-repassado-essencial",
+  "nome": "Custo pago por você e repassado ao cliente, essencial ao serviço",
+  "grupo": "atividade",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "orientacao": "Entra só quando o comprovante está no seu CPF e o custo é necessário para prestar o serviço. Conta no mês em que você pagou.",
+  "ordem": 210,
+  "fonte": "Consulta ao contador, rodada 2b (ago/2026) e rodada 4 (25/09/2026), P2 e P3: com o comprovante no CPF do profissional, a despesa só entra se for essencial à atividade, no mês do pagamento"
+}

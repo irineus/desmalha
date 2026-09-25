@@ -1,0 +1,10 @@
+{
+  "id": "telefone-residencia",
+  "nome": "Telefone da casa (atende em casa)",
+  "grupo": "residencia",
+  "dedutivel": true,
+  "travaResidencia": true,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 140,
+  "fonte": "Consulta ao contador, rodada 4b (25/09/2026), P4: internet e telefone residenciais na trava de 20%"
+}

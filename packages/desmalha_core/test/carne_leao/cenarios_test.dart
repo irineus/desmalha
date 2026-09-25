@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:desmalha_core/catalogo_arquivos.dart';
 import 'package:desmalha_core/desmalha_core.dart';
 import 'package:test/test.dart';
 
@@ -16,6 +17,10 @@ void main() {
     File('cenarios/cenarios_carne_leao.json').readAsStringSync(),
   ) as Map<String, Object?>;
 
+  // Despesa com "rubrica" é resolvida pelo catálogo REAL do repositório:
+  // a trava de 20% e a vedação vêm da rubrica publicada, não da fixture.
+  final catalogo = Catalogo.fromItens(itensDoCatalogoNoRepositorio('.'));
+
   final tabelas = [
     for (final t in raiz['tabelas']! as List<Object?>)
       TabelaIrpf.fromJson(t! as Map<String, Object?>),
@@ -29,7 +34,8 @@ void main() {
     test('cenário $numero: $descricao', () {
       final meses = cenario['meses']! as List<Object?>;
       final entradas = [
-        for (final m in meses) _entrada(m! as Map<String, Object?>),
+        for (final m in meses)
+          _entrada(m! as Map<String, Object?>, catalogo),
       ];
 
       final apuracoes = apurarSequencia(
@@ -53,14 +59,24 @@ void main() {
   }
 }
 
-EntradaApuracao _entrada(Map<String, Object?> mes) {
+EntradaApuracao _entrada(Map<String, Object?> mes, Catalogo catalogo) {
   var despesas = 0;
   final lancamentos = mes['despesas'];
   if (lancamentos != null) {
     for (final d in lancamentos as List<Object?>) {
       final lancamento = d! as Map<String, Object?>;
+      final valor = lancamento['valorCentavos']! as int;
+      final idRubrica = lancamento['rubrica'] as String?;
+      if (idRubrica != null) {
+        final rubrica = catalogo.rubricaPorId(idRubrica);
+        if (rubrica == null) {
+          throw ArgumentError('rubrica "$idRubrica" não está no catálogo');
+        }
+        despesas += rubrica.despesa(valor).dedutivelCentavos;
+        continue;
+      }
       despesas += DespesaLivroCaixa(
-        valorCentavos: lancamento['valorCentavos']! as int,
+        valorCentavos: valor,
         sujeitaTravaHomeOffice:
             (lancamento['travaHomeOffice'] as bool?) ?? false,
       ).dedutivelCentavos;
@@ -96,5 +112,11 @@ Object? _campo(ApuracaoMensal apuracao, String nome) => switch (nome) {
       'impostoAcumuladoNovoCentavos' =>
         apuracao.impostoAcumuladoNovoCentavos,
       'irrfRetidoPjCentavos' => apuracao.irrfRetidoPjCentavos,
+      'baseCalculoCentavos' => apuracao.baseCalculoCentavos,
+      'aliquotaPontosBase' => apuracao.aliquotaPontosBase,
+      'parcelaDeduzirCentavos' => apuracao.parcelaDeduzirCentavos,
+      'impostoApuradoCentavos' => apuracao.impostoApuradoCentavos,
+      'saldoNegativoUtilizadoCentavos' =>
+        apuracao.saldoNegativoUtilizadoCentavos,
       _ => throw ArgumentError('campo desconhecido na fixture: "$nome"'),
     };

@@ -68,9 +68,13 @@ class DespesaLivroCaixa {
   const DespesaLivroCaixa({
     required this.valorCentavos,
     this.sujeitaTravaHomeOffice = false,
+    this.dedutivel = true,
   });
 
   final int valorCentavos;
+
+  /// `false` para rubrica vedada: o gasto é registrado, mas deduz zero.
+  final bool dedutivel;
 
   /// `true` para rubricas de manutenção da residência usadas como espaço
   /// profissional (aluguel, condomínio, luz, água, internet) — só 20% do
@@ -78,9 +82,12 @@ class DespesaLivroCaixa {
   final bool sujeitaTravaHomeOffice;
 
   /// Valor que entra no livro-caixa, com a trava aplicada.
-  int get dedutivelCentavos => sujeitaTravaHomeOffice
-      ? valorCentavos * travaHomeOfficePontosBase ~/ 10000
-      : valorCentavos;
+  int get dedutivelCentavos {
+    if (!dedutivel) return 0;
+    return sujeitaTravaHomeOffice
+        ? valorCentavos * travaHomeOfficePontosBase ~/ 10000
+        : valorCentavos;
+  }
 }
 
 /// Fração dedutível das rubricas de manutenção da residência: 20%.
@@ -156,6 +163,11 @@ class ApuracaoMensal {
     required this.valorDarfCentavos,
     required this.impostoAcumuladoNovoCentavos,
     required this.irrfRetidoPjCentavos,
+    required this.baseCalculoCentavos,
+    required this.aliquotaPontosBase,
+    required this.parcelaDeduzirCentavos,
+    required this.impostoApuradoCentavos,
+    required this.saldoNegativoUtilizadoCentavos,
   });
 
   final String competencia;
@@ -201,6 +213,29 @@ class ApuracaoMensal {
 
   /// Informativo para o relatório anual — não participa do cálculo.
   final int irrfRetidoPjCentavos;
+
+  // --- Linha de apuração do cenário vencedor ---
+  // Derivados que a apuração gravada e a memória de cálculo mostram. Saem
+  // daqui, e não da camada que persiste ou apresenta, para que a tela e o
+  // banco nunca recalculem regra fiscal por conta própria.
+
+  /// Base de cálculo do cenário vencedor (A ou B).
+  final int baseCalculoCentavos;
+
+  /// Alíquota da faixa em que [baseCalculoCentavos] cai (27,5% = 2750).
+  final int aliquotaPontosBase;
+
+  /// Parcela a deduzir da mesma faixa.
+  final int parcelaDeduzirCentavos;
+
+  /// Imposto do cenário vencedor ANTES do redutor da Lei 15.270/2025, com o
+  /// mesmo ajuste final do devido.
+  final int impostoApuradoCentavos;
+
+  /// Quanto do [saldoNegativoAnteriorCentavos] foi consumido neste mês. Só
+  /// as deduções reais consomem saldo: no desconto simplificado é zero, e o
+  /// saldo anterior segue inteiro para os meses seguintes.
+  final int saldoNegativoUtilizadoCentavos;
 }
 
 /// Apura uma competência isolada.
@@ -279,6 +314,21 @@ ApuracaoMensal apurarMes({
   final devidoMicro = impostoVencedorMicro - reducaoAplicadaMicro;
   final impostoDevido = _ajustarParaCentavos(devidoMicro, modoAjuste);
 
+  // --- Linha de apuração do vencedor ---
+  final baseVencedora = vencedorEhB ? baseB : baseA;
+  final faixaVencedora = tabela.faixaPara(baseVencedora);
+  // Deduções reais consomem o saldo anterior até o que a receita líquida
+  // de despesas do mês comporta; o resto dele segue como saldo novo.
+  final receitaLiquidaDespesas = receita - entrada.despesasDedutiveisCentavos;
+  final int saldoUtilizado;
+  if (vencedorEhB || receitaLiquidaDespesas <= 0) {
+    saldoUtilizado = 0;
+  } else {
+    saldoUtilizado = receitaLiquidaDespesas < saldoNegativoAnteriorCentavos
+        ? receitaLiquidaDespesas
+        : saldoNegativoAnteriorCentavos;
+  }
+
   // --- DARF mínimo (Lei 9.430/1996, art. 68) ---
   final totalParaDarf = impostoDevido + impostoAcumuladoAnteriorCentavos;
   final ehDezembro = entrada.competencia.endsWith('-12');
@@ -326,6 +376,12 @@ ApuracaoMensal apurarMes({
     valorDarfCentavos: valorDarf,
     impostoAcumuladoNovoCentavos: acumuladoNovo,
     irrfRetidoPjCentavos: entrada.irrfRetidoPjCentavos,
+    baseCalculoCentavos: baseVencedora,
+    aliquotaPontosBase: faixaVencedora.aliquotaPontosBase,
+    parcelaDeduzirCentavos: faixaVencedora.parcelaDeduzirCentavos,
+    impostoApuradoCentavos:
+        _ajustarParaCentavos(impostoVencedorMicro, modoAjuste),
+    saldoNegativoUtilizadoCentavos: saldoUtilizado,
   );
 }
 

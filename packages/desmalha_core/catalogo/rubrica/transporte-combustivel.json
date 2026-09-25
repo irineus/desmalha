@@ -1,0 +1,11 @@
+{
+  "id": "transporte-combustivel",
+  "nome": "Transporte e combustível",
+  "grupo": "vedada",
+  "dedutivel": false,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "orientacao": "Não dedutível no livro-caixa das profissões atendidas pelo Desmalha. A exceção legal é o representante comercial autônomo.",
+  "ordem": 220,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}

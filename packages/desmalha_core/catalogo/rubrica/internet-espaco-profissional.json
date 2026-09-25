@@ -1,0 +1,10 @@
+{
+  "id": "internet-espaco-profissional",
+  "nome": "Internet do consultório ou escritório",
+  "grupo": "espacoProfissional",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 50,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}

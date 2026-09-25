@@ -1,0 +1,11 @@
+{
+  "id": "equipamento-duravel",
+  "nome": "Equipamento durável (notebook, maca, câmera)",
+  "grupo": "vedada",
+  "dedutivel": false,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "orientacao": "Não dedutível nem no mês da compra nem por depreciação: é bem de capital e vai para Bens e Direitos na declaração anual.",
+  "ordem": 240,
+  "fonte": "Consulta ao contador, rodada 2b (ago/2026): art. 6º, § 1º, 'a' da Lei nº 8.134/1990 e art. 104, § 1º, I da IN RFB nº 1.500/2014"
+}

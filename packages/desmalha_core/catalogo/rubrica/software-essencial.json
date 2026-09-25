@@ -1,0 +1,10 @@
+{
+  "id": "software-essencial",
+  "nome": "Software essencial à atividade (inclui o Desmalha)",
+  "grupo": "atividade",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 200,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}

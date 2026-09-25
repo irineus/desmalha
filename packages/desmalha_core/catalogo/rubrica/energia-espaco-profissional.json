@@ -1,0 +1,10 @@
+{
+  "id": "energia-espaco-profissional",
+  "nome": "Energia do consultório ou escritório",
+  "grupo": "espacoProfissional",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 30,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}
