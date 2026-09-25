@@ -109,10 +109,14 @@ class PainelApurado extends PainelMensal {
 /// apurá-lo não mudaria nem o saldo nem o acumulado. Mês SÓ com despesa
 /// entra: o excesso do livro-caixa vira saldo negativo para os seguintes.
 /// (INSS e dependentes sozinhos não transportam nada.)
+///
+/// [periodosQuitados]: períodos de guias já pagas — entram no encadeamento
+/// e zeram o acumulado depois deles (ver [apurarSequencia]).
 PainelMensal montarPainelMensal({
   required String competencia,
   required Map<String, DadosDoMes> dadosDoAno,
   required Catalogo catalogo,
+  Set<String> periodosQuitados = const {},
 }) {
   final ano = competencia.substring(0, 4);
   final doMes = dadosDoAno[competencia] ?? const DadosDoMes();
@@ -129,7 +133,8 @@ PainelMensal montarPainelMensal({
   final comDados = [
     for (final c in meses)
       if ((dadosDoAno[c]?.lancamentosClassificados ?? 0) > 0 ||
-          (dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0) > 0)
+          (dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0) > 0 ||
+          periodosQuitados.contains(c))
         c,
   ];
 
@@ -140,14 +145,16 @@ PainelMensal montarPainelMensal({
         for (final c in comDados)
           EntradaApuracao(
             competencia: c,
-            receitaBrutaCentavos: dadosDoAno[c]!.receitaTributavelCentavos,
+            receitaBrutaCentavos:
+                dadosDoAno[c]?.receitaTributavelCentavos ?? 0,
             despesasDedutiveisCentavos:
-                dadosDoAno[c]!.despesasDedutiveisCentavos,
-            inssPagoCentavos: dadosDoAno[c]!.inssDedutivelCentavos,
-            numeroDependentes: dadosDoAno[c]!.dependentes,
+                dadosDoAno[c]?.despesasDedutiveisCentavos ?? 0,
+            inssPagoCentavos: dadosDoAno[c]?.inssDedutivelCentavos ?? 0,
+            numeroDependentes: dadosDoAno[c]?.dependentes ?? 0,
           ),
       ],
       tabelaPara: catalogo.tabelaVigentePara,
+      periodosQuitados: periodosQuitados,
     );
   } on StateError catch (e) {
     return PainelSemTabela(competencia, e.message);

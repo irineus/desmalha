@@ -752,6 +752,130 @@
           }
         }
       ]
+    },
+    {
+      "numero": 25,
+      "descricao": "Rodada 4, P8: março reaberto — pago R$ 394,54 sobre R$ 6.000,00; um Pix de R$ 1.000,00 era de cliente e o imposto vai a R$ 802,68 → DARF complementar de R$ 408,14 da competência março, pelo SicalcWeb",
+      "guiasPagas": [
+        {"competencias": ["2026-03"], "principalCentavos": 39454}
+      ],
+      "meses": [
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 700000,
+          "esperado": {
+            "impostoDevidoCentavos": 80268,
+            "totalParaDarfCentavos": 80268
+          }
+        }
+      ],
+      "acertos": [
+        {"periodo": "2026-03", "tipo": "complementar", "competencia": "2026-03", "diferencaCentavos": 40814}
+      ]
+    },
+    {
+      "numero": 26,
+      "descricao": "Rodada 4, P9: o caso inverso — pago R$ 802,68, correto R$ 394,54 → só sinaliza pagamento a maior de R$ 408,14; o acerto é na declaração anual, nunca abate de guia futura",
+      "guiasPagas": [
+        {"competencias": ["2026-03"], "principalCentavos": 80268}
+      ],
+      "meses": [
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 600000,
+          "esperado": {"impostoDevidoCentavos": 39454}
+        }
+      ],
+      "acertos": [
+        {"periodo": "2026-03", "tipo": "pagoAMaior", "diferencaCentavos": 40814}
+      ]
+    },
+    {
+      "numero": 27,
+      "descricao": "Rodada 5, P14 (pendente): diferença a maior abaixo de R$ 10,00 — pago R$ 394,54, recalculado R$ 402,70 (Pix de R$ 20,00) → cálculo pendente, sem valor",
+      "guiasPagas": [
+        {"competencias": ["2026-03"], "principalCentavos": 39454}
+      ],
+      "meses": [
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 602000,
+          "esperado": {"impostoDevidoCentavos": 40270}
+        }
+      ],
+      "acertos": [
+        {"periodo": "2026-03", "tipo": "pendente", "pergunta": "P14"}
+      ]
+    },
+    {
+      "numero": 28,
+      "descricao": "Rodada 5, P13 (pendente): janeiro (R$ 5,36) acumulou na guia de fevereiro (R$ 17,89, paga); a correção leva janeiro a R$ 196,58, com guia própria → cálculo pendente, sem valor",
+      "guiasPagas": [
+        {"competencias": ["2026-01", "2026-02"], "principalCentavos": 1789}
+      ],
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 551500,
+          "esperado": {"impostoDevidoCentavos": 19658, "statusDarf": "emitido"}
+        },
+        {
+          "competencia": "2026-02",
+          "receitaCentavos": 503500,
+          "esperado": {"impostoDevidoCentavos": 1253}
+        }
+      ],
+      "acertos": [
+        {"periodo": "2026-02", "tipo": "pendente", "pergunta": "P13"}
+      ]
+    },
+    {
+      "numero": 29,
+      "descricao": "Rodada 4, P8 em guia de vários meses sem mudar o agrupamento: janeiro (R$ 5,36) segue acumulando; fevereiro corrigido vai a R$ 204,75 → total R$ 210,11 contra R$ 17,89 pagos → complementar de R$ 192,22 da competência fevereiro, o período da guia (P10)",
+      "guiasPagas": [
+        {"competencias": ["2026-01", "2026-02"], "principalCentavos": 1789}
+      ],
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 501500,
+          "esperado": {"impostoDevidoCentavos": 536, "statusDarf": "acumulaParaProximoMes"}
+        },
+        {
+          "competencia": "2026-02",
+          "receitaCentavos": 553500,
+          "esperado": {"impostoDevidoCentavos": 20475, "totalParaDarfCentavos": 21011}
+        }
+      ],
+      "acertos": [
+        {"periodo": "2026-02", "tipo": "complementar", "competencia": "2026-02", "diferencaCentavos": 19222}
+      ]
+    },
+    {
+      "numero": 30,
+      "descricao": "Guia paga zera o acumulado: março pago com R$ 394,54 é corrigido para R$ 5,36 (abaixo do mínimo) → pago a maior R$ 389,18 (P9), e abril começa sem acumulado (R$ 12,53, não R$ 17,89) — o que a guia paga cobriu não é cobrado de novo",
+      "guiasPagas": [
+        {"competencias": ["2026-03"], "principalCentavos": 39454}
+      ],
+      "meses": [
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 501500,
+          "esperado": {"impostoDevidoCentavos": 536, "totalParaDarfCentavos": 536}
+        },
+        {
+          "competencia": "2026-04",
+          "receitaCentavos": 503500,
+          "esperado": {
+            "impostoAcumuladoAnteriorCentavos": 0,
+            "totalParaDarfCentavos": 1253,
+            "valorDarfCentavos": 1253
+          }
+        }
+      ],
+      "acertos": [
+        {"periodo": "2026-03", "tipo": "pagoAMaior", "diferencaCentavos": 38918}
+      ]
     }
   ]
 }

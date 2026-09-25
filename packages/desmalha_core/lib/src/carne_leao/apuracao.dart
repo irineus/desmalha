@@ -393,12 +393,19 @@ ApuracaoMensal apurarMes({
 /// resíduo de DARF abaixo de R$ 10,00 não transporta para janeiro — é
 /// absorvido na DIRPF.
 ///
+/// [periodosQuitados] são os períodos de apuração de guias já PAGAS: depois
+/// de um deles o acumulado recomeça do zero, mesmo que o recálculo o deixe
+/// abaixo de R$ 10,00 — o que a guia paga cobriu não volta a ser cobrado
+/// no mês seguinte. A diferença entre o pago e o recalculado é o acerto
+/// da guia ([acertoDaGuia]: P8/P9 da rodada 4).
+///
 /// [tabelaPara] resolve a versão da tabela vigente em cada competência
 /// (ver [tabelaVigente]).
 List<ApuracaoMensal> apurarSequencia({
   required List<EntradaApuracao> entradas,
   required TabelaIrpf Function(String competencia) tabelaPara,
   ModoAjusteFinal modoAjuste = ModoAjusteFinal.truncar,
+  Set<String> periodosQuitados = const {},
 }) {
   final resultados = <ApuracaoMensal>[];
   var saldoNegativo = 0;
@@ -428,7 +435,9 @@ List<ApuracaoMensal> apurarSequencia({
     );
     resultados.add(apuracao);
     saldoNegativo = apuracao.saldoNegativoNovoCentavos;
-    impostoAcumulado = apuracao.impostoAcumuladoNovoCentavos;
+    impostoAcumulado = periodosQuitados.contains(entrada.competencia)
+        ? 0
+        : apuracao.impostoAcumuladoNovoCentavos;
     competenciaAnterior = entrada.competencia;
   }
   return resultados;
