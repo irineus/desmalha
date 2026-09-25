@@ -33,6 +33,8 @@ export 'src/darf/itf.dart';
 export 'src/darf/layout_darf.dart';
 export 'src/darf/pdf_darf.dart';
 export 'src/darf/pdf_minimo.dart';
+export 'src/relatorio/pdf_relatorio.dart';
+export 'src/relatorio/relatorio_anual.dart';
 export 'src/dinheiro.dart';
 export 'src/extrato/csv_parser.dart';
 export 'src/extrato/data_civil.dart';
