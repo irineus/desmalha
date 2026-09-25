@@ -47,11 +47,16 @@ class ControladorImportacao extends ChangeNotifier {
     required this.repositorio,
     required this.seletor,
     required this.carregarCatalogo,
+    this.aplicarRegras,
   });
 
   final RepositorioImportacao repositorio;
   final SeletorDeArquivo seletor;
   final Future<Catalogo> Function() carregarCatalogo;
+
+  /// Depois de gravar: remetentes com regra confirmada recebem a proposta
+  /// da regra nos créditos novos ("proposto pela regra" até o toque).
+  final Future<int> Function()? aplicarRegras;
 
   EstadoImportacao _estado = EstadoImportacao.inicial;
   ArquivoSelecionado? _arquivo;
@@ -231,6 +236,13 @@ class ControladorImportacao extends ChangeNotifier {
         resultado: _resultado!,
         decisoesPossiveis: Map.of(_decisoes),
       );
+      // A importação já está gravada; a regra é conveniência. Se falhar, os
+      // créditos continuam na fila sem proposta — nada se perde.
+      try {
+        await aplicarRegras?.call();
+      } on Exception {
+        // segue: a fila mostra os recebimentos sem a proposta da regra
+      }
       _mudar(EstadoImportacao.concluida);
     } on Exception catch (e) {
       // A confirmação é uma transação: nada foi gravado. A prévia volta.

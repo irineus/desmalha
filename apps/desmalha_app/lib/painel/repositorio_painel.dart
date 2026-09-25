@@ -24,18 +24,15 @@ class RepositorioPainelDrift implements RepositorioPainel {
   Future<Map<String, DadosDoMes>> dadosDoAno(int ano) async {
     final de = '$ano-01';
     final ate = '$ano-12';
+    // Linha a linha: o que cada classificação faz na receita é regra do
+    // core (totaisDoMes — P1: PJ fora; P2: reembolso/repasse pela árvore),
+    // não um CASE em SQL.
     final classificados = await banco
         .customSelect(
-          'SELECT competencia, '
-          'SUM(CASE WHEN classificacao = ? THEN valor_centavos '
-          'ELSE 0 END) AS receita, COUNT(*) AS n '
-          'FROM lancamentos WHERE competencia BETWEEN ? AND ? '
-          'GROUP BY competencia',
-          variables: [
-            Variable.withString(ClassificacaoLancamento.rendimentoPf.name),
-            Variable.withString(de),
-            Variable.withString(ate),
-          ],
+          'SELECT competencia, valor_centavos, classificacao, '
+          'comprovante_titular, custo_essencial '
+          'FROM lancamentos WHERE competencia BETWEEN ? AND ?',
+          variables: [Variable.withString(de), Variable.withString(ate)],
         )
         .get();
     // Crédito importado sem lançamento = recebimento a classificar. O mês
@@ -51,14 +48,32 @@ class RepositorioPainelDrift implements RepositorioPainel {
         )
         .get();
 
-    final receita = <String, int>{};
-    final nClassificados = <String, int>{};
-    final nPendentes = <String, int>{};
+    final porMes = <String, List<LancamentoClassificado>>{};
     for (final l in classificados) {
-      final c = l.read<String>('competencia');
-      receita[c] = l.read<int>('receita');
-      nClassificados[c] = l.read<int>('n');
+      (porMes[l.read<String>('competencia')] ??= []).add(
+        LancamentoClassificado(
+          valorCentavos: l.read<int>('valor_centavos'),
+          classificacao:
+              ClassificacaoLancamento.values.byName(l.read<String>('classificacao')),
+          titular: switch (l.readNullable<String>('comprovante_titular')) {
+            null => null,
+            final t => TitularComprovante.values.byName(t),
+          },
+          custoEssencial: switch (l.readNullable<int>('custo_essencial')) {
+            null => null,
+            final e => e == 1,
+          },
+        ),
+      );
     }
+    final receita = <String, int>{
+      for (final e in porMes.entries)
+        e.key: totaisDoMes(lancamentos: e.value).receitaTributavelCentavos,
+    };
+    final nClassificados = {
+      for (final e in porMes.entries) e.key: e.value.length,
+    };
+    final nPendentes = <String, int>{};
     for (final l in pendentes) {
       nPendentes[l.read<String>('competencia')] = l.read<int>('n');
     }
