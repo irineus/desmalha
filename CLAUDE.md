@@ -24,7 +24,7 @@ imposto mensal, gera DARF (código 0190) e prepara os consolidados para o e-CAC.
 | `applicationId` Android | **`com.desmalha.app`** |
 | `minSdk` | **26** (Android 8.0) — exigido por SQLCipher, Keystore de hardware e custo do Argon2id |
 | Estrutura | Monorepo: `apps/desmalha_app` (Flutter) + `packages/desmalha_core` (Dart puro) |
-| CI/CD | **Codemagic** (runner macOS gratuito, 500 min/mês) — máquina de dev é Windows, sem Xcode local |
+| CI/CD | **GitHub Actions** `verify` (Linux: analyze + testes, gate de todo PR) + **Codemagic** (runner macOS gratuito, 500 min/mês: APK e iOS, só por tag) — máquina de dev é Windows, sem Xcode local |
 | Backend | Supabase (identidade/assinatura, catálogo só-leitura, backups E2E) |
 | JDK | 17 |
 
@@ -39,6 +39,7 @@ imposto mensal, gera DARF (código 0190) e prepara os consolidados para o e-CAC.
 ```
 .fvmrc                     # pin do Flutter (3.44.7) — só o .fvmrc é versionado, .fvm/ não
 codemagic.yaml             # CI: android-verify (tag verificar-*) + ios-simulator-nightly (cron/manual)
+.github/workflows/verify.yml  # CI de PR: analyze + testes do core e do app (Actions, Linux)
 tool/setup_env.sh          # bootstrap idempotente de ambiente Linux (JDK, FVM, Android SDK)
 tool/verificar_ambiente.dart  # verificador de ambiente (Dart puro; roda nos 3 ambientes)
 docs/ambiente-windows.md   # roteiro da máquina de UI (emulador, hot reload, Android Studio)
@@ -50,6 +51,18 @@ O `desmalha_core` existe para que motor de cálculo, parser OFX e regras fiscais
 Dart puro, testáveis com `dart test` sem emulador — a Fase 4 inteira acontece lá. O
 motor de cálculo será validado contra 10 cenários oficiais table-driven em JSON
 (especificação no Notion; entra na Fase 4).
+
+## CI
+- **`verify` (GitHub Actions, `.github/workflows/verify.yml`)** roda em todo PR e em todo
+  push no `main` (menos mudança só de `.md`): `dart analyze --fatal-infos` + `dart test`
+  no core, `flutter analyze` + a prova do `PRAGMA cipher_version` + `flutter test` no app.
+  Flutter lido do `.fvmrc`. Sem APK e sem emulador.
+- **Condição de merge:** PR que toca `apps/` ou `packages/` só entra com o check `verify`
+  **`success`** (lido pelo `conclusion` do check-run, nunca pelo exit code de um watch).
+  PR que toca `supabase/` também precisa das "Suítes do backend" verdes.
+- **Codemagic** não roda por PR nem por merge: `android-verify` (APK debug) dispara só por
+  tag `verificar-*`, e o iOS tem o nightly. O APK de cada PR é o gate local
+  (`fvm flutter build apk --debug`).
 
 ## Ambiente & comandos
 Sessão Linux efêmera nasce pronta com:
