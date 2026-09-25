@@ -110,9 +110,13 @@ class PorteiroOnboarding extends StatefulWidget {
     super.key,
     required this.servicos,
     required this.child,
+    required this.aoSair,
   });
 
   final ServicosDoApp servicos;
+
+  /// Sair da conta (a tela de dados de outra conta oferece isso).
+  final Future<void> Function() aoSair;
 
   /// O app em si, depois do onboarding e com os aceites em dia.
   final Widget child;
@@ -146,6 +150,14 @@ class _PorteiroOnboardingState extends State<PorteiroOnboarding> {
           ),
         );
       }
+      // Antes de tudo — onboarding, aceite, app e backup automático: dado
+      // de outra conta no aparelho nunca aparece nem vai para o backup desta.
+      if (c.dadosDeOutraConta) {
+        return TelaDadosDeOutraConta(
+          servicos: widget.servicos,
+          aoSair: widget.aoSair,
+        );
+      }
       if (c.precisaOnboarding) {
         return FluxoOnboarding(servicos: widget.servicos);
       }
@@ -161,6 +173,107 @@ class _PorteiroOnboardingState extends State<PorteiroOnboarding> {
       }
       return widget.child;
     },
+  );
+}
+
+// ─── Dados de outra conta no aparelho ───────────────────────────────
+
+/// O aparelho tem dados criados por outra conta. Decisão do owner
+/// (24/09/2026): os dados locais pertencem à conta que os criou — a conta
+/// desta sessão só entra depois de apagá-los. Nunca herdar em silêncio.
+class TelaDadosDeOutraConta extends StatefulWidget {
+  const TelaDadosDeOutraConta({
+    super.key,
+    required this.servicos,
+    required this.aoSair,
+  });
+
+  final ServicosDoApp servicos;
+  final Future<void> Function() aoSair;
+
+  @override
+  State<TelaDadosDeOutraConta> createState() => _TelaDadosDeOutraContaState();
+}
+
+class _TelaDadosDeOutraContaState extends State<TelaDadosDeOutraConta> {
+  bool _entendi = false;
+  bool _ocupado = false;
+  String? _erro;
+
+  Future<void> _apagar() async {
+    setState(() {
+      _ocupado = true;
+      _erro = null;
+    });
+    try {
+      await widget.servicos.onboarding.apagarDadosLocais();
+      await widget.servicos.backup.recarregar();
+      widget.servicos.dadosAlterados.value++;
+    } on Exception catch (e) {
+      if (mounted) {
+        setState(
+          () => _erro =
+              'Não foi possível apagar os dados deste celular: $e. Nada '
+              'da outra conta foi mostrado.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(EspacosDesmalha.s5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _titulo(context, 'Este celular tem dados de outra conta'),
+            _paragrafo(
+              context,
+              'Os lançamentos, o perfil e o código de backup guardados neste '
+              'celular foram criados com outra conta. Para entrar com a sua, '
+              'é preciso apagá-los daqui.',
+            ),
+            _paragrafo(
+              context,
+              'Só este celular é afetado: os backups da outra conta, se ela '
+              'ainda existir, continuam na nuvem dela. Se os dados são seus e '
+              'você entrou com o e-mail errado, saia e entre com o e-mail '
+              'certo.',
+            ),
+            CheckboxListTile(
+              key: const Key('caixa_apagar_dados_locais'),
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: _entendi,
+              onChanged: _ocupado ? null : (v) => setState(() => _entendi = v!),
+              title: const Text(
+                'Entendo que os dados deste celular serão apagados e que '
+                'isso não se desfaz.',
+              ),
+            ),
+            const SizedBox(height: EspacosDesmalha.s3),
+            if (_erro != null) _textoErro(_erro!),
+            OutlinedButton(
+              key: const Key('botao_apagar_dados_locais'),
+              style: estiloBotaoDestrutivo(),
+              onPressed: _entendi && !_ocupado ? _apagar : null,
+              child: Text(
+                _ocupado ? 'Apagando…' : 'Apagar os dados deste celular',
+              ),
+            ),
+            TextButton(
+              key: const Key('botao_sair_outra_conta'),
+              onPressed: _ocupado ? null : widget.aoSair,
+              child: const Text('Sair desta conta'),
+            ),
+          ],
+        ),
+      ),
+    ),
   );
 }
 

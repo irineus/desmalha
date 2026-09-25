@@ -63,6 +63,7 @@ class _PortalAuthState extends State<PortalAuth> {
     // de abertura só depois dele — backup sem código confirmado não roda.
     Autenticado() => PorteiroOnboarding(
       servicos: widget.servicos,
+      aoSair: widget.servico.sair,
       child: GatilhosDeAbertura(
         servicos: widget.servicos,
         child: CascaDoApp(

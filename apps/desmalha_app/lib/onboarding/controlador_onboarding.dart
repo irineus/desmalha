@@ -12,6 +12,7 @@ library;
 import 'package:desmalha_core/desmalha_core.dart';
 import 'package:flutter/foundation.dart';
 
+import '../dados/limpeza_local.dart';
 import 'porta_aceite.dart';
 import 'repositorio_onboarding.dart';
 
@@ -33,6 +34,7 @@ class ControladorOnboarding extends ChangeNotifier {
     required this.aceite,
     required this.carregarCatalogo,
     required this.usuarioId,
+    required this.limpeza,
     this.permiteSeguirSemTermos = kDebugMode,
     DateTime Function()? relogio,
   }) : _relogio = relogio ?? DateTime.now;
@@ -41,6 +43,9 @@ class ControladorOnboarding extends ChangeNotifier {
   final PortaAceite aceite;
   final Future<Catalogo> Function() carregarCatalogo;
   final String? Function() usuarioId;
+
+  /// Apaga do aparelho os dados de outra conta.
+  final LimpezaLocal limpeza;
 
   /// `true` só em build de desenvolvimento: sem documento publicado, o app
   /// segue com a pendência visível. Em release, para.
@@ -59,6 +64,23 @@ class ControladorOnboarding extends ChangeNotifier {
   PerfilDoApp? get perfil => _perfil;
 
   bool get precisaOnboarding => !(_perfil?.onboardingCompleto ?? false);
+
+  /// O aparelho tem dados criados por OUTRA conta (decisão do owner,
+  /// 24/09/2026: os dados locais pertencem à conta que os criou). Perfil sem
+  /// dono registrado também conta como de outra conta: não dá para provar
+  /// que é desta, e herdar em silêncio mostraria dado alheio.
+  bool get dadosDeOutraConta {
+    final perfil = _perfil;
+    final sessao = usuarioId();
+    return perfil != null && sessao != null && perfil.usuarioRemotoId != sessao;
+  }
+
+  /// Apaga os dados locais da outra conta e recomeça: o onboarding volta
+  /// para a conta desta sessão.
+  Future<void> apagarDadosLocais() async {
+    await limpeza.apagarDadosDaConta();
+    await carregar();
+  }
 
   /// Documentos publicados cuja versão vigente ainda não foi aceita.
   List<DocumentoLegal> get aceitesPendentes => [

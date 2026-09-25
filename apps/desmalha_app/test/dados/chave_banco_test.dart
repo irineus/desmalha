@@ -68,6 +68,9 @@ class _CofreEmMemoria implements CofreSeguro {
     gravacoes++;
     valores[campo] = valor;
   }
+
+  @override
+  Future<void> apagar(String campo) async => valores.remove(campo);
 }
 
 /// Aceita o `gravar` sem erro, mas a releitura volta vazia — o análogo do
@@ -78,4 +81,7 @@ class _CofreQueEngoleGravacao implements CofreSeguro {
 
   @override
   Future<void> gravar(String campo, String valor) async {}
+
+  @override
+  Future<void> apagar(String campo) async {}
 }

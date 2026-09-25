@@ -321,6 +321,7 @@ void main() {
         nome: 'Ana',
         cpf: '52998224725',
         onboardingCompleto: true,
+        usuarioRemotoId: '00000000-0000-4000-8000-00000000000a',
       )
       ..aceites.addAll({
         ('termos_uso', '2026-09-v1'),
