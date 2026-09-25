@@ -14,62 +14,90 @@ import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
 import 'repositorio_fechamento.dart';
 
-/// O acerto de uma guia paga, nas palavras que a pessoa age:
-/// P8 → complementar pelo SicalcWeb; P9 → pago a maior, acerto na
-/// declaração; rodada 5 → cálculo pendente, sem valor.
+/// O acerto de uma guia paga, nas palavras que a pessoa age: P8 →
+/// complementar pelo SicalcWeb; P9 → pago a maior, acerto na declaração;
+/// rodada 5 → P13 DARF próprio em atraso por competência, P14 diferença
+/// abaixo de R$ 10,00 sem guia, P15 retificadora de ano anterior.
 class AcertoDaGuiaNaTela extends StatelessWidget {
   const AcertoDaGuiaNaTela({
     super.key,
     required this.acerto,
-    required this.tocaDeclaracao,
+    required this.pedeRetificadora,
   });
 
   final AcertoDaGuia acerto;
-  final bool tocaDeclaracao;
+  final bool pedeRetificadora;
 
   @override
   Widget build(BuildContext context) {
     final texto = Theme.of(context).textTheme;
-    final declaracao = tocaDeclaracao
+    final retificadora = pedeRetificadora
         ? Padding(
             padding: const EdgeInsets.only(top: EspacosDesmalha.s2),
             child: Text(
-              '$textoCalculoPendente sobre a declaração de '
-              '${int.parse(acerto.guia.periodo.substring(0, 4)) + 1}, que '
-              'pode já ter sido entregue.',
-              key: const Key('acerto_declaracao'),
+              'Se você já entregou a declaração de '
+              '${int.parse(acerto.guia.periodo.substring(0, 4)) + 1}, faça '
+              'a retificadora com os valores novos: é ela que regulariza o '
+              'ano, e também o caminho para reaver pagamento a maior.',
+              key: const Key('acerto_retificadora'),
               style: texto.bodySmall,
             ),
           )
         : null;
-    final corpo = switch (acerto) {
-      AcertoEmDia() => null,
-      AcertoComplementar(:final competencia, :final diferencaCentavos) =>
-        BannerObrigacao(
-          key: const Key('acerto_complementar'),
-          titulo: 'Falta pagar ${centavosParaExibicao(diferencaCentavos)} '
-              'de ${competenciaPorExtenso(competencia)}.',
-          texto: 'O recálculo ficou maior que o DARF pago. Gere o DARF '
-              'complementar da competência '
-              '${competenciaPorExtenso(competencia)} no SicalcWeb, que soma '
-              'multa e juros. A diferença não vai para outro mês.',
-        ),
-      AcertoPagoAMaior(:final diferencaCentavos) => Text(
-          'Pago a maior: ${centavosParaExibicao(diferencaCentavos)}. O '
-          'acerto é na declaração anual — o app não abate de outra guia.',
-          key: const Key('acerto_pago_a_maior'),
-          style: texto.bodyMedium,
-        ),
-      AcertoPendente() => Text(
-          '$textoCalculoPendente.',
-          key: const Key('acerto_pendente'),
-          style: texto.titleSmall,
-        ),
-    };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [?corpo, ?declaracao],
+      children: [..._corpo(context, acerto), ?retificadora],
     );
+  }
+
+  List<Widget> _corpo(BuildContext context, AcertoDaGuia a) {
+    final texto = Theme.of(context).textTheme;
+    return switch (a) {
+      AcertoEmDia() => const [],
+      AcertoComplementar(:final competencia, :final diferencaCentavos) => [
+          BannerObrigacao(
+            key: const Key('acerto_complementar'),
+            titulo: 'Falta pagar ${centavosParaExibicao(diferencaCentavos)} '
+                'de ${competenciaPorExtenso(competencia)}.',
+            texto: 'O recálculo ficou maior que o DARF pago. Gere o DARF '
+                'complementar da competência '
+                '${competenciaPorExtenso(competencia)} no SicalcWeb, que soma '
+                'multa e juros. A diferença não vai para outro mês.',
+          ),
+        ],
+      AcertoPagoAMaior(:final diferencaCentavos) => [
+          Text(
+            'Pago a maior: ${centavosParaExibicao(diferencaCentavos)}. O '
+            'acerto é na declaração anual — o app não abate de outra guia.',
+            key: const Key('acerto_pago_a_maior'),
+            style: texto.bodyMedium,
+          ),
+        ],
+      AcertoAbaixoDoMinimo(:final diferencaCentavos) => [
+          BannerObrigacao(
+            key: const Key('acerto_abaixo_do_minimo'),
+            titulo: 'Diferença de ${centavosParaExibicao(diferencaCentavos)} '
+                'a pagar, sem guia.',
+            texto: 'Abaixo de R\$ 10,00 não sai DARF — a lei e o SicalcWeb '
+                'não permitem. O valor é cobrado, com as correções, na '
+                'declaração anual. Não o some a outra guia.',
+          ),
+        ],
+      AcertoReagrupado(:final emAtraso, :final doPeriodo) => [
+          for (final g in emAtraso)
+            BannerObrigacao(
+              key: Key('acerto_em_atraso_${g.competencia}'),
+              titulo: '${competenciaPorExtenso(g.competencia)} passou a ter '
+                  'DARF próprio: ${centavosParaExibicao(g.valorCentavos)}.',
+              texto: 'A correção tirou o mês da guia de '
+                  '${competenciaPorExtenso(a.guia.periodo)}. Gere o DARF da '
+                  'competência ${competenciaPorExtenso(g.competencia)} no '
+                  'SicalcWeb, que soma multa e juros, e marque como pago na '
+                  'tela do mês.',
+            ),
+          ..._corpo(context, doPeriodo),
+        ],
+    };
   }
 }
 

@@ -10,6 +10,7 @@ import 'repositorio_painel.dart';
 /// Onde a competência na tela está no fechamento (decisão 7 do owner).
 class EstadoFechamento {
   const EstadoFechamento({
+    required this.competencia,
     required this.fechado,
     required this.guia,
     required this.acerto,
@@ -17,8 +18,10 @@ class EstadoFechamento {
     required this.correcaoPendente,
     required this.motivosQueImpedem,
     required this.meses,
-    required this.tocaDeclaracao,
+    required this.pedeRetificadora,
   });
+
+  final String competencia;
 
   /// A competência tem apuração fechada vigente.
   final bool fechado;
@@ -41,14 +44,23 @@ class EstadoFechamento {
   /// O ano recalculado, com o que a apuração gravada precisa guardar.
   final Map<String, MesApurado> meses;
 
-  /// P15 (rodada 5): o acerto é de ano cuja declaração pode já ter sido
-  /// entregue.
-  final bool tocaDeclaracao;
+  /// P15 (rodada 5): o acerto é de ano anterior — se a declaração dele
+  /// já foi entregue, a correção pede a retificadora.
+  final bool pedeRetificadora;
 
-  /// O pagamento mais recente da guia desta competência.
+  /// P13 (rodada 5): a competência saiu da guia de vários meses que a
+  /// absorvia e deve DARF próprio, ainda não pago.
+  bool get deveGuiaPropria => switch (acerto) {
+        AcertoReagrupado(:final emAtraso) =>
+          emAtraso.any((g) => g.competencia == competencia),
+        _ => false,
+      };
+
+  /// O pagamento mais recente da guia desta competência — `null` também
+  /// quando ela deve DARF próprio ([deveGuiaPropria]).
   PagamentoDarf? get pagamento {
     final g = guia;
-    if (g == null) return null;
+    if (g == null || deveGuiaPropria) return null;
     for (final p in pagamentos) {
       if (p.periodo == g.periodo) return p;
     }
@@ -199,12 +211,25 @@ class ControladorPainel extends ChangeNotifier {
       return null;
     }
     final fechadas = await repo.fechadas(ano);
+    // A guia do próprio período vence a de vários meses que a absorvia
+    // (P13: depois de pagar o DARF próprio, é ele que vale para o mês).
     GuiaPaga? guia;
     for (final g in guias) {
+      if (g.periodo == c) {
+        guia = g;
+        break;
+      }
       if (g.competencias.contains(c)) guia = g;
     }
-    final acerto = guia == null ? null : acertoDaGuia(guia, recalculadas);
+    final acerto = guia == null
+        ? null
+        : acertoDaGuia(
+            guia,
+            recalculadas,
+            periodosPagos: {for (final g in guias) g.periodo},
+          );
     return EstadoFechamento(
+      competencia: c,
       fechado: fechadas.containsKey(c),
       guia: guia,
       acerto: acerto,
@@ -217,8 +242,8 @@ class ControladorPainel extends ChangeNotifier {
         recebimentosAClassificar: painel.recebimentosAClassificar,
       ),
       meses: meses,
-      tocaDeclaracao:
-          acerto != null && acertoTocaDeclaracaoEntregue(acerto, hoje),
+      pedeRetificadora:
+          acerto != null && acertoPedeRetificadora(acerto, hoje),
     );
   }
 

@@ -162,4 +162,96 @@ void main() {
     expect(find.text('mês fechado'), findsOneWidget);
     expect(chave('botao_fechar_mes'), findsNothing);
   });
+
+  Future<void> pagarPelaTela(WidgetTester tester) async {
+    await tocar(tester, chave('botao_ver_darf'));
+    await tocar(tester, chave('botao_marcar_pago'));
+    await tocar(tester, chave('confirmar_pagamento'));
+  }
+
+  testWidgets('P13: janeiro sai da guia de fevereiro — DARF próprio em '
+      'atraso; pago ele, fevereiro fica só com o pago a maior', (tester) async {
+    // Janeiro R$ 5,36 acumula; fevereiro soma R$ 17,89 numa guia só.
+    painel.dados['2026-01'] = classificado(501500);
+    painel.dados['2026-02'] = classificado(503500);
+    await montar(tester, DateTime(2026, 3, 20, 10));
+    expect(find.text('fevereiro/2026'), findsOneWidget);
+    await pagarPelaTela(tester);
+
+    // A correção leva janeiro a R$ 196,58.
+    painel.dados['2026-01'] = classificado(551500);
+    servicos.dadosAlterados.value++;
+    await assentar(tester);
+    expect(
+      find.textContaining('janeiro/2026 passou a ter DARF próprio: '
+          'R\$ 196,58', findRichText: true, skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(tester.widget<Text>(chave('acerto_pago_a_maior')).data,
+        startsWith('Pago a maior: R\$ 5,36.'));
+
+    await tocar(tester, chave('mes_anterior'));
+    expect(textoDe(tester, 'valor_darf'), 'R\$ 196,58');
+    await pagarPelaTela(tester);
+    expect(textoDe(tester, 'valor_pago'), 'R\$ 196,58');
+
+    await tocar(tester, chave('mes_seguinte'));
+    expect(chave('acerto_em_atraso_2026-01'), findsNothing);
+    expect(chave('acerto_pago_a_maior'), findsOneWidget);
+  });
+
+  testWidgets('P14: diferença abaixo de R\$ 10,00 não gera guia',
+      (tester) async {
+    painel.dados['2026-08'] = classificado(600000);
+    await montar(tester, DateTime(2026, 9, 24, 10));
+    await pagarPelaTela(tester);
+
+    painel.dados['2026-08'] = classificado(602000);
+    servicos.dadosAlterados.value++;
+    await assentar(tester);
+    expect(
+      find.textContaining('Diferença de R\$ 8,16 a pagar, sem guia.',
+          findRichText: true, skipOffstage: false),
+      findsOneWidget,
+    );
+    await tocar(tester, chave('botao_ver_darf'));
+    expect(chave('botao_complementar'), findsNothing,
+        reason: 'abaixo do mínimo não há complementar a registrar');
+  });
+
+  testWidgets('P15: acerto de ano anterior orienta a retificadora',
+      (tester) async {
+    // Sem os feriados de 2027 no catálogo a guia de dezembro não sai
+    // pela tela: o pagamento é gravado direto.
+    painel.dados['2026-12'] = classificado(600000);
+    final apuradas = apurarAno(
+      ate: '2026-12',
+      dadosDoAno: painel.dados,
+      catalogo: catalogo,
+    );
+    await tester.runAsync(() => fechamento.marcarPago(
+          periodo: '2026-12',
+          competencias: ['2026-12'],
+          meses: {
+            '2026-12': MesApurado(
+              apuracao: apuradas['2026-12']!,
+              dados: painel.dados['2026-12']!,
+              tabela: catalogo.tabelaVigentePara('2026-12'),
+            ),
+          },
+          principalCentavos: 39454,
+          vencimento: '2027-01-29',
+          pagoEm: '2027-01-15',
+        ));
+    await montar(tester, DateTime(2027, 1, 20, 10));
+
+    painel.dados['2026-12'] = classificado(700000);
+    servicos.dadosAlterados.value++;
+    await assentar(tester);
+    expect(
+      tester.widget<Text>(chave('acerto_retificadora')).data,
+      startsWith('Se você já entregou a declaração de 2027, faça a '
+          'retificadora'),
+    );
+  });
 }

@@ -8,17 +8,16 @@
 ///   maior → DARF complementar da competência original pelo SicalcWeb, sem
 ///   somar a outro mês (P8); menor → só sinaliza, o acerto é na declaração
 ///   anual, nunca abate de guia futura (P9);
-/// - o que a rodada 4 não cobre é FALHA VISÍVEL, nunca número adivinhado
-///   (rodada 5, 25/09/2026): mês de uma guia de vários meses que passa a
-///   ter guia própria (P13), diferença a maior abaixo de R$ 10,00 (P14) e
-///   correção depois de entregue a declaração do ano (P15).
+/// - rodada 5 (25/09/2026): mês de uma guia de vários meses que passa a
+///   ter guia própria é acertado POR COMPETÊNCIA — ele deve o valor
+///   integral em DARF em atraso, e o que tinha pago na guia posterior vira
+///   pagamento a maior dela (P13); diferença a maior abaixo de R$ 10,00
+///   não gera guia, o acerto é na declaração anual (P14); correção depois
+///   de entregue a declaração do ano pede a retificadora, nos dois
+///   sentidos (P15).
 library;
 
 import 'apuracao.dart';
-
-/// Texto único da falha visível enquanto o contador não responde.
-const String textoCalculoPendente =
-    'Cálculo pendente: aguardando confirmação do contador';
 
 /// Por que o mês ainda não pode ser fechado. Vazio = pode fechar.
 List<String> motivosQueImpedemFechar({required int recebimentosAClassificar}) =>
@@ -82,29 +81,66 @@ class AcertoPagoAMaior extends AcertoDaGuia {
   final int diferencaCentavos;
 }
 
-/// Caso que a rodada 4 não cobre: [textoCalculoPendente], sem valor.
-class AcertoPendente extends AcertoDaGuia {
-  const AcertoPendente(super.guia, {required this.pergunta});
+/// P14 (rodada 5): falta pagar [diferencaCentavos], mas abaixo do DARF
+/// mínimo não sai guia — a lei e o SicalcWeb vedam. O valor é cobrado,
+/// com as correções, na declaração anual; somá-lo a guia futura omitiria
+/// multa e juros.
+class AcertoAbaixoDoMinimo extends AcertoDaGuia {
+  const AcertoAbaixoDoMinimo(super.guia, {required this.diferencaCentavos});
 
-  /// A pergunta da rodada 5 que decide o caso (`'P13'`, `'P14'`).
-  final String pergunta;
+  final int diferencaCentavos;
+}
+
+/// Uma competência que a guia absorvia e agora tem DARF próprio (P13).
+typedef GuiaEmAtraso = ({String competencia, int valorCentavos});
+
+/// P13 (rodada 5): o agrupamento da guia mudou. Cada mês de [emAtraso]
+/// deve o valor integral recalculado em DARF próprio, em atraso, pelo
+/// SicalcWeb; o período da guia é acertado por [doPeriodo] — em geral,
+/// pago a maior do que o mês reaberto tinha "pegado carona".
+class AcertoReagrupado extends AcertoDaGuia {
+  const AcertoReagrupado(
+    super.guia, {
+    required this.emAtraso,
+    required this.doPeriodo,
+  });
+
+  final List<GuiaEmAtraso> emAtraso;
+
+  /// Nunca outro [AcertoReagrupado].
+  final AcertoDaGuia doPeriodo;
 }
 
 /// Compara a [guia] paga com o ano recalculado ([recalculadas], por
-/// competência, apurado com o período da guia em `periodosQuitados`).
+/// competência, apurado com os períodos das guias pagas em
+/// `periodosQuitados`).
 ///
-/// O devido da guia é o total a recolher recalculado no período dela —
-/// o próprio mês mais o que acumulou até ele. Se um mês que a guia
-/// absorveu passou a ter guia própria, o agrupamento mudou: P13.
+/// O devido do período é o total a recolher recalculado nele — o próprio
+/// mês mais o que acumulou até ele. Um mês que a guia absorvia e agora
+/// emite DARF próprio vai para [AcertoReagrupado.emAtraso], a menos que
+/// já tenha guia paga com período nele ([periodosPagos]).
 AcertoDaGuia acertoDaGuia(
+  GuiaPaga guia,
+  Map<String, ApuracaoMensal> recalculadas, {
+  Set<String> periodosPagos = const {},
+}) {
+  final doPeriodo = _acertoDoPeriodo(guia, recalculadas);
+  final emAtraso = <GuiaEmAtraso>[
+    for (final c in guia.competencias.take(guia.competencias.length - 1))
+      if (recalculadas[c] case final a?
+          when a.statusDarf == StatusDarf.emitido &&
+              !periodosPagos.contains(c))
+        (competencia: c, valorCentavos: a.valorDarfCentavos),
+  ];
+  return emAtraso.isEmpty
+      ? doPeriodo
+      : AcertoReagrupado(guia, emAtraso: emAtraso, doPeriodo: doPeriodo);
+}
+
+AcertoDaGuia _acertoDoPeriodo(
   GuiaPaga guia,
   Map<String, ApuracaoMensal> recalculadas,
 ) {
-  for (final c in guia.competencias.take(guia.competencias.length - 1)) {
-    if (recalculadas[c]?.statusDarf == StatusDarf.emitido) {
-      return AcertoPendente(guia, pergunta: 'P13');
-    }
-  }
   final devido = recalculadas[guia.periodo]?.totalParaDarfCentavos ?? 0;
   final diferenca = devido - guia.principalPagoCentavos;
   if (diferenca == 0) return AcertoEmDia(guia);
@@ -112,7 +148,7 @@ AcertoDaGuia acertoDaGuia(
     return AcertoPagoAMaior(guia, diferencaCentavos: -diferenca);
   }
   if (diferenca < darfMinimoCentavos) {
-    return AcertoPendente(guia, pergunta: 'P14');
+    return AcertoAbaixoDoMinimo(guia, diferencaCentavos: diferenca);
   }
   return AcertoComplementar(
     guia,
@@ -121,9 +157,10 @@ AcertoDaGuia acertoDaGuia(
   );
 }
 
-/// P15 (rodada 5): corrigir uma guia de ano-calendário anterior pode mexer
-/// na declaração já entregue — o app mostra [textoCalculoPendente] para a
-/// declaração, além do acerto da guia.
-bool acertoTocaDeclaracaoEntregue(AcertoDaGuia acerto, String hoje) =>
+/// P15 (rodada 5): acerto de uma guia de ano-calendário anterior — se a
+/// declaração daquele ano já foi entregue, a correção exige a retificadora,
+/// nos dois sentidos (é ela que regulariza o ano e permite reaver
+/// pagamento a maior).
+bool acertoPedeRetificadora(AcertoDaGuia acerto, String hoje) =>
     acerto is! AcertoEmDia &&
     acerto.guia.periodo.substring(0, 4).compareTo(hoje.substring(0, 4)) < 0;

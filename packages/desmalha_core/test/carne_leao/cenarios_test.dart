@@ -100,7 +100,11 @@ void main() {
           .cast<Map<String, Object?>>()) {
         final guia = guias.singleWhere((g) => g.periodo == esperado['periodo']);
         expect(
-          _acerto(acertoDaGuia(guia, porCompetencia)),
+          _acerto(acertoDaGuia(
+            guia,
+            porCompetencia,
+            periodosPagos: {for (final g in guias) g.periodo},
+          )),
           {
             for (final e in esperado.entries)
               if (e.key != 'periodo') e.key: e.value,
@@ -250,9 +254,17 @@ Map<String, Object?> _acerto(AcertoDaGuia acerto) => switch (acerto) {
           'tipo': 'pagoAMaior',
           'diferencaCentavos': diferencaCentavos,
         },
-      AcertoPendente(:final pergunta) => {
-          'tipo': 'pendente',
-          'pergunta': pergunta,
+      AcertoAbaixoDoMinimo(:final diferencaCentavos) => {
+          'tipo': 'abaixoDoMinimo',
+          'diferencaCentavos': diferencaCentavos,
+        },
+      AcertoReagrupado(:final emAtraso, :final doPeriodo) => {
+          'tipo': 'reagrupado',
+          'emAtraso': [
+            for (final g in emAtraso)
+              {'competencia': g.competencia, 'valorCentavos': g.valorCentavos},
+          ],
+          'doPeriodo': _acerto(doPeriodo),
         },
     };
 

@@ -792,7 +792,7 @@
     },
     {
       "numero": 27,
-      "descricao": "Rodada 5, P14 (pendente): diferença a maior abaixo de R$ 10,00 — pago R$ 394,54, recalculado R$ 402,70 (Pix de R$ 20,00) → cálculo pendente, sem valor",
+      "descricao": "Rodada 5, P14: diferença a maior abaixo de R$ 10,00 — pago R$ 394,54, recalculado R$ 402,70 (Pix de R$ 20,00) → R$ 8,16 SEM guia (DARF mínimo); o acerto é na declaração anual, nunca somado a guia futura",
       "guiasPagas": [
         {"competencias": ["2026-03"], "principalCentavos": 39454}
       ],
@@ -804,12 +804,12 @@
         }
       ],
       "acertos": [
-        {"periodo": "2026-03", "tipo": "pendente", "pergunta": "P14"}
+        {"periodo": "2026-03", "tipo": "abaixoDoMinimo", "diferencaCentavos": 816}
       ]
     },
     {
       "numero": 28,
-      "descricao": "Rodada 5, P13 (pendente): janeiro (R$ 5,36) acumulou na guia de fevereiro (R$ 17,89, paga); a correção leva janeiro a R$ 196,58, com guia própria → cálculo pendente, sem valor",
+      "descricao": "Rodada 5, P13: janeiro (R$ 5,36) acumulou na guia de fevereiro (R$ 17,89, paga); a correção leva janeiro a R$ 196,58 → por competência: DARF de janeiro de R$ 196,58 em atraso, e fevereiro (devia R$ 12,53) fica com R$ 5,36 pagos a maior, acerto na declaração",
       "guiasPagas": [
         {"competencias": ["2026-01", "2026-02"], "principalCentavos": 1789}
       ],
@@ -826,7 +826,7 @@
         }
       ],
       "acertos": [
-        {"periodo": "2026-02", "tipo": "pendente", "pergunta": "P13"}
+        {"periodo": "2026-02", "tipo": "reagrupado", "emAtraso": [{"competencia": "2026-01", "valorCentavos": 19658}], "doPeriodo": {"tipo": "pagoAMaior", "diferencaCentavos": 536}}
       ]
     },
     {
@@ -875,6 +875,30 @@
       ],
       "acertos": [
         {"periodo": "2026-03", "tipo": "pagoAMaior", "diferencaCentavos": 38918}
+      ]
+    },
+    {
+      "numero": 31,
+      "descricao": "Rodada 5, P13 depois de pagar o DARF próprio de janeiro (R$ 196,58): janeiro fica em dia e fevereiro só com os R$ 5,36 pagos a maior — janeiro não volta à lista de guias em atraso",
+      "guiasPagas": [
+        {"competencias": ["2026-01", "2026-02"], "principalCentavos": 1789},
+        {"competencias": ["2026-01"], "principalCentavos": 19658}
+      ],
+      "meses": [
+        {
+          "competencia": "2026-01",
+          "receitaCentavos": 551500,
+          "esperado": {"impostoDevidoCentavos": 19658, "statusDarf": "emitido"}
+        },
+        {
+          "competencia": "2026-02",
+          "receitaCentavos": 503500,
+          "esperado": {"impostoAcumuladoAnteriorCentavos": 0, "totalParaDarfCentavos": 1253}
+        }
+      ],
+      "acertos": [
+        {"periodo": "2026-01", "tipo": "emDia"},
+        {"periodo": "2026-02", "tipo": "pagoAMaior", "diferencaCentavos": 536}
       ]
     }
   ]
