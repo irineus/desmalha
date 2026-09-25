@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'backup/chaves_backup.dart';
 import 'classificacao/repositorio_classificacao.dart';
 import 'despesas/repositorio_despesas.dart';
+import 'diagnostico/repositorio_diagnostico.dart';
 import 'painel/repositorio_fechamento.dart';
 import 'relatorio/repositorio_relatorio.dart';
 import 'backup/controlador_backup.dart';
@@ -36,6 +37,7 @@ class ServicosDoApp {
     required this.despesas,
     required this.fechamento,
     required this.relatorio,
+    required this.diagnostico,
     required this.dadosAlterados,
     required this.arquivoRecebido,
   });
@@ -78,6 +80,9 @@ class ServicosDoApp {
 
   /// O relatório anual para a declaração (visão, nada gravado).
   final RepositorioRelatorio relatorio;
+
+  /// O resumo de diagnóstico para o suporte (sem dado pessoal).
+  final RepositorioDiagnostico diagnostico;
 
   /// Sobe a cada importação confirmada: a aba Mês recalcula.
   final ValueNotifier<int> dadosAlterados;

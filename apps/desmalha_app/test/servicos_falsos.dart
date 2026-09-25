@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:desmalha_app/classificacao/repositorio_classificacao.dart';
 import 'package:desmalha_app/despesas/repositorio_despesas.dart';
+import 'package:desmalha_app/diagnostico/repositorio_diagnostico.dart';
 import 'package:desmalha_app/painel/repositorio_fechamento.dart';
 import 'package:desmalha_app/relatorio/repositorio_relatorio.dart';
 import 'package:desmalha_app/backup/chaves_backup.dart';
@@ -108,6 +109,7 @@ ServicosDoApp servicosFalsos({
   RepositorioDespesas? despesas,
   RepositorioFechamento? fechamento,
   RepositorioRelatorio? relatorio,
+  RepositorioDiagnostico? diagnostico,
   ValueNotifier<RecebimentoDeArquivo?>? arquivoRecebido,
 }) {
   final chaves =
@@ -136,6 +138,12 @@ ServicosDoApp servicosFalsos({
     fechamento: fechamento ?? RepositorioFechamento(_importacaoPadraoBanco),
     relatorio: relatorio ??
         RepositorioRelatorio(
+          _importacaoPadraoBanco,
+          painel: painel ?? PainelFalso(),
+          fechamento: fechamento ?? RepositorioFechamento(_importacaoPadraoBanco),
+        ),
+    diagnostico: diagnostico ??
+        RepositorioDiagnostico(
           _importacaoPadraoBanco,
           painel: painel ?? PainelFalso(),
           fechamento: fechamento ?? RepositorioFechamento(_importacaoPadraoBanco),
