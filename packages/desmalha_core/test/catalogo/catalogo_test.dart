@@ -22,6 +22,105 @@ void main() {
           reason: 'Nubank, Inter e BB — os perfis de referência de perfis/');
     });
 
+    test('rubricas: a trava de 20% é a lista fechada das rodadas 4 e 4b', () {
+      final residencia = {
+        for (final r in catalogo.rubricas)
+          if (r.travaResidencia) r.id,
+      };
+      expect(residencia, {
+        'aluguel-residencia',
+        'condominio-residencia',
+        'energia-residencia',
+        'agua-residencia',
+        'iptu-residencia',
+        'gas-residencia',
+        'taxas-municipais-residencia',
+        'internet-residencia',
+        'telefone-residencia',
+      });
+      // P4 (rodada 4): IPTU R$ 2.400,00 → R$ 480,00 dedutíveis.
+      final iptu = catalogo.rubricaPorId('iptu-residencia')!;
+      expect(iptu.despesa(240000).dedutivelCentavos, 48000);
+      // P4 (rodada 4b): internet de casa R$ 150,00 → R$ 30,00.
+      final internet = catalogo.rubricaPorId('internet-residencia')!;
+      expect(internet.despesa(15000).dedutivelCentavos, 3000);
+    });
+
+    test('rubricas: linha exclusiva deduz 100% e pede a declaração', () {
+      final linha = catalogo.rubricaPorId('linha-exclusiva-atividade')!;
+      expect(linha.exigeDeclaracaoExclusividade, isTrue);
+      expect(linha.travaResidencia, isFalse);
+      // P4 (rodada 4b): linha exclusiva R$ 60,00 → R$ 60,00.
+      expect(linha.despesa(6000).dedutivelCentavos, 6000);
+      expect(linha.orientacao, contains('CPF'));
+      final comDeclaracao = [
+        for (final r in catalogo.rubricas)
+          if (r.exigeDeclaracaoExclusividade) r.id,
+      ];
+      expect(comDeclaracao, ['linha-exclusiva-atividade']);
+    });
+
+    test('rubricas vedadas: registram o gasto e deduzem zero', () {
+      final vedadas = {
+        for (final r in catalogo.rubricas)
+          if (!r.dedutivel) r.id,
+      };
+      expect(vedadas, {
+        'transporte-combustivel',
+        'formacao-graduacao-pos',
+        'equipamento-duravel',
+      });
+      for (final id in vedadas) {
+        final rubrica = catalogo.rubricaPorId(id)!;
+        expect(rubrica.despesa(100000).dedutivelCentavos, 0, reason: id);
+      }
+    });
+
+    test('rubricas saem em ordem e sem ordem repetida', () {
+      final ordens = [for (final r in catalogo.rubricas) r.ordem];
+      expect(ordens, orderedEquals([...ordens]..sort()));
+      expect(ordens.toSet(), hasLength(ordens.length));
+    });
+
+    test('profissões: saúde pede CPF do pagador e do beneficiário', () {
+      final saude = {
+        for (final p in catalogo.profissoes)
+          if (p.saude) p.id,
+      };
+      // Rodada 2, item 2: médicos, dentistas, psicólogos, fisioterapeutas,
+      // TO e fono.
+      expect(saude, {
+        'medico',
+        'dentista',
+        'psicologo',
+        'fisioterapeuta',
+        'terapeuta-ocupacional',
+        'fonoaudiologo',
+      });
+      // Demais regulamentadas: só o CPF de quem pagou.
+      final soPagador = {
+        for (final p in catalogo.profissoes)
+          if (p.regulamentada && !p.saude) p.id,
+      };
+      expect(soPagador, {'nutricionista', 'advogado'});
+      // Rodada 2, item 4: MEI vedado a psicólogo, fisio, nutricionista e
+      // advogado; permitido a fotógrafo e professor particular.
+      const vedadoMei = [
+        'psicologo',
+        'fisioterapeuta',
+        'nutricionista',
+        'advogado',
+      ];
+      for (final id in vedadoMei) {
+        expect(catalogo.profissaoPorId(id)!.meiPermitido, isFalse, reason: id);
+      }
+      for (final id in ['fotografo', 'professor-particular']) {
+        final profissao = catalogo.profissaoPorId(id)!;
+        expect(profissao.meiPermitido, isTrue, reason: id);
+        expect(profissao.regulamentada, isFalse, reason: id);
+      }
+    });
+
     test('nome de arquivo = id do conteúdo (Catalogo já reprova divergir)',
         () {
       // Catalogo.fromItens lança se o id da linha difere do id do conteúdo;
@@ -425,6 +524,82 @@ void main() {
         jsonEncode(relido.documentosLegais.single.toJson()),
         jsonEncode(base()),
       );
+    });
+  });
+
+  group('Rubrica', () {
+    Map<String, Object?> valida() => {
+          'id': 'x',
+          'nome': 'X',
+          'grupo': 'atividade',
+          'dedutivel': true,
+          'travaResidencia': false,
+          'exigeDeclaracaoExclusividade': false,
+          'ordem': 1,
+          'fonte': 'teste',
+        };
+
+    test('carrega o caso válido', () {
+      expect(Rubrica.fromJson(valida()).grupo, GrupoRubrica.atividade);
+    });
+
+    test('vedada dedutível é recusada', () {
+      expect(() => Rubrica.fromJson({...valida(), 'grupo': 'vedada'}),
+          throwsFormatException);
+    });
+
+    test('vedada sem dizer por quê é recusada', () {
+      expect(
+        () => Rubrica.fromJson(
+            {...valida(), 'grupo': 'vedada', 'dedutivel': false}),
+        throwsFormatException,
+      );
+    });
+
+    test('trava de 20% fora do grupo residência é recusada', () {
+      expect(() => Rubrica.fromJson({...valida(), 'travaResidencia': true}),
+          throwsFormatException);
+      expect(() => Rubrica.fromJson({...valida(), 'grupo': 'residencia'}),
+          throwsFormatException);
+    });
+
+    test('declaração de exclusividade sem orientação é recusada', () {
+      expect(
+        () => Rubrica.fromJson(
+            {...valida(), 'exigeDeclaracaoExclusividade': true}),
+        throwsFormatException,
+      );
+    });
+
+    test('grupo desconhecido é recusado', () {
+      expect(() => Rubrica.fromJson({...valida(), 'grupo': 'outro'}),
+          throwsFormatException);
+    });
+  });
+
+  group('Profissao', () {
+    Map<String, Object?> valida() => {
+          'id': 'x',
+          'nome': 'X',
+          'regulamentada': true,
+          'saude': true,
+          'conselho': 'CRX',
+          'meiPermitido': null,
+          'fonte': 'teste',
+        };
+
+    test('carrega o caso válido', () {
+      expect(Profissao.fromJson(valida()).saude, isTrue);
+    });
+
+    test('saúde sem ser regulamentada é recusada', () {
+      expect(() => Profissao.fromJson({...valida(), 'regulamentada': false}),
+          throwsFormatException);
+    });
+
+    test('regulamentada sem conselho é recusada', () {
+      expect(() => Profissao.fromJson({...valida(), 'conselho': null}),
+          throwsFormatException);
     });
   });
 }

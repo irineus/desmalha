@@ -1,0 +1,10 @@
+{
+  "id": "honorarios-contabeis",
+  "nome": "Honorários do contador",
+  "grupo": "atividade",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 190,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}

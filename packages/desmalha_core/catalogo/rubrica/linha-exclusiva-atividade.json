@@ -1,0 +1,11 @@
+{
+  "id": "linha-exclusiva-atividade",
+  "nome": "Linha ou chip exclusivo da atividade",
+  "grupo": "atividade",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": true,
+  "orientacao": "Declare que o número é usado só na atividade. Guarde a fatura no seu CPF e mostre que o número aparece só como contato profissional: cartão de visita, redes profissionais, site, fichas de pacientes.",
+  "ordem": 150,
+  "fonte": "Consulta ao contador, rodada 4b (25/09/2026), P4: linha ou chip exclusivo da atividade deduz 100%, com comprovação"
+}

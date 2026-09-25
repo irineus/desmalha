@@ -1,0 +1,10 @@
+{
+  "id": "condominio-espaco-profissional",
+  "nome": "Condomínio do consultório ou escritório",
+  "grupo": "espacoProfissional",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 20,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}

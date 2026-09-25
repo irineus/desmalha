@@ -1,0 +1,11 @@
+{
+  "id": "formacao-graduacao-pos",
+  "nome": "Graduação, pós-graduação e cursos de formação",
+  "grupo": "vedada",
+  "dedutivel": false,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "orientacao": "Não dedutível no livro-caixa de pessoa física.",
+  "ordem": 230,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}

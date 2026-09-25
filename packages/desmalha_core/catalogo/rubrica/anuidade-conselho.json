@@ -1,0 +1,10 @@
+{
+  "id": "anuidade-conselho",
+  "nome": "Anuidade e taxas do conselho profissional",
+  "grupo": "atividade",
+  "dedutivel": true,
+  "travaResidencia": false,
+  "exigeDeclaracaoExclusividade": false,
+  "ordem": 170,
+  "fonte": "Decisões vigentes §3 (Regras fiscais do carnê-leão, definidas com o contador)"
+}

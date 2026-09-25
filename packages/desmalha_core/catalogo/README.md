@@ -21,6 +21,8 @@ perfis/<id>.json               # tipo perfil_csv (ver nota)
 | `perfil_csv`                | `PerfilCsv`                 | Nubank, Inter, BB |
 | `layout_darf_codigo_barras` | `LayoutCodigoBarrasDarf`    | nenhum — só entra conferido contra DARF real |
 | `documento_legal`           | `DocumentoLegal`            | nenhum — só entra texto aprovado e servido numa URL pública |
+| `rubrica`                   | `Rubrica`                   | 24 rubricas do livro-caixa (Decisões §3 + rodadas 4 e 4b), inclusive as vedadas |
+| `profissao`                 | `Profissao`                 | 10 profissões (rodada 2/2b: saúde, demais regulamentadas, não regulamentadas) |
 
 Os perfis CSV moram em `perfis/` (fora daqui) porque o CLI de validação e o
 roteiro do usuário no Windows já apontam para lá; o manifesto de publicação

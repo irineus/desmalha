@@ -63,6 +63,11 @@
           "inssPagoCentavos": 20000,
           "dependentes": 2,
           "esperado": {
+            "baseCalculoCentavos": 442082,
+            "aliquotaPontosBase": 2250,
+            "parcelaDeduzirCentavos": 67549,
+            "impostoApuradoCentavos": 31919,
+            "saldoNegativoUtilizadoCentavos": 0,
             "cenarioVencedor": "deducoesReais",
             "baseCenarioACentavos": 442082,
             "impostoCenarioACentavos": 31919,
@@ -87,6 +92,11 @@
           "receitaCentavos": 300000,
           "despesas": [ { "valorCentavos": 400000 } ],
           "esperado": {
+            "baseCalculoCentavos": 239280,
+            "aliquotaPontosBase": 0,
+            "parcelaDeduzirCentavos": 0,
+            "impostoApuradoCentavos": 0,
+            "saldoNegativoUtilizadoCentavos": 0,
             "cenarioVencedor": "descontoSimplificado",
             "baseCenarioACentavos": 0,
             "impostoCenarioACentavos": 0,
@@ -102,6 +112,11 @@
           "receitaCentavos": 500000,
           "despesas": [ { "valorCentavos": 100000 } ],
           "esperado": {
+            "baseCalculoCentavos": 300000,
+            "aliquotaPontosBase": 1500,
+            "parcelaDeduzirCentavos": 39416,
+            "impostoApuradoCentavos": 5584,
+            "saldoNegativoUtilizadoCentavos": 100000,
             "cenarioVencedor": "deducoesReais",
             "saldoNegativoAnteriorCentavos": 100000,
             "baseCenarioACentavos": 300000,
@@ -176,6 +191,11 @@
           "receitaCentavos": 700000,
           "despesas": [ { "valorCentavos": 30000 } ],
           "esperado": {
+            "baseCalculoCentavos": 639280,
+            "aliquotaPontosBase": 2750,
+            "parcelaDeduzirCentavos": 90873,
+            "impostoApuradoCentavos": 84929,
+            "saldoNegativoUtilizadoCentavos": 0,
             "cenarioVencedor": "descontoSimplificado",
             "baseCenarioACentavos": 670000,
             "impostoCenarioACentavos": 93377,
@@ -217,6 +237,11 @@
           "competencia": "2026-01",
           "receitaCentavos": 600000,
           "esperado": {
+            "baseCalculoCentavos": 539280,
+            "aliquotaPontosBase": 2750,
+            "parcelaDeduzirCentavos": 90873,
+            "impostoApuradoCentavos": 57429,
+            "saldoNegativoUtilizadoCentavos": 0,
             "cenarioVencedor": "descontoSimplificado",
             "baseCenarioACentavos": 600000,
             "impostoCenarioACentavos": 74127,
@@ -413,6 +438,38 @@
             "impostoDevidoCentavos": 21313,
             "statusDarf": "emitido",
             "valorDarfCentavos": 21313
+          }
+        }
+      ]
+    },
+    {
+      "numero": 18,
+      "descricao": "Rodadas 4 e 4b, P4: a trava de 20% da residência vem da RUBRICA do catálogo (IPTU R$ 2.400,00 → R$ 480,00; internet de casa R$ 150,00 → R$ 30,00), linha exclusiva deduz 100% (R$ 60,00) e equipamento durável deduz zero",
+      "meses": [
+        {
+          "competencia": "2026-03",
+          "receitaCentavos": 1000000,
+          "despesas": [
+            { "valorCentavos": 300000, "rubrica": "aluguel-residencia" },
+            { "valorCentavos": 240000, "rubrica": "iptu-residencia" },
+            { "valorCentavos": 15000, "rubrica": "internet-residencia" },
+            { "valorCentavos": 6000, "rubrica": "linha-exclusiva-atividade" },
+            { "valorCentavos": 300000, "rubrica": "equipamento-duravel" }
+          ],
+          "esperado": {
+            "cenarioVencedor": "deducoesReais",
+            "baseCenarioACentavos": 883000,
+            "impostoCenarioACentavos": 151952,
+            "baseCenarioBCentavos": 939280,
+            "impostoCenarioBCentavos": 167429,
+            "reducaoRedutorCentavos": 0,
+            "impostoDevidoCentavos": 151952,
+            "baseCalculoCentavos": 883000,
+            "aliquotaPontosBase": 2750,
+            "parcelaDeduzirCentavos": 90873,
+            "impostoApuradoCentavos": 151952,
+            "statusDarf": "emitido",
+            "valorDarfCentavos": 151952
           }
         }
       ]
