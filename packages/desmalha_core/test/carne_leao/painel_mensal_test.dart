@@ -193,6 +193,39 @@ void main() {
       expect(p, isA<PainelApurado>());
       expect((p as PainelApurado).apuracao.impostoAcumuladoAnteriorCentavos, 0);
     });
+
+    test('guia paga zera o acumulado: o mês seguinte não recobra o que ela '
+        'cobriu', () {
+      // Março pago; a correção o deixa em R$ 5,36 (abaixo do mínimo).
+      final dados = {
+        '2026-03': classificado(501500),
+        '2026-04': classificado(503500),
+      };
+      final semGuia = montarPainelMensal(
+        competencia: '2026-04',
+        dadosDoAno: dados,
+        catalogo: catalogo,
+      ) as PainelApurado;
+      final comGuia = montarPainelMensal(
+        competencia: '2026-04',
+        dadosDoAno: dados,
+        catalogo: catalogo,
+        periodosQuitados: {'2026-03'},
+      ) as PainelApurado;
+      expect(semGuia.apuracao.totalParaDarfCentavos, 1789);
+      expect(comGuia.apuracao.totalParaDarfCentavos, 1253);
+    });
+
+    test('período quitado entra no encadeamento mesmo sem dado', () {
+      final p = montarPainelMensal(
+        competencia: '2026-04',
+        dadosDoAno: {'2026-04': classificado(503500)},
+        catalogo: catalogo,
+        periodosQuitados: {'2026-03'},
+      ) as PainelApurado;
+      expect(p.evolucao.firstWhere((m) => m.competencia == '2026-03').apuracao,
+          isNotNull);
+    });
   });
 
   group('falha visível', () {

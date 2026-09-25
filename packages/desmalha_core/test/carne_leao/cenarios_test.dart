@@ -52,9 +52,21 @@ void main() {
           _entrada(m! as Map<String, Object?>, catalogo, porData),
       ];
 
+      // Guias já pagas (reabertura, P8/P9): o período de cada uma zera o
+      // acumulado, e o acerto compara o recalculado com o pago.
+      final guias = [
+        for (final g in ((cenario['guiasPagas'] as List<Object?>?) ?? [])
+            .cast<Map<String, Object?>>())
+          GuiaPaga(
+            competencias: (g['competencias']! as List<Object?>).cast<String>(),
+            principalPagoCentavos: g['principalCentavos']! as int,
+          ),
+      ];
+
       final apuracoes = apurarSequencia(
         entradas: entradas,
         tabelaPara: (competencia) => tabelaVigente(tabelas, competencia),
+        periodosQuitados: {for (final g in guias) g.periodo},
       );
 
       for (var i = 0; i < meses.length; i++) {
@@ -68,6 +80,20 @@ void main() {
             reason: 'competência ${atual.competencia}, campo ${entry.key}',
           );
         }
+      }
+
+      final porCompetencia = {for (final a in apuracoes) a.competencia: a};
+      for (final esperado in ((cenario['acertos'] as List<Object?>?) ?? [])
+          .cast<Map<String, Object?>>()) {
+        final guia = guias.singleWhere((g) => g.periodo == esperado['periodo']);
+        expect(
+          _acerto(acertoDaGuia(guia, porCompetencia)),
+          {
+            for (final e in esperado.entries)
+              if (e.key != 'periodo') e.key: e.value,
+          },
+          reason: 'acerto da guia de ${guia.periodo}',
+        );
       }
     });
   }
@@ -154,6 +180,23 @@ EntradaApuracao _entrada(
     irrfRetidoPjCentavos: (mes['irrfPjCentavos'] as int?) ?? 0,
   );
 }
+
+Map<String, Object?> _acerto(AcertoDaGuia acerto) => switch (acerto) {
+      AcertoEmDia() => {'tipo': 'emDia'},
+      AcertoComplementar(:final competencia, :final diferencaCentavos) => {
+          'tipo': 'complementar',
+          'competencia': competencia,
+          'diferencaCentavos': diferencaCentavos,
+        },
+      AcertoPagoAMaior(:final diferencaCentavos) => {
+          'tipo': 'pagoAMaior',
+          'diferencaCentavos': diferencaCentavos,
+        },
+      AcertoPendente(:final pergunta) => {
+          'tipo': 'pendente',
+          'pergunta': pergunta,
+        },
+    };
 
 Object? _campo(ApuracaoMensal apuracao, String nome) => switch (nome) {
       'versaoTabelaId' => apuracao.versaoTabelaId,
