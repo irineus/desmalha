@@ -213,4 +213,94 @@ void main() {
       expect(fonte.importados, isNull);
     },
   );
+
+  group('recuperação (decisão 10 do owner)', () {
+    final codigoAntigo = gerarCodigoRecuperacao(Random(6));
+
+    test('aparelho novo restaura com o código: importa, adota a chave e os '
+        'próximos backups abrem com o MESMO código', () async {
+      final porta = ArmazenamentoFalso();
+      await servico(porta, _FonteFalsa()).fazerBackup();
+
+      final novas = ChavesBackup(cofre: CofreEmMemoria(), aleatorio: Random(9));
+      final fonte = _FonteFalsa();
+      final s = servico(porta, fonte, chaves: novas);
+      await s.restaurarComCodigo(
+        codigoAntigo.replaceAll('-', ' ').toLowerCase(),
+      );
+      expect(fonte.importados!.single.dados['id'], 'tx-1');
+      expect(await novas.codigoConfirmado(), isTrue);
+      expect(await novas.vinculadoAosBackups(), isTrue);
+
+      fonte.documentos = [
+        const DocumentoBackup('transacoes', {'id': 'tx-9'}),
+      ];
+      final r = (await s.fazerBackup())!;
+      final bytes = porta.objetos[ServicoBackup.caminhoDe(_uid, r.seq)]!;
+      final aberto = await abrirDsmbComCodigo(bytes, codigoAntigo);
+      expect((await lerPayload(aberto.conteudo)).documentos.single.dados['id'],
+          'tx-9');
+    });
+
+    test('código errado não toca em nada', () async {
+      final porta = ArmazenamentoFalso();
+      await servico(porta, _FonteFalsa()).fazerBackup();
+      final novas = ChavesBackup(cofre: CofreEmMemoria(), aleatorio: Random(9));
+      final fonte = _FonteFalsa();
+      await expectLater(
+        servico(porta, fonte, chaves: novas)
+            .restaurarComCodigo(gerarCodigoRecuperacao(Random(77))),
+        throwsA(isA<FalhaBackup>().having(
+            (f) => f.mensagem, 'mensagem', contains('Nada foi alterado'))),
+      );
+      expect(fonte.importados, isNull);
+      expect(await novas.codigoConfirmado(), isFalse);
+    });
+
+    test('começar do zero: backup desligado até confirmar o descarte dos '
+        'antigos', () async {
+      final porta = ArmazenamentoFalso();
+      await servico(porta, _FonteFalsa()).fazerBackup();
+
+      final zero = ChavesBackup(cofre: CofreEmMemoria(), aleatorio: Random(9));
+      await zero.confirmarCodigo(gerarCodigoRecuperacao(Random(10)));
+      final s = servico(porta, _FonteFalsa(), chaves: zero);
+      await expectLater(s.fazerBackup(), throwsA(isA<FalhaBackupsAntigos>()));
+      expect(porta.objetos, hasLength(1), reason: 'nada enviado');
+
+      await s.descartarBackupsAntigos();
+      expect(await s.fazerBackup(), isNotNull);
+    });
+
+    test('aparelho que já fazia backup (sem vínculo gravado): confere que o '
+        'último abre com a própria chave e liga sozinho', () async {
+      final cofre = CofreEmMemoria();
+      final chaves = ChavesBackup(cofre: cofre, aleatorio: Random(5));
+      await chaves.confirmarCodigo(codigoAntigo);
+      final porta = ArmazenamentoFalso();
+      await servico(porta, _FonteFalsa(), chaves: chaves).fazerBackup();
+      await cofre.apagar(ChavesBackup.campoVinculo);
+
+      expect(await chaves.vinculadoAosBackups(), isFalse);
+      expect(await servico(porta, _FonteFalsa(), chaves: chaves).fazerBackup(),
+          isNotNull);
+      expect(await chaves.vinculadoAosBackups(), isTrue);
+    });
+
+    test('não troca uma chave já vinculada por outra', () async {
+      final chaves = ChavesBackup(cofre: CofreEmMemoria(), aleatorio: Random(5));
+      await chaves.confirmarCodigo(codigoAntigo);
+      await chaves.vincularAosBackups();
+      final outra = Uint8List.fromList(List.filled(32, 7));
+      final cabecalho = await embrulharChaveMestra(
+        chaveMestra: outra,
+        codigo: codigoAntigo,
+        aleatorio: Random(1),
+      );
+      await expectLater(
+        chaves.adotarChaveMestra(outra, cabecalho),
+        throwsA(isA<ChavesBackupException>()),
+      );
+    });
+  });
 }

@@ -106,7 +106,10 @@ final chaveNavegadorDoApp = GlobalKey<NavigatorState>();
 void abrirTelaBackup(ServicosDoApp servicos) {
   chaveNavegadorDoApp.currentState?.push(
     MaterialPageRoute<void>(
-      builder: (_) => TelaBackup(controlador: servicos.backup),
+      builder: (_) => TelaBackup(
+        controlador: servicos.backup,
+        aoRestaurar: () => servicos.dadosAlterados.value++,
+      ),
     ),
   );
 }
@@ -144,7 +147,12 @@ class _ItemBackup extends StatelessWidget {
           subtitle: Text(subtitulo),
           trailing: selo ?? const Icon(Icons.chevron_right),
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => TelaBackup(controlador: c)),
+            MaterialPageRoute<void>(
+              builder: (_) => TelaBackup(
+                controlador: c,
+                aoRestaurar: () => servicos.dadosAlterados.value++,
+              ),
+            ),
           ),
         );
       },

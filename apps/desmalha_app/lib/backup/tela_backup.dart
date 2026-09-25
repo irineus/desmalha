@@ -5,6 +5,7 @@ import '../tema/tipografia.dart';
 import '../tema/tokens.dart';
 import 'controlador_backup.dart';
 import 'tela_codigo_recuperacao.dart';
+import 'tela_restaurar.dart';
 
 String _quando(DateTime? em) {
   if (em == null) return 'nunca';
@@ -24,15 +25,32 @@ String _tamanho(int? bytes) {
 /// Ajustes > Backup: o estado, a regra do automático, o código de
 /// recuperação e "Fazer backup agora".
 class TelaBackup extends StatefulWidget {
-  const TelaBackup({super.key, required this.controlador});
+  const TelaBackup({super.key, required this.controlador, this.aoRestaurar});
 
   final ControladorBackup controlador;
+
+  /// Depois de uma restauração: as telas de dados recarregam.
+  final VoidCallback? aoRestaurar;
 
   @override
   State<TelaBackup> createState() => _TelaBackupState();
 }
 
 class _TelaBackupState extends State<TelaBackup> {
+  bool _entendiDescarte = false;
+
+  Future<void> _restaurar() async {
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => TelaRestaurar(
+          restaurar: widget.controlador.restaurarComCodigo,
+          substituiDadosLocais: true,
+        ),
+      ),
+    );
+    widget.aoRestaurar?.call();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -124,6 +142,57 @@ class _TelaBackupState extends State<TelaBackup> {
                     key: const Key('falha_backup'),
                     style: texto.bodyMedium!.copyWith(
                       color: CoresDesmalha.falha,
+                    ),
+                  ),
+                ],
+                if (c.backupsAntigos) ...[
+                  const SizedBox(height: EspacosDesmalha.s3),
+                  Card(
+                    key: const Key('painel_backups_antigos'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(EspacosDesmalha.s4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Seus backups antigos',
+                            style: texto.titleMedium,
+                          ),
+                          const SizedBox(height: EspacosDesmalha.s2),
+                          Text(
+                            'Eles só abrem com o código de recuperação antigo. '
+                            'Sem ele, ninguém — nem nós — consegue abri-los, e '
+                            'isso não tem volta. Se você achar o código, '
+                            'restaure; se não, descarte-os para o backup '
+                            'voltar a funcionar com o código novo.',
+                            style: texto.bodyMedium,
+                          ),
+                          OutlinedButton(
+                            key: const Key('botao_restaurar_backup'),
+                            onPressed: _restaurar,
+                            child: const Text('Achei o código: restaurar'),
+                          ),
+                          CheckboxListTile(
+                            key: const Key('marcar_descarte'),
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            value: _entendiDescarte,
+                            onChanged: (v) =>
+                                setState(() => _entendiDescarte = v ?? false),
+                            title: const Text(
+                              'Entendo: vou descartar os backups antigos, que '
+                              'ninguém mais consegue abrir.',
+                            ),
+                          ),
+                          FilledButton(
+                            key: const Key('botao_descartar_antigos'),
+                            onPressed: _entendiDescarte && !c.executando
+                                ? c.descartarBackupsAntigos
+                                : null,
+                            child: const Text('Descartar e ligar o backup'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

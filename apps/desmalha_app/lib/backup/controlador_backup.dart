@@ -34,6 +34,10 @@ class ControladorBackup extends ChangeNotifier {
   bool executando = false;
   String? ultimaFalha;
   String? ultimoAviso;
+
+  /// O último backup parou porque os da nuvem são de outro código
+  /// ([FalhaBackupsAntigos]): a tela oferece restaurar ou descartar.
+  bool backupsAntigos = false;
   bool _carregado = false;
 
   bool get carregado => _carregado;
@@ -79,6 +83,24 @@ class ControladorBackup extends ChangeNotifier {
   Future<bool> existeBackupNaNuvem() async =>
       (await servico().porta.listarMetadados()).isNotEmpty;
 
+  /// "Descartar os backups antigos, que ninguém mais consegue abrir" — só
+  /// depois da marcação explícita na tela. Liga o backup e já faz um.
+  Future<void> descartarBackupsAntigos() async {
+    await servico().descartarBackupsAntigos();
+    backupsAntigos = false;
+    await _executar();
+  }
+
+  /// Restaura o backup mais recente com o [codigo] de recuperação —
+  /// SUBSTITUI os dados deste aparelho. Lança [FalhaBackup] (código errado
+  /// não altera nada).
+  Future<void> restaurarComCodigo(String codigo) async {
+    await servico().restaurarComCodigo(codigo);
+    backupsAntigos = false;
+    ultimaFalha = null;
+    await recarregar();
+  }
+
   Future<void> _executar({String? pularSeConteudoFor}) async {
     executando = true;
     ultimaFalha = null;
@@ -100,6 +122,11 @@ class ControladorBackup extends ChangeNotifier {
         );
         ultimoAviso = 'Backup feito.';
       }
+      backupsAntigos = false;
+    } on FalhaBackupsAntigos catch (e) {
+      await estadoPersistido.registrarFalha(e.mensagem);
+      ultimaFalha = e.mensagem;
+      backupsAntigos = true;
     } on FalhaBackup catch (e) {
       await estadoPersistido.registrarFalha(e.mensagem);
       ultimaFalha = e.mensagem;
