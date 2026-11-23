@@ -26,6 +26,8 @@ import 'despesas/repositorio_despesas.dart';
 import 'diagnostico/repositorio_diagnostico.dart';
 import 'painel/repositorio_fechamento.dart';
 import 'relatorio/repositorio_relatorio.dart';
+import 'suporte/porta_suporte_http.dart';
+import 'suporte/servico_suporte.dart';
 import 'importacao/arquivo_recebido.dart';
 import 'importacao/seletor_arquivo_sistema.dart';
 import 'lembretes/controlador_lembretes.dart';
@@ -135,6 +137,15 @@ Future<void> main() async {
             bancoDoApp(),
             painel: RepositorioPainelDrift(bancoDoApp()),
             fechamento: RepositorioFechamento(bancoDoApp()),
+          ),
+          suporte: ServicoSuporte(
+            bancoDoApp(),
+            porta: PortaSuporteHttp(
+              url: supabaseUrl,
+              chavePublicavel: supabasePublishableKey,
+              tokenDaSessao: () => portaAuth.tokenDeAcesso,
+            ),
+            usuarioId: () => portaAuth.usuarioAtual?.id,
           ),
           dadosAlterados: ValueNotifier(0),
           arquivoRecebido: arquivoRecebido,

@@ -31,6 +31,11 @@ const _permitidos = {
   // PostgREST do backup, com o token da sessão. Porta própria pelo mesmo
   // motivo da exclusão.
   'lib/backup/porta_armazenamento_backup_http.dart',
+  // +1 (25/09/2026, Cadeia 2 item 10, "Envio opcional de extrato ao
+  // suporte"): upload ao bucket suporte-extratos e registro em
+  // envios_suporte, com o token da sessão. Porta própria pelo mesmo motivo
+  // da exclusão.
+  'lib/suporte/porta_suporte_http.dart',
   // +1 (24/09/2026, card "Telas de onboarding e login"): RPC
   // registrar_aceite com o token da sessão. Porta própria pelo mesmo motivo
   // da exclusão — o aceite não é método da PortaAuth.
