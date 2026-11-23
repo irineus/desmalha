@@ -10,7 +10,7 @@ library;
 import 'dart:async';
 
 import 'package:desmalha_core/desmalha_core.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../importacao/tela_importacao.dart' show dataBr;
 import '../servicos_do_app.dart';

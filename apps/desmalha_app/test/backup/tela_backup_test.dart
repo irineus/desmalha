@@ -5,7 +5,7 @@ import 'package:desmalha_app/backup/servico_backup.dart';
 import 'package:desmalha_app/backup/tela_backup.dart';
 import 'package:desmalha_app/backup/tela_restaurar.dart';
 import 'package:desmalha_app/tema/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../servicos_falsos.dart';

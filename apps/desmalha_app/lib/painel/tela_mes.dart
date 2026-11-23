@@ -8,7 +8,7 @@ library;
 import 'dart:async';
 
 import 'package:desmalha_core/desmalha_core.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../backup/lembrete_codigo.dart';
 import '../backup/tela_backup.dart';

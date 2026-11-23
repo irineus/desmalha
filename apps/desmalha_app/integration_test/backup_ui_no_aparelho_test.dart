@@ -16,7 +16,7 @@ import 'package:desmalha_app/dados/chave_banco.dart';
 import 'package:desmalha_app/navegacao/abas.dart';
 import 'package:desmalha_app/tema/tema.dart';
 import 'package:desmalha_core/desmalha_core.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 

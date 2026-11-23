@@ -27,7 +27,7 @@ source tool/env          # ANDROID_HOME / PATH para a sessão atual
 
 **Windows** (máquina de UI, emulador e hot reload): [`docs/ambiente-windows.md`](docs/ambiente-windows.md).
 
-Flutter **3.44.7** pinado via [FVM](https://fvm.app) (`.fvmrc`). JDK 17.
+Flutter **3.50.1** pinado via [FVM](https://fvm.app) (`.fvmrc`). JDK 17.
 
 ## Verificar o ambiente
 

@@ -1,8 +1,10 @@
 import 'package:desmalha_app/navegacao/casca.dart';
 import 'package:desmalha_app/tema/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../fontes_de_teste.dart';
 
 /// Uma aba com contador — para provar que trocar de aba não perde estado.
 class _AbaContadora extends StatefulWidget {
@@ -99,6 +101,7 @@ void main() {
       plex.addFont(rootBundle.load('assets/fonts/IBMPlexMono-$peso.ttf'));
     }
     await plex.load();
+    await drenarAvisoDeFontes(tester);
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);

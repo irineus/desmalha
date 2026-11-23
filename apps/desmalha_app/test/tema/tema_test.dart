@@ -4,9 +4,11 @@ import 'package:desmalha_app/tema/componentes.dart';
 import 'package:desmalha_app/tema/tema.dart';
 import 'package:desmalha_app/tema/tipografia.dart';
 import 'package:desmalha_app/tema/tokens.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../fontes_de_teste.dart';
 
 Widget _noTema(Widget filho) => MaterialApp(
   theme: temaDesmalha(),
@@ -153,6 +155,7 @@ void main() {
           ..addFont(Future.value(dados));
         await carregador.load();
       }
+      await drenarAvisoDeFontes(tester);
     });
   });
 }

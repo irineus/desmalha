@@ -7,7 +7,7 @@
 /// familiaridade com o celular deixa de achar.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// As abas, na ordem da barra.
 enum AbaDoApp {

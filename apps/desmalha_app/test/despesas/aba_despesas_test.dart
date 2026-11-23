@@ -3,7 +3,7 @@ import 'package:desmalha_app/despesas/aba_despesas.dart';
 import 'package:desmalha_app/despesas/repositorio_despesas.dart';
 import 'package:desmalha_app/tema/tema.dart';
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../lembretes/notificacoes_falsas.dart';

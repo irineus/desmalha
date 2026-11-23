@@ -6,7 +6,7 @@
 /// livro-caixa e relatório anual).
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../auth/servico_auth.dart';
 import '../auth/tela_conta.dart';

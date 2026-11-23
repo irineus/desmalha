@@ -19,7 +19,7 @@ três ambientes é o **verificador**, e é ele que diz se a instalação ficou c
 fvm dart run tool/verificar_ambiente.dart --android
 ```
 
-> ⚠️ **A versão do Flutter não muda aqui.** O pin vive no `.fvmrc` (hoje **3.44.7**) e só
+> ⚠️ **A versão do Flutter não muda aqui.** O pin vive no `.fvmrc` (hoje **3.50.1**) e só
 > muda por decisão explícita registrada no board. Instalar "o Flutter mais novo" e deixar o
 > Android Studio apontar para ele é exatamente a divergência silenciosa que o verificador
 > existe para pegar.
@@ -92,7 +92,7 @@ caminho da seção 5. Defini-la aponta o CLI para um lugar e deixa os symlinks d
 Do diretório raiz do repositório:
 
 ```powershell
-fvm install          # lê o .fvmrc e baixa exatamente 3.44.7
+fvm install          # lê o .fvmrc e baixa exatamente 3.50.1
 fvm flutter --version
 ```
 
@@ -105,7 +105,7 @@ fvm flutter doctor --android-licenses
 
 ## 4. Componentes do Android SDK
 
-As versões **não** são escolha livre: são as que o Flutter 3.44.7 declara, e são as mesmas
+As versões **não** são escolha livre: são as que o Flutter 3.50.1 declara, e são as mesmas
 constantes do `tool/setup_env.sh` (`ANDROID_PLATFORM`, `BUILD_TOOLS`, `NDK_VERSION`). Pelo
 SDK Manager do Android Studio, ou pela linha de comando:
 
@@ -149,7 +149,7 @@ Em *Settings → Languages & Frameworks → Flutter → Flutter SDK path*, apont
 o FVM baixou:
 
 ```
-C:\Users\<voce>\fvm\versions\3.44.7
+C:\Users\<voce>\fvm\versions\3.50.1
 ```
 
 (o caminho exato sai de `fvm list`). Se este passo for pulado, o app compila — só que com
