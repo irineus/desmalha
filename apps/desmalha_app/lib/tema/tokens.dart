@@ -14,7 +14,7 @@
 ///   importação quebrada, exclusão irreversível). Pendência nunca é vermelha.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// As cores, por papel. `const` e sem instância: o tema lê daqui.
 abstract final class CoresDesmalha {

@@ -11,7 +11,7 @@ import 'package:desmalha_app/onboarding/repositorio_onboarding.dart';
 import 'package:desmalha_app/onboarding/telas_onboarding.dart';
 import 'package:desmalha_app/tema/tema.dart';
 import 'package:desmalha_core/desmalha_core.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../auth/porta_auth_falsa.dart';

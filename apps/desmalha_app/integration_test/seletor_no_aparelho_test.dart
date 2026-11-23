@@ -12,7 +12,7 @@ import 'package:desmalha_app/importacao/controlador_importacao.dart';
 import 'package:desmalha_app/importacao/seletor_arquivo_sistema.dart';
 import 'package:desmalha_app/importacao/tela_importacao.dart';
 import 'package:desmalha_app/tema/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 

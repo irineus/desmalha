@@ -20,7 +20,7 @@ imposto mensal, gera DARF (código 0190) e prepara os consolidados para o e-CAC.
 ## Decisões travadas (não reabrir, não "melhorar")
 | Decisão | Valor |
 |---|---|
-| Flutter | **3.44.7 (stable)**, pinado via **FVM** (`.fvmrc` na raiz) |
+| Flutter | **3.50.1 (stable)**, pinado via **FVM** (`.fvmrc` na raiz) |
 | `applicationId` Android | **`com.desmalha.app`** |
 | `minSdk` | **26** (Android 8.0) — exigido por SQLCipher, Keystore de hardware e custo do Argon2id |
 | Estrutura | Monorepo: `apps/desmalha_app` (Flutter) + `packages/desmalha_core` (Dart puro) |
@@ -37,7 +37,7 @@ imposto mensal, gera DARF (código 0190) e prepara os consolidados para o e-CAC.
 
 ## Mapa de pastas
 ```
-.fvmrc                     # pin do Flutter (3.44.7) — só o .fvmrc é versionado, .fvm/ não
+.fvmrc                     # pin do Flutter (3.50.1) — só o .fvmrc é versionado, .fvm/ não
 codemagic.yaml             # CI: android-verify (tag verificar-*) + ios-simulator-nightly (cron/manual)
 .github/workflows/verify.yml  # CI de PR: analyze + testes do core e do app (Actions, Linux)
 tool/setup_env.sh          # bootstrap idempotente de ambiente Linux (JDK, FVM, Android SDK)
@@ -67,7 +67,7 @@ motor de cálculo será validado contra 10 cenários oficiais table-driven em JS
 ## Ambiente & comandos
 Sessão Linux efêmera nasce pronta com:
 ```
-bash tool/setup_env.sh          # instala JDK 17, FVM, Flutter 3.44.7, Android SDK
+bash tool/setup_env.sh          # instala JDK 17, FVM, Flutter 3.50.1, Android SDK
 source tool/env                 # exporta ANDROID_HOME etc. (gerado pelo script)
 ```
 Conferir que o ambiente bate com o que o repositório declara (vale nos três ambientes;

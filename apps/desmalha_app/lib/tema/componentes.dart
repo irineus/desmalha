@@ -13,7 +13,7 @@
 library;
 
 import 'package:desmalha_core/desmalha_core.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'tipografia.dart';
 import 'tokens.dart';

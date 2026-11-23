@@ -8,7 +8,7 @@ library;
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../tema/componentes.dart';
 import '../tema/tokens.dart';

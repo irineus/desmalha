@@ -8,7 +8,7 @@ import 'package:desmalha_app/painel/repositorio_fechamento.dart';
 import 'package:desmalha_app/tema/tema.dart';
 import 'package:desmalha_core/desmalha_core.dart';
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../lembretes/notificacoes_falsas.dart';

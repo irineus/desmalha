@@ -16,7 +16,7 @@
 /// variável — sem ele, o texto sai no peso padrão do arquivo.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'tokens.dart';
 
